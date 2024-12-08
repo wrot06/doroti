@@ -36,18 +36,20 @@ if ($conec->connect_error) {
 }
 
 // Preparar consulta SQL para obtener los capítulos
-$sql_get_capitulos = "SELECT id2, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin FROM IndiceTemp WHERE Caja = ? AND Carpeta = ?";
+$sql_get_capitulos = "SELECT id2, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas FROM IndiceTemp WHERE Caja = ? AND Carpeta = ?";
 $stmt_get_capitulos = $conec->prepare($sql_get_capitulos);
 $stmt_get_capitulos->bind_param("ii", $caja, $carpeta);
 $stmt_get_capitulos->execute();
 $result_capitulos = $stmt_get_capitulos->get_result();
 
 $capitulos = [];
-$ultimaPagina = 1; // Inicializar última página
+$ultimaPagina = 0; // Inicializar última página
 
 while ($row = $result_capitulos->fetch_assoc()) {
     $capitulos[] = $row;
-    $ultimaPagina = max($ultimaPagina, (int) $row['NoFolioFin']);
+
+    // Calcular la última página como la suma de NoFolioFin
+    $ultimaPagina += (int) $row['NoFolioFin']; // Aquí suma el valor de NoFolioFin
 }
 
 $stmt_get_capitulos->close();
@@ -118,138 +120,167 @@ $conec->close();
 
 <script>
 $(document).ready(function() {
-    let siguientePagina = <?= empty($capitulos) ? 1 : $paginaSiguiente ?? 1 ?>; // Página inicial
+let siguientePagina = <?= empty($capitulos) ? 1 : $paginaSiguiente ?? 1 ?>; // Página inicial
 
-    // Agregar un nuevo capítulo
-    $("#capituloForm").submit(function(event) {
-        event.preventDefault();
 
-        const etiquetaSeleccionada = $("input[name='etiqueta']:checked").val();
-        if (!etiquetaSeleccionada) {
-            alert("Por favor, selecciona una etiqueta antes de agregar un capítulo.");
-            return;
-        }
+// Agregar un nuevo capítulo
+$("#capituloForm").submit(function(event) {
+    event.preventDefault();
 
-        const titulo = $("#titulo").val().trim();
-        const paginaFinal = parseInt($("#paginaFinal").val());
+    const etiquetaSeleccionada = $("input[name='etiqueta']:checked").val();
+    if (!etiquetaSeleccionada) {
+        alert("Por favor, selecciona una etiqueta antes de agregar un capítulo.");
+        return;
+    }
 
-        if (!titulo) {
-            alert("El título no puede estar vacío.");
-            return;
-        }
+    const titulo = $("#titulo").val().trim();
+    const paginaFinal = parseInt($("#paginaFinal").val());
 
-        if (isNaN(paginaFinal) || paginaFinal < siguientePagina) {
-            alert("La página de finalización debe ser un número válido mayor o igual a la página de inicio.");
-            return;
-        }
+    if (!titulo) {
+        alert("El título no puede estar vacío.");
+        return;
+    }
 
-        const paginaInicio = siguientePagina;
-        const numPaginas = paginaFinal - paginaInicio + 1;
+    if (isNaN(paginaFinal) || paginaFinal < siguientePagina) {
+        alert("La página de finalización debe ser un número válido mayor o igual a la página de inicio.");
+        return;
+    }
 
-        $.ajax({
-            url: 'rene/agregar_capitulo.php',
-            type: 'POST',
-            data: {
-                caja: <?= $caja ?>,
-                carpeta: <?= $carpeta ?>,
-                titulo: `${etiquetaSeleccionada}: ${titulo}`,
-                paginaInicio: paginaInicio,
-                paginaFinal: paginaFinal
-            },
-            success: function(response) {
-                try {
-                    const data = JSON.parse(response);
-                    if (data.status === 'success') {
-                        $("#capitulosTable tbody").find("tr:first-child:contains('No hay capítulos')").remove();
+    const paginaInicio = siguientePagina;
+    const numPaginas = paginaFinal - paginaInicio + 1;
 
-                        $("#capitulosTable tbody").append(`
-                            <tr data-id="${data.id}" data-num-paginas="${numPaginas}">
-                                <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
-                                <td contenteditable="true" class="editable">${etiquetaSeleccionada}: ${titulo}</td>
-                                <td>${paginaInicio}</td>
-                                <td>${paginaFinal}</td>
-                                <td><button class="eliminar">Eliminar</button></td>
-                            </tr>
-                        `);
-                        $("#titulo").val('');
-                        $("#paginaFinal").val('');
-                        siguientePagina = paginaFinal + 1;
-                        actualizarUltimaPagina();
-                    } else {
-                        alert(data.message || "Error al agregar el capítulo.");
-                    }
-                } catch (e) {
-                    console.error("Error en la respuesta del servidor:", e);
-                    alert("Error al procesar la solicitud.");
+    $.ajax({
+        url: 'rene/agregar_capitulo.php',
+        type: 'POST',
+        data: {
+            caja: <?= $caja ?>,
+            carpeta: <?= $carpeta ?>,
+            titulo: `${etiquetaSeleccionada}: ${titulo}`,
+            paginaInicio: paginaInicio,
+            paginaFinal: paginaFinal,
+            paginas2: numPaginas // Asegúrate de enviar el número de páginas al servidor
+        },
+        success: function(response) {
+            try {
+                const data = JSON.parse(response);
+                if (data.status === 'success') {
+                    $("#capitulosTable tbody").find("tr:first-child:contains('No hay capítulos')").remove();
+
+                    $("#capitulosTable tbody").append(`
+                        <tr data-id="${data.id}" data-num-paginas="${numPaginas}">
+                            <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
+                            <td contenteditable="true" class="editable">${etiquetaSeleccionada}: ${titulo}</td>
+                            <td>${paginaInicio}</td>
+                            <td>${paginaFinal}</td>
+                            <td><button class="eliminar">Eliminar</button></td>
+                        </tr>
+                    `);
+
+                    $("#titulo").val('');
+                    $("#paginaFinal").val('');
+                    siguientePagina = paginaFinal + 1;
+                    actualizarUltimaPagina();
+                } else {
+                    alert(data.message || "Error al agregar el capítulo.");
                 }
-            },
-            error: function() {
-                alert("Error en la solicitud. Por favor, intenta nuevamente.");
+            } catch (e) {
+                console.error("Error en la respuesta del servidor:", e);
+                alert("Error al procesar la solicitud.");
             }
-        });
+        },
+        error: function() {
+            alert("Error en la solicitud. Por favor, intenta nuevamente.");
+        }
     });
+});
 
-    // Función para actualizar la última página
-    function actualizarUltimaPagina() {
+
+
+
+// Función para actualizar la última página
+function actualizarUltimaPagina() {
         $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
     }
 
-    // Función para reordenar capítulos y actualizar páginas
-    function actualizarPaginas() {
-        siguientePagina = 1;
 
-        $("#capitulosTable tbody tr").each(function() {
-            const $fila = $(this);
-            const numPaginas = parseInt($fila.data("num-paginas"), 10);
-            const nuevaPaginaFinal = siguientePagina + numPaginas - 1;
+// Función para reordenar capítulos y actualizar páginas
+function actualizarPaginas() {
+    let siguientePagina = 1;
 
-            $fila.find("td:eq(2)").text(siguientePagina); // Actualizar página de inicio
-            $fila.find("td:eq(3)").text(nuevaPaginaFinal); // Actualizar página de finalización
+    $("#capitulosTable tbody tr").each(function() {
+        const $fila = $(this);
 
-            siguientePagina = nuevaPaginaFinal + 1;
-        });
+        // Obtener numPaginas desde data
+        const numPaginas = parseInt($fila.data("num-paginas"), 10) || 1;
 
-        actualizarUltimaPagina();
-    }
+        // Calcular paginaInicio y paginaFinal
+        const paginaInicio = siguientePagina; // La página de inicio es el siguiente número disponible
+        const paginaFinal = paginaInicio + numPaginas - 1; // La página final se calcula con numPaginas
 
-    // Reordenar las filas de la tabla
-    $("#capitulosTable tbody").sortable({
-        items: "tr",
-        cursor: "move",
-        placeholder: "highlight",
-        handle: ".drag-icon",
-        update: function() {
-            actualizarPaginas();
-            const nuevoOrden = [];
-            $("#capitulosTable tbody tr").each(function(index) {
-                const idCapitulo = $(this).data("id");
-                nuevoOrden.push({ id: idCapitulo, orden: index + 1 });
-            });
-
-            $.ajax({
-                url: 'rene/actualizar_orden.php',
-                type: 'POST',
-                data: { orden: nuevoOrden },
-                success: function(response) {
-                    try {
-                        const data = JSON.parse(response);
-                        if (data.status !== 'success') {
-                            alert(data.message || "Error al actualizar el orden.");
-                        }
-                    } catch (e) {
-                        console.error("Error en la respuesta del servidor:", e);
-                        alert("Error al procesar la solicitud.");
-                    }
-                },
-                error: function() {
-                    alert("Error al actualizar el orden. Por favor, intenta nuevamente.");
-                }
-            });
+        // Validar que la página final sea mayor o igual que la página de inicio
+        if (isNaN(paginaFinal) || paginaFinal < paginaInicio) {
+            console.error(`Error en la fila ${$fila.index() + 1}: Página final (${paginaFinal}) no puede ser menor que la página de inicio (${paginaInicio}).`);
+            return; // Salir de esta iteración si hay un error
         }
+
+        // Actualizar el valor de paginas2 y logear la información
+        const paginas2 = numPaginas; // Aquí se calcula el valor de paginas2
+        console.log(`Fila: ${$fila.index() + 1}, Num Páginas: ${numPaginas}, Inicio: ${paginaInicio}, Final: ${paginaFinal}, Paginas2: ${paginas2}`);
+
+        $fila.find("td:eq(2)").text(paginaInicio); // Actualizar columna de página de inicio
+        $fila.find("td:eq(3)").text(paginaFinal); // Actualizar columna de página final
+        $fila.data("num-paginas", numPaginas); // Actualizar el dato de num-paginas en el elemento
+
+        // Actualizar siguientePágina para la próxima fila
+        siguientePagina = paginaFinal + 1; 
     });
 
-    // Eliminar un capítulo
-    $(document).on("click", ".eliminar", function() {
+    actualizarUltimaPagina();
+}
+
+
+
+
+
+
+
+
+
+
+
+// Reordenar las filas de la tabla
+$("#capitulosTable tbody").sortable({
+    items: "tr",
+    cursor: "move",
+    placeholder: "highlight",
+    handle: ".drag-icon",
+    update: function() {
+        actualizarPaginas();
+        const nuevoOrden = $("#capitulosTable tbody tr").map(function(index) {
+            return { id: $(this).data("id"), orden: index + 1 };
+        }).get();
+
+        $.ajax({
+            url: 'rene/actualizar_orden.php',
+            type: 'POST',
+            data: { orden: nuevoOrden },
+            success: function(response) {
+                const data = JSON.parse(response);
+                if (data.status !== 'success') {
+                    alert(data.message || "Error al actualizar el orden.");
+                }
+            },
+            error: function() {
+                alert("Error al actualizar el orden. Por favor, intenta nuevamente.");
+            }
+        });
+    }
+});
+
+
+
+// Eliminar un capítulo
+$(document).on("click", ".eliminar", function() {
         const $fila = $(this).closest("tr");
         const idCapitulo = $fila.data("id");
 
@@ -279,8 +310,9 @@ $(document).ready(function() {
         }
     });
 
-    // Permitir la edición del título
-    $(document).on("blur", ".editable", function() {
+
+// Permitir la edición del título
+$(document).on("blur", ".editable", function() {
         const nuevoTitulo = $(this).text().trim();
         if (!nuevoTitulo) {
             alert("El título no puede estar vacío.");
@@ -288,6 +320,7 @@ $(document).ready(function() {
         }
     });
 });
+
 </script>
 
 </body>

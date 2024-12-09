@@ -148,13 +148,23 @@ $("#capituloForm").submit(function(event) {
         return;
     }
 
+    // Recalcular siguientePagina basado en la tabla
+    let ultimaPaginaTabla = 0;
+    $("#capitulosTable tbody tr").each(function() {
+        const filaPaginaFinal = parseInt($(this).find("td:eq(3)").text(), 10);
+        if (!isNaN(filaPaginaFinal)) {
+            ultimaPaginaTabla = Math.max(ultimaPaginaTabla, filaPaginaFinal);
+        }
+    });
+
+    const siguientePagina = ultimaPaginaTabla + 1; // La siguiente página disponible
+
     if (isNaN(paginaFinal) || paginaFinal < siguientePagina) {
         alert("La página de finalización debe ser un número válido mayor o igual a la página de inicio.");
         return;
     }
 
-    const paginaInicio = siguientePagina;
-    const numPaginas = paginaFinal - paginaInicio + 1;
+    const numPaginas = paginaFinal - siguientePagina + 1;
 
     $.ajax({
         url: 'rene/agregar_capitulo.php',
@@ -163,9 +173,9 @@ $("#capituloForm").submit(function(event) {
             caja: <?= $caja ?>,
             carpeta: <?= $carpeta ?>,
             titulo: `${etiquetaSeleccionada}: ${titulo}`,
-            paginaInicio: paginaInicio,
+            paginaInicio: siguientePagina,
             paginaFinal: paginaFinal,
-            paginas2: numPaginas // Asegúrate de enviar el número de páginas al servidor
+            paginas2: numPaginas // Enviar el número de páginas
         },
         success: function(response) {
             try {
@@ -177,7 +187,7 @@ $("#capituloForm").submit(function(event) {
                         <tr data-id="${data.id}" data-num-paginas="${numPaginas}">
                             <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
                             <td contenteditable="true" class="editable">${etiquetaSeleccionada}: ${titulo}</td>
-                            <td>${paginaInicio}</td>
+                            <td>${siguientePagina}</td>
                             <td>${paginaFinal}</td>
                             <td><button class="eliminar">Eliminar</button></td>
                         </tr>
@@ -185,7 +195,6 @@ $("#capituloForm").submit(function(event) {
 
                     $("#titulo").val('');
                     $("#paginaFinal").val('');
-                    siguientePagina = paginaFinal + 1;
                     actualizarUltimaPagina();
                 } else {
                     alert(data.message || "Error al agregar el capítulo.");

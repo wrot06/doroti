@@ -47,9 +47,7 @@ $ultimaPagina = 0; // Inicializar última página
 
 while ($row = $result_capitulos->fetch_assoc()) {
     $capitulos[] = $row;
-
-    // Calcular la última página como la suma de NoFolioFin
-    $ultimaPagina += (int) $row['NoFolioFin']; // Aquí suma el valor de NoFolioFin
+    $ultimaPagina = max($ultimaPagina, (int)$row['NoFolioFin']); // Determinar el mayor valor de NoFolioFin
 }
 
 $stmt_get_capitulos->close();
@@ -96,7 +94,12 @@ $conec->close();
             </tr>
         <?php else: ?>
             <?php foreach ($capitulos as $capitulo): ?>
-                <tr data-id="<?= htmlspecialchars($capitulo['id2'], ENT_QUOTES, 'UTF-8'); ?>">
+                <?php
+                // Calcular el número de páginas
+                $numPaginas = (int)$capitulo['NoFolioFin'] - (int)$capitulo['NoFolioInicio'] + 1;
+                ?>
+                <tr data-id="<?= htmlspecialchars($capitulo['id2'], ENT_QUOTES, 'UTF-8'); ?>" 
+                    data-num-paginas="<?= $numPaginas; ?>">
                     <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
                     <td contenteditable="true" class="editable"><?= htmlspecialchars($capitulo['DescripcionUnidadDocumental'], ENT_QUOTES, 'UTF-8'); ?></td>
                     <td><?= htmlspecialchars($capitulo['NoFolioInicio'], ENT_QUOTES, 'UTF-8'); ?></td>
@@ -107,6 +110,7 @@ $conec->close();
         <?php endif; ?>
     </tbody>
 </table>
+
 
 <form id="capituloForm">
     <h2>Agregar Folios</h2>    
@@ -121,6 +125,9 @@ $conec->close();
 <script>
 $(document).ready(function() {
 let siguientePagina = <?= empty($capitulos) ? 1 : $paginaSiguiente ?? 1 ?>; // Página inicial
+inicializarPaginas();//Inicialisa las Paginas cuando se carla la pargian por primera vez
+
+
 
 
 // Agregar un nuevo capítulo
@@ -203,45 +210,34 @@ function actualizarUltimaPagina() {
     }
 
 
-// Función para reordenar capítulos y actualizar páginas
-function actualizarPaginas() {
-    let siguientePagina = 1;
+// Función para recalcular páginas después del reordenamiento
+   function actualizarPaginas() {
+    let siguientePagina = 1; // Página inicial para el primer capítulo
 
     $("#capitulosTable tbody tr").each(function() {
         const $fila = $(this);
 
-        // Obtener numPaginas desde data
-        const numPaginas = parseInt($fila.data("num-paginas"), 10) || 1;
-
-        // Calcular paginaInicio y paginaFinal
-        const paginaInicio = siguientePagina; // La página de inicio es el siguiente número disponible
-        const paginaFinal = paginaInicio + numPaginas - 1; // La página final se calcula con numPaginas
-
-        // Validar que la página final sea mayor o igual que la página de inicio
-        if (isNaN(paginaFinal) || paginaFinal < paginaInicio) {
-            console.error(`Error en la fila ${$fila.index() + 1}: Página final (${paginaFinal}) no puede ser menor que la página de inicio (${paginaInicio}).`);
-            return; // Salir de esta iteración si hay un error
+        // Obtener el número de páginas desde el atributo data-num-paginas
+        const numPaginas = parseInt($fila.attr("data-num-paginas"), 10);
+        if (isNaN(numPaginas) || numPaginas < 1) {
+            console.error(`Error: Número de páginas inválido en la fila ${$fila.index() + 1}`);
+            return; // Saltar esta fila si hay un error
         }
 
-        // Actualizar el valor de paginas2 y logear la información
-        const paginas2 = numPaginas; // Aquí se calcula el valor de paginas2
-        console.log(`Fila: ${$fila.index() + 1}, Num Páginas: ${numPaginas}, Inicio: ${paginaInicio}, Final: ${paginaFinal}, Paginas2: ${paginas2}`);
+        // Calcular las nuevas páginas de inicio y fin
+        const paginaInicio = siguientePagina;
+        const paginaFinal = paginaInicio + numPaginas - 1;
 
-        $fila.find("td:eq(2)").text(paginaInicio); // Actualizar columna de página de inicio
-        $fila.find("td:eq(3)").text(paginaFinal); // Actualizar columna de página final
-        $fila.data("num-paginas", numPaginas); // Actualizar el dato de num-paginas en el elemento
+        // Actualizar las celdas visibles en la tabla
+        $fila.find("td:eq(2)").text(paginaInicio); // Página Inicio
+        $fila.find("td:eq(3)").text(paginaFinal); // Página Final
 
-        // Actualizar siguientePágina para la próxima fila
-        siguientePagina = paginaFinal + 1; 
+        // Actualizar siguiente página disponible
+        siguientePagina = paginaFinal + 1;
     });
 
-    actualizarUltimaPagina();
+    actualizarUltimaPagina(); // Actualizar un indicador global si es necesario
 }
-
-
-
-
-
 
 
 
@@ -320,6 +316,64 @@ $(document).on("blur", ".editable", function() {
         }
     });
 });
+
+
+//INCIA la apgina con eel numero de pagians correctos de cada capitulo
+function inicializarPaginas() {
+    // Realizar una solicitud AJAX para obtener los datos desde el servidor
+    $.ajax({
+        url: 'rene/obtener_capitulos.php', // Ruta del script en el servidor
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (Array.isArray(response)) {
+                let siguientePagina = 1;
+
+                response.forEach((capitulo, index) => {
+                    const { id, titulo, paginas, paginaInicio, paginaFinal } = capitulo;
+
+                    // Validar los datos recibidos
+                    if (isNaN(paginaInicio) || isNaN(paginaFinal) || paginaFinal < paginaInicio) {
+                        console.error(`Error en el capítulo ${index + 1}: Datos inválidos. Inicio: ${paginaInicio}, Final: ${paginaFinal}`);
+                        return;
+                    }
+
+                    // Insertar o actualizar las filas en la tabla
+                    const $fila = $(`#capitulosTable tbody tr[data-id="${id}"]`);
+                    if ($fila.length) {
+                        // Actualizar la fila existente
+                        $fila.find("td:eq(2)").text(paginaInicio);
+                        $fila.find("td:eq(3)").text(paginaFinal);
+                        $fila.data("num-paginas", paginas);
+                    } else {
+                        // Crear una nueva fila si no existe
+                        $("#capitulosTable tbody").append(`
+                            <tr data-id="${id}" data-num-paginas="${paginas}">
+                                <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
+                                <td contenteditable="true" class="editable">${titulo}</td>
+                                <td>${paginaInicio}</td>
+                                <td>${paginaFinal}</td>
+                                <td><button class="eliminar">Eliminar</button></td>
+                            </tr>
+                        `);
+                    }
+
+                    siguientePagina = paginaFinal + 1;
+                });
+
+                actualizarUltimaPagina();
+                console.log("Inicialización de páginas completada.");
+            } else {
+                console.error("Error: Formato de datos no válido.");
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error al obtener los datos de los capítulos:", error);
+        }
+    });
+}
+
+
 
 </script>
 

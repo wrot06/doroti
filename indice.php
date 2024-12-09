@@ -116,7 +116,7 @@ $conec->close();
     <h2>Agregar Folios</h2>    
     <input type="text" id="titulo" placeholder="Describir" required style="width: 80%; height: 40px; font-size: 16px;"> 
     <div class="form-row">
-        <p id="ultimaPagina">Última página: <?= $ultimaPagina ?></p>      
+        <p id="ultimaPagina">Última página: <?= $ultimaPagina + 1 ?></p>      
         <input type="number" id="paginaFinal" placeholder="Página de Finalización" required>
         <button type="submit">Agregar Folios</button>
     </div>

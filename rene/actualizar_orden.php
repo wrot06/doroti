@@ -5,8 +5,6 @@ ini_set('display_errors', 1);
 
 require 'conexion3.php';
 
-header('Content-Type: application/json');
-
 // Leer los datos enviados
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -25,11 +23,17 @@ $errores = [];
 // Actualizar cada capítulo
 foreach ($cambios as $capitulo) {
     $id = $capitulo['id'];
-    $inicio = $capitulo['inicio'];
-    $fin = $capitulo['fin'];
+    $inicio = (int)$capitulo['inicio'];
+    $fin = (int)$capitulo['fin'];
 
     $sql = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ? WHERE Caja = ? AND Carpeta = ? AND id2 = ?";
     $stmt = $conec->prepare($sql);
+    
+    if ($stmt === false) {
+        $errores[] = "Error en la preparación de la consulta: " . $conec->error;
+        continue; // Salir del bucle si la consulta no se puede preparar
+    }
+
     $stmt->bind_param("iiiii", $inicio, $fin, $caja, $carpeta, $id);
 
     if (!$stmt->execute()) {
@@ -45,3 +49,4 @@ if (empty($errores)) {
     echo json_encode(['status' => 'error', 'message' => implode(", ", $errores)]);
 }
 $conec->close();
+?>

@@ -247,6 +247,7 @@ function actualizarUltimaPagina(ultimaPagina) {
 
 
 // Reordenar las filas de la tabla
+// Reordenar las filas de la tabla
 $("#capitulosTable tbody").sortable({
     items: "tr",
     cursor: "move",
@@ -254,61 +255,89 @@ $("#capitulosTable tbody").sortable({
     handle: ".drag-icon",
     update: function() {
         actualizarPaginas();
+        
+        // Obtener el nuevo orden de los capítulos
         const nuevoOrden = $("#capitulosTable tbody tr").map(function(index) {
-            return { id: $(this).data("id"), orden: index + 1 };
+            const id = $(this).data("id");
+            const inicio = parseInt($(this).find("td:eq(2)").text(), 10); // Columna de página de inicio
+            const fin = parseInt($(this).find("td:eq(3)").text(), 10); // Columna de página final
+            return { id: id, inicio: inicio, fin: fin };
         }).get();
 
+        // Enviar el nuevo orden al servidor
         $.ajax({
-            url: 'rene/actualizar_orden.php',
-            type: 'POST',
-            data: { orden: nuevoOrden },
-            success: function(response) {
-                const data = JSON.parse(response);
-                if (data.status !== 'success') {
-                    alert(data.message || "Error al actualizar el orden.");
-                }
-            },
-            error: function() {
-                alert("Error al actualizar el orden. Por favor, intenta nuevamente.");
-            }
-        });
-        
+    url: 'rene/actualizar_orden.php',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({
+        cambios: nuevoOrden,
+        caja: <?= $caja ?>,
+        carpeta: <?= $carpeta ?>
+    }),
+    success: function(response) {
+        console.log("Respuesta del servidor:", response);
+        // Verificar que la respuesta tenga la estructura correcta
+        if (response.status === 'success') {
+            console.log("Orden actualizado con éxito.");
+        } else {
+            alert(response.message || "Error al actualizar el orden.");
+        }
+    },
+    error: function(xhr, status, error) {
+        console.error("Error al actualizar el orden:", error);
+        console.log("Respuesta del servidor:", xhr.responseText);
+        alert("Error al actualizar el orden. Por favor, intenta nuevamente.");
     }
-    
 });
+
+
+
+    }
+});
+
+
 
 
 
 // Eliminar un capítulo
 $(document).on("click", ".eliminar", function() {
-        const $fila = $(this).closest("tr");
-        const idCapitulo = $fila.data("id");
+    const $fila = $(this).closest("tr");
+    const idCapitulo = $fila.data("id");
 
-        if (confirm("¿Está seguro de que desea eliminar este capítulo?")) {
-            $.ajax({
-                url: 'rene/eliminar_capitulo.php',
-                type: 'POST',
-                data: { id: idCapitulo },
-                success: function(response) {
-                    try {
-                        const data = JSON.parse(response);
-                        if (data.status === 'success') {
-                            $fila.remove();
-                            actualizarPaginas();
-                        } else {
-                            alert(data.message || "Error al eliminar el capítulo.");
-                        }
-                    } catch (e) {
-                        console.error("Error en la respuesta del servidor:", e);
-                        alert("Error al procesar la solicitud.");
+    // Asumiendo que ya tienes estas variables definidas en tu script
+    const caja = <?= $caja ?>; // Número de caja
+    const carpeta = <?= $carpeta ?>; // Número de carpeta
+
+    if (confirm("¿Está seguro de que desea eliminar este capítulo?")) {
+        $.ajax({
+            url: 'rene/eliminar_capitulo.php',
+            type: 'POST',
+            data: {
+                id: idCapitulo,
+                caja: caja,
+                carpeta: carpeta
+            },
+            success: function(response) {
+                try {
+                    const data = JSON.parse(response);
+                    if (data.status === 'success') {
+                        $fila.remove();
+                        actualizarPaginas(); // Actualiza las páginas después de eliminar
+                    } else {
+                        alert(data.message || "Error al eliminar el capítulo.");
                     }
-                },
-                error: function() {
-                    alert("Error al eliminar el capítulo. Por favor, intenta nuevamente.");
+                } catch (e) {
+                    console.error("Error en la respuesta del servidor:", e);
+                    alert("Error al procesar la solicitud.");
                 }
-            });
-        }
-    });
+            },
+            error: function() {
+                alert("Error al eliminar el capítulo. Por favor, intenta nuevamente.");
+            }
+        });
+    }
+});
+
 
 
 // Permitir la edición del título

@@ -148,23 +148,13 @@ $("#capituloForm").submit(function(event) {
         return;
     }
 
-    // Recalcular siguientePagina basado en la tabla
-    let ultimaPaginaTabla = 0;
-    $("#capitulosTable tbody tr").each(function() {
-        const filaPaginaFinal = parseInt($(this).find("td:eq(3)").text(), 10);
-        if (!isNaN(filaPaginaFinal)) {
-            ultimaPaginaTabla = Math.max(ultimaPaginaTabla, filaPaginaFinal);
-        }
-    });
-
-    const siguientePagina = ultimaPaginaTabla + 1; // La siguiente página disponible
-
     if (isNaN(paginaFinal) || paginaFinal < siguientePagina) {
         alert("La página de finalización debe ser un número válido mayor o igual a la página de inicio.");
         return;
     }
 
-    const numPaginas = paginaFinal - siguientePagina + 1;
+    const paginaInicio = siguientePagina;
+    const numPaginas = paginaFinal - paginaInicio + 1;
 
     $.ajax({
         url: 'rene/agregar_capitulo.php',
@@ -173,9 +163,9 @@ $("#capituloForm").submit(function(event) {
             caja: <?= $caja ?>,
             carpeta: <?= $carpeta ?>,
             titulo: `${etiquetaSeleccionada}: ${titulo}`,
-            paginaInicio: siguientePagina,
+            paginaInicio: paginaInicio,
             paginaFinal: paginaFinal,
-            paginas2: numPaginas // Enviar el número de páginas
+            paginas2: numPaginas
         },
         success: function(response) {
             try {
@@ -183,19 +173,26 @@ $("#capituloForm").submit(function(event) {
                 if (data.status === 'success') {
                     $("#capitulosTable tbody").find("tr:first-child:contains('No hay capítulos')").remove();
 
+                    // Usar los valores exactos devueltos por el servidor
+                    const nuevoCapitulo = data.capitulo;
+
                     $("#capitulosTable tbody").append(`
-                        <tr data-id="${data.id}" data-num-paginas="${numPaginas}">
+                        <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
                             <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
-                            <td contenteditable="true" class="editable">${etiquetaSeleccionada}: ${titulo}</td>
-                            <td>${siguientePagina}</td>
-                            <td>${paginaFinal}</td>
+                            <td contenteditable="true" class="editable">${nuevoCapitulo.titulo}</td>
+                            <td>${nuevoCapitulo.pagina_inicio}</td>
+                            <td>${nuevoCapitulo.pagina_final}</td>
                             <td><button class="eliminar">Eliminar</button></td>
                         </tr>
                     `);
 
+                    // Actualizar la última página correctamente
+                    siguientePagina = parseInt(nuevoCapitulo.pagina_final, 10) + 1;
+                    $(".ultima-pagina").text(`Última página disponible: ${siguientePagina}`);
+
+                    // Limpiar campos del formulario
                     $("#titulo").val('');
                     $("#paginaFinal").val('');
-                    actualizarUltimaPagina();
                 } else {
                     alert(data.message || "Error al agregar el capítulo.");
                 }
@@ -213,15 +210,10 @@ $("#capituloForm").submit(function(event) {
 
 
 
-// Función para actualizar la última página
-function actualizarUltimaPagina() {
-        $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
-    }
-
-
 // Función para recalcular páginas después del reordenamiento
-   function actualizarPaginas() {
+function actualizarPaginas() {
     let siguientePagina = 1; // Página inicial para el primer capítulo
+    let ultimaPaginaCalculada = 0; // Para calcular la última página global
 
     $("#capitulosTable tbody tr").each(function() {
         const $fila = $(this);
@@ -243,9 +235,19 @@ function actualizarUltimaPagina() {
 
         // Actualizar siguiente página disponible
         siguientePagina = paginaFinal + 1;
+
+        // Mantener un seguimiento de la última página calculada
+        ultimaPaginaCalculada = paginaFinal;
     });
 
-    actualizarUltimaPagina(); // Actualizar un indicador global si es necesario
+    // Actualizar la última página global
+    actualizarUltimaPagina(ultimaPaginaCalculada);
+}
+
+// Función para actualizar la última página en la interfaz
+function actualizarUltimaPagina(ultimaPagina) {
+    siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
+    $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
 }
 
 
@@ -279,7 +281,9 @@ $("#capitulosTable tbody").sortable({
                 alert("Error al actualizar el orden. Por favor, intenta nuevamente.");
             }
         });
+        
     }
+    
 });
 
 
@@ -327,7 +331,7 @@ $(document).on("blur", ".editable", function() {
 });
 
 
-//INCIA la apgina con eel numero de pagians correctos de cada capitulo
+//INCIA la pagina con el numero de pagians correctos de cada capitulo
 function inicializarPaginas() {
     // Realizar una solicitud AJAX para obtener los datos desde el servidor
     $.ajax({

@@ -131,6 +131,7 @@ inicializarPaginas();//Inicialisa las Paginas cuando se carla la pargian por pri
 
 
 // Agregar un nuevo capítulo
+// Agregar un nuevo capítulo
 $("#capituloForm").submit(function(event) {
     event.preventDefault();
 
@@ -153,7 +154,7 @@ $("#capituloForm").submit(function(event) {
         return;
     }
 
-    const paginaInicio = siguientePagina;
+    const paginaInicio = siguientePagina; // Suponiendo que esta variable se actualiza correctamente.
     const numPaginas = paginaFinal - paginaInicio + 1;
 
     $.ajax({
@@ -163,49 +164,42 @@ $("#capituloForm").submit(function(event) {
             caja: <?= $caja ?>,
             carpeta: <?= $carpeta ?>,
             titulo: `${etiquetaSeleccionada}: ${titulo}`,
-            paginaInicio: paginaInicio,
-            paginaFinal: paginaFinal,
-            paginas2: numPaginas
+            paginaFinal: paginaFinal // Mantén esto para el cálculo en el servidor
         },
+        dataType: 'json', // Asegúrate de que el tipo de respuesta sea JSON
         success: function(response) {
-            try {
-                const data = JSON.parse(response);
-                if (data.status === 'success') {
-                    $("#capitulosTable tbody").find("tr:first-child:contains('No hay capítulos')").remove();
+            console.log("Respuesta del servidor:", response); // Verificar qué está recibiendo
+            if (response.status === 'success') {
+                // Procesar éxito
+                const nuevoCapitulo = response.capitulo;
+                $("#capitulosTable tbody").append(`
+                    <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
+                        <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
+                        <td contenteditable="true" class="editable">${nuevoCapitulo.titulo}</td>
+                        <td>${nuevoCapitulo.pagina_inicio}</td>
+                        <td>${nuevoCapitulo.pagina_final}</td>
+                        <td><button class="eliminar">Eliminar</button></td>
+                    </tr>
+                `);
 
-                    // Usar los valores exactos devueltos por el servidor
-                    const nuevoCapitulo = data.capitulo;
-
-                    $("#capitulosTable tbody").append(`
-                        <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
-                            <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
-                            <td contenteditable="true" class="editable">${nuevoCapitulo.titulo}</td>
-                            <td>${nuevoCapitulo.pagina_inicio}</td>
-                            <td>${nuevoCapitulo.pagina_final}</td>
-                            <td><button class="eliminar">Eliminar</button></td>
-                        </tr>
-                    `);
-
-                    // Actualizar la última página correctamente
-                    siguientePagina = parseInt(nuevoCapitulo.pagina_final, 10) + 1;
-                    $(".ultima-pagina").text(`Última página disponible: ${siguientePagina}`);
-
-                    // Limpiar campos del formulario
-                    $("#titulo").val('');
-                    $("#paginaFinal").val('');
-                } else {
-                    alert(data.message || "Error al agregar el capítulo.");
-                }
-            } catch (e) {
-                console.error("Error en la respuesta del servidor:", e);
-                alert("Error al procesar la solicitud.");
+                // Actualiza la última página
+                siguientePagina = parseInt(nuevoCapitulo.pagina_final, 10) + 1;
+                $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
+                $("#titulo").val('');
+                $("#paginaFinal").val('');
+            } else {
+                alert(data.message || "Error al agregar el capítulo.");
             }
         },
-        error: function() {
-            alert("Error en la solicitud. Por favor, intenta nuevamente.");
+        error: function(xhr, status, error) {
+            console.error("Error en la solicitud AJAX:", error);
+            console.log("Respuesta del servidor:", xhr.responseText); // Muestra la respuesta completa
+            alert("Error al procesar la solicitud.");
         }
     });
 });
+
+
 
 
 
@@ -249,9 +243,6 @@ function actualizarUltimaPagina(ultimaPagina) {
     siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
     $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
 }
-
-
-
 
 
 
@@ -330,17 +321,26 @@ $(document).on("blur", ".editable", function() {
     });
 });
 
+function actualizarUltimaPagina(ultimaPagina) {
+    siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
+    $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
+}
 
-//INCIA la pagina con el numero de pagians correctos de cada capitulo
+
+//INCIA la pagina con el numero de paginas correctos de cada capitulo
 function inicializarPaginas() {
     // Realizar una solicitud AJAX para obtener los datos desde el servidor
     $.ajax({
         url: 'rene/obtener_capitulos.php', // Ruta del script en el servidor
         type: 'GET',
+        data: {
+            caja: <?= $caja ?>,
+            carpeta: <?= $carpeta ?>
+        },
         dataType: 'json',
         success: function(response) {
             if (Array.isArray(response)) {
-                let siguientePagina = 1;
+                let siguientePagina = 0; // Inicializa en 0 para asegurar un valor correcto
 
                 response.forEach((capitulo, index) => {
                     const { id, titulo, paginas, paginaInicio, paginaFinal } = capitulo;
@@ -371,10 +371,14 @@ function inicializarPaginas() {
                         `);
                     }
 
-                    siguientePagina = paginaFinal + 1;
+                    // Actualizar el siguiente página con el valor más alto de paginaFinal
+                    if (paginaFinal > siguientePagina) {
+                        siguientePagina = paginaFinal; // Solo guarda el valor más alto
+                    }
                 });
 
-                actualizarUltimaPagina();
+                // Llamar a la función para actualizar la última página
+                actualizarUltimaPagina(siguientePagina);
                 console.log("Inicialización de páginas completada.");
             } else {
                 console.error("Error: Formato de datos no válido.");
@@ -382,6 +386,7 @@ function inicializarPaginas() {
         },
         error: function(xhr, status, error) {
             console.error("Error al obtener los datos de los capítulos:", error);
+            console.log("Respuesta del servidor:", xhr.responseText); // Muestra la respuesta completa
         }
     });
 }

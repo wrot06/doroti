@@ -245,8 +245,6 @@ function actualizarUltimaPagina(ultimaPagina) {
 }
 
 
-
-// Reordenar las filas de la tabla
 // Reordenar las filas de la tabla
 $("#capitulosTable tbody").sortable({
     items: "tr",
@@ -256,44 +254,42 @@ $("#capitulosTable tbody").sortable({
     update: function() {
         actualizarPaginas();
         
-        // Obtener el nuevo orden de los capítulos
+        // Obtener el nuevo orden y actualizar los IDs
         const nuevoOrden = $("#capitulosTable tbody tr").map(function(index) {
-            const id = $(this).data("id");
+            const id = index + 1; // Asignar nuevo ID basado en el índice
+            const titulo = $(this).find("td:eq(1)").text(); // Columna del título del capítulo
             const inicio = parseInt($(this).find("td:eq(2)").text(), 10); // Columna de página de inicio
             const fin = parseInt($(this).find("td:eq(3)").text(), 10); // Columna de página final
-            return { id: id, inicio: inicio, fin: fin };
+            const paginas = fin - inicio + 1; // Calcular el número de páginas
+            return { id: id, titulo: titulo, inicio: inicio, fin: fin, paginas: paginas }; // Incluir título y páginas en el objeto
         }).get();
 
-        // Enviar el nuevo orden al servidor
+        // Convertir los datos a JSON
+        const jsonData = JSON.stringify({
+            cambios: nuevoOrden,
+            caja: <?= $caja ?>,
+            carpeta: <?= $carpeta ?>
+        });
+
+        // Hacer una llamada AJAX para actualizar la base de datos
         $.ajax({
-    url: 'rene/actualizar_orden.php',
-    type: 'POST',
-    contentType: 'application/json',
-    data: JSON.stringify({
-        cambios: nuevoOrden,
-        caja: <?= $caja ?>,
-        carpeta: <?= $carpeta ?>
-    }),
-    success: function(response) {
-        console.log("Respuesta del servidor:", response);
-        // Verificar que la respuesta tenga la estructura correcta
-        if (response.status === 'success') {
-            console.log("Orden actualizado con éxito.");
-        } else {
-            alert(response.message || "Error al actualizar el orden.");
-        }
-    },
-    error: function(xhr, status, error) {
-        console.error("Error al actualizar el orden:", error);
-        console.log("Respuesta del servidor:", xhr.responseText);
-        alert("Error al actualizar el orden. Por favor, intenta nuevamente.");
+            url: 'rene/actualizar_orden.php', // URL del archivo PHP que maneja la actualización
+            method: 'GET', // Cambia a 'POST' si prefieres
+            data: { data: jsonData },
+            success: function(response) {
+                // Manejar la respuesta aquí (por ejemplo, mostrar un mensaje de éxito)
+                //alert(response.message); // Muestra un mensaje de éxito o error
+            },
+            error: function(xhr, status, error) {
+                console.error("Error en la actualización:", error);
+                alert("Error al actualizar: " + error);
+            }
+        });
     }
 });
 
 
 
-    }
-});
 
 
 

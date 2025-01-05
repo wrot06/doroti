@@ -3,50 +3,57 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require 'conexion3.php';
+require "conexion3.php"; // Asegúrate de incluir tu archivo de conexión
 
-// Leer los datos enviados
-$data = json_decode(file_get_contents('php://input'), true);
+// Obtener los datos de la URL
+if (isset($_GET['data'])) {
+    $data = $_GET['data'];
+    // Decodificar los datos JSON
+    $jsonData = json_decode(urldecode($data), true);
 
-// Validar datos recibidos
-if (!isset($data['cambios']) || !isset($data['caja']) || !isset($data['carpeta'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Datos incompletos']);
-    exit;
-}
+    // Verificar la conexión
+    if ($conec->connect_error) {
+        die("Connection failed: " . $conec->connect_error);
+    }
 
-$cambios = $data['cambios'];
-$caja = $data['caja'];
-$carpeta = $data['carpeta'];
+    $cambios = $jsonData['cambios'];
+    $caja = $jsonData['caja'];
+    $carpeta = $jsonData['carpeta'];
 
-$errores = [];
-
-// Actualizar cada capítulo
-foreach ($cambios as $capitulo) {
-    $id = $capitulo['id'];
-    $inicio = (int)$capitulo['inicio'];
-    $fin = (int)$capitulo['fin'];
-
-    $sql = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ? WHERE Caja = ? AND Carpeta = ? AND id2 = ?";
+    // Preparar la consulta de actualización
+    $sql = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ?, DescripcionUnidadDocumental = ?, paginas = ? WHERE id2 = ? AND Caja = ? AND Carpeta = ?";
     $stmt = $conec->prepare($sql);
-    
-    if ($stmt === false) {
-        $errores[] = "Error en la preparación de la consulta: " . $conec->error;
-        continue; // Salir del bucle si la consulta no se puede preparar
+
+    // Verificar que la preparación de la consulta fue exitosa
+    if (!$stmt) {
+        die("Prepare failed: " . $conec->error);
     }
 
-    $stmt->bind_param("iiiii", $inicio, $fin, $caja, $carpeta, $id);
+    // Vincular parámetros y ejecutar la consulta para cada cambio
+    foreach ($cambios as $capitulo) {
+        $inicio = $capitulo['inicio'];
+        $fin = $capitulo['fin'];
+        $titulo = $capitulo['titulo'];
+        $paginas = $capitulo['paginas'];
+        $id2 = $capitulo['id']; // Asegúrate de que estás usando el id correcto
 
-    if (!$stmt->execute()) {
-        $errores[] = "Error actualizando ID $id: " . $stmt->error;
+        // Vincular los parámetros (usar "i" para enteros y "s" para strings)
+        $stmt->bind_param("iisiiii", $inicio, $fin, $titulo, $paginas, $id2, $caja, $carpeta);
+
+        // Ejecutar la consulta
+        if (!$stmt->execute()) {
+            echo json_encode(['status' => 'error', 'message' => 'Error al actualizar: ' . $stmt->error]);
+            exit;
+        }
     }
+
+    // Cerrar la declaración y la conexión
     $stmt->close();
-}
+    $conec->close();
 
-// Respuesta al cliente
-if (empty($errores)) {
-    echo json_encode(['status' => 'success']);
+    // Retornar un mensaje de éxito
+    echo json_encode(['status' => 'success', 'message' => 'Actualización exitosa']);
 } else {
-    echo json_encode(['status' => 'error', 'message' => implode(", ", $errores)]);
+    echo json_encode(['status' => 'error', 'message' => 'No se recibieron datos']);
 }
-$conec->close();
 ?>

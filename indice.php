@@ -204,10 +204,11 @@ $("#capituloForm").submit(function(event) {
 
 
 
-// Función para recalcular páginas después del reordenamiento
+// Función para recalcular páginas e ID después del reordenamiento
 function actualizarPaginas() {
     let siguientePagina = 1; // Página inicial para el primer capítulo
     let ultimaPaginaCalculada = 0; // Para calcular la última página global
+    let nuevoId2 = 1; // ID inicial para el primer capítulo
 
     $("#capitulosTable tbody tr").each(function() {
         const $fila = $(this);
@@ -227,8 +228,15 @@ function actualizarPaginas() {
         $fila.find("td:eq(2)").text(paginaInicio); // Página Inicio
         $fila.find("td:eq(3)").text(paginaFinal); // Página Final
 
-        // Actualizar siguiente página disponible
+        // Actualizar el atributo data-id con el nuevo ID
+        $fila.attr("data-id", nuevoId2);
+
+        // Actualizar la celda del ID visible, si es necesario
+        $fila.find("td:eq(0)").text(nuevoId2); // Supongamos que la columna ID está en la posición 0
+
+        // Actualizar siguiente página disponible y el ID
         siguientePagina = paginaFinal + 1;
+        nuevoId2++;
 
         // Mantener un seguimiento de la última página calculada
         ultimaPaginaCalculada = paginaFinal;
@@ -237,6 +245,8 @@ function actualizarPaginas() {
     // Actualizar la última página global
     actualizarUltimaPagina(ultimaPaginaCalculada);
 }
+
+
 
 // Función para actualizar la última página en la interfaz
 function actualizarUltimaPagina(ultimaPagina) {

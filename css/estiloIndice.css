@@ -22,7 +22,7 @@ tr {
 }
 form {
     text-align: center;
-    margin: 20px;
+    margin: 15px;
 }
 .form-row {
     display: flex;
@@ -41,6 +41,6 @@ form {
 .drag-column {
     cursor: move; /* Cambiar el cursor al mover en la celda de mover */
 }
-.etiquetas {
-    margin: 10px 0; /* Margen para las etiquetas */
-}
+
+
+/* Margen para las etiquetas */

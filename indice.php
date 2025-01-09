@@ -60,7 +60,7 @@ $conec->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reordenar Capítulos</title>
-    <link rel="stylesheet" href="css/estiloIndice.css">
+    <link rel="stylesheet" href="css/estiloindice.css">
     <link rel="stylesheet" href="css/botongrabar.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -68,15 +68,25 @@ $conec->close();
 </head>
 <body>
 
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
 <div class="etiquetas">
-    <h3>Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?></h3>
-    <?php
-    $etiquetas = ['correspondencia', 'acuerdos', 'resoluciones', 'actas', 'constancias', 'certificaciones', 'listados', 'proposiciones'];
-    foreach ($etiquetas as $etiqueta) {
-        echo "<label><input type='radio' name='etiqueta' value='{$etiqueta}'> " . ucfirst($etiqueta) . "</label>";
-    }
-    ?>
+    <h5>Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?></h5>
+    <div class="etiquetas-container">
+        <?php
+        $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Constancia', 'Certificación', 'Listado', 'Proposición'];
+        foreach ($etiquetas as $etiqueta) {
+            echo "<div class='form-check form-check-inline'>
+                    <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}'>
+                    <label class='form-check-label' for='etiqueta-{$etiqueta}'>" . ucfirst($etiqueta) . "</label>
+                  </div>";
+        }
+        ?>
+    </div>
 </div>
+
+
+
 
 <table id="capitulosTable">
     <thead>
@@ -116,7 +126,7 @@ $conec->close();
 <form id="capituloForm">
     
     <h2>Agregar Folios</h2>
-    <input type="text" id="titulo" placeholder="Describir" required style="width: 80%; height: 40px; font-size: 16px;">
+    <textarea id="titulo" placeholder="Describir" required style="width: 80%; height: 100px; font-size: 16px;"></textarea>
     <div class="form-row" style="display: flex; align-items: center; gap: 10px;">
         <button type="button" id="grabarBoton">Grabar (F2)</button>
         <p id="ultimaPagina">Última página: <?= $ultimaPagina + 1 ?></p>
@@ -130,6 +140,7 @@ $conec->close();
 $(document).ready(function() {
 let siguientePagina = <?= empty($capitulos) ? 1 : $paginaSiguiente ?? 1 ?>; // Página inicial
 inicializarPaginas();//Inicialisa las Paginas cuando se carla la pargian por primera vez
+
 
 
 
@@ -210,6 +221,13 @@ $("#capituloForm").submit(function(event) {
     });
 });
 
+// Agregar un nuevo capítulo Tecla ENTER
+$("#titulo").keypress(function(event) {
+    if (event.which === 13) { // 13 es el código de la tecla Enter
+        event.preventDefault(); // Evita que se envíe el formulario
+        agregarCapitulo(); // Llama a la función para agregar el capítulo
+    }
+});
 
 
 

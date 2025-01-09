@@ -122,7 +122,7 @@ $conec->close();
 
 
     <form id="capituloForm">
-        <h2 class="h6 mb-2">Descripción</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
+        <h2 class="h6 mb-2">Asunto</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
         <div class="form-group">
             <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required></textarea> <!-- Añadido class 'form-control-sm' -->
         </div>
@@ -200,6 +200,12 @@ $("#capituloForm").submit(function(event) {
     const paginaInicio = siguientePagina; // Suponiendo que esta variable se actualiza correctamente.
     const numPaginas = paginaFinal - paginaInicio + 1;
 
+    // Verificar si el número de páginas es mayor a 200
+    if (numPaginas > 200) {
+        alert("No se puede agregar un numero de folio que exceda los 200 folios.");
+        return;
+    }
+
     $.ajax({
         url: 'rene/agregar_capitulo.php',
         type: 'POST',
@@ -253,6 +259,7 @@ $("#capituloForm").submit(function(event) {
         }
     });
 });
+
 
 
 // Agregar un nuevo capítulo Tecla ENTER

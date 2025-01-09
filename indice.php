@@ -106,20 +106,20 @@ $conec->close();
         </tbody>
     </table>
 
-    <div class="etiquetas mb-1"> <!-- Reduce el margen inferior -->
-        
-        <div class="etiquetas-container">
-            <?php
-            $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Constancia', 'Certificación', 'Listado', 'Proposición'];
+<div class="etiquetas mb-1" style="font-size: 0.75rem;"> <!-- Reducir el tamaño global del texto -->
+    <div class="etiquetas-container d-flex flex-wrap align-items-center" style="gap: 5px;"> <!-- Espaciado compacto -->
+        <?php
+            $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Proposición', 'Constancia', 'Certificación', 'Listado', 'Circular', 'Memorando', 'Derecho de Petición', 'Inventario', 'Factura', 'Contenido Programático'];
             foreach ($etiquetas as $etiqueta) {
-                echo "<div class='form-check form-check-inline'>
-                        <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}'>
-                        <label class='form-check-label' for='etiqueta-{$etiqueta}'>" . ucfirst($etiqueta) . "</label>
-                      </div>";
+                echo "<div class='form-check form-check-inline' style='margin-bottom: 2px;'>
+                        <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}' style='width: 0.85rem; height: 0.85rem;'>
+                        <label class='form-check-label' for='etiqueta-{$etiqueta}' style='font-size: 0.75rem; margin-left: 3px;'>" . ucfirst($etiqueta) . "</label>
+                    </div>";
             }
-            ?>
-        </div>
+        ?>
     </div>
+</div>
+
 
     <form id="capituloForm">
         <h2 class="h6 mb-2">Descripción</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
@@ -141,7 +141,7 @@ $conec->close();
 
 <script>
 
-//inicia el puntero  en el textarea
+//Inicia el puntero  en el textarea
 document.addEventListener('DOMContentLoaded', function() {
         // Enfocar el textarea
         document.getElementById('titulo').focus();
@@ -439,6 +439,7 @@ $(document).on("blur", ".editable", function() {
     });
 });
 
+//Actuliza la ultima Pagina
 function actualizarUltimaPagina(ultimaPagina) {
     siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
     $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
@@ -511,7 +512,7 @@ function inicializarPaginas() {
 
 
 
-//Grabar voz con el microfono y lo pasa a texto
+// Grabar voz con el micrófono y convertir a texto
 let grabando = false; // Estado de grabación
 let recognition; // Reconocimiento de voz
 
@@ -532,7 +533,11 @@ function iniciarReconocimiento() {
             const resultado = event.results[i];
             if (resultado.isFinal) {
                 const texto = resultado[0].transcript;
-                document.getElementById('titulo').value += texto + " "; // Agregar texto al input
+                const textarea = document.getElementById('titulo');
+                textarea.value += texto + " "; // Agregar texto al input
+                // Enfocar y mover el cursor al final del texto
+                textarea.focus();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
             }
         }
     };
@@ -556,6 +561,11 @@ function detenerReconocimiento() {
     }
     grabando = false; // Actualiza el estado
     document.getElementById('grabarBoton').classList.remove('grabando'); // Cambia color a rojo
+
+    // Enfocar nuevamente el textarea y mover el cursor al final
+    const textarea = document.getElementById('titulo');
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 }
 
 // Manejar el clic en el botón de grabar

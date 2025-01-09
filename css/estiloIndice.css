@@ -45,4 +45,5 @@ form {
 
 .etiquetas {
     margin-bottom: 0.3rem; /* Ajusta el margen inferior de las etiquetas */
+    font-size: 12px;
 }

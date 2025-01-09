@@ -61,6 +61,7 @@ $conec->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reordenar Capítulos</title>
     <link rel="stylesheet" href="css/estiloIndice.css">
+    <link rel="stylesheet" href="css/botongrabar.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -113,17 +114,16 @@ $conec->close();
 
 
 <form id="capituloForm">
-    <h2>Agregar Folios</h2>    
-    <input type="text" id="titulo" placeholder="Describir" required style="width: 80%; height: 40px; font-size: 16px;"> 
-    <div class="form-row">
-        <p id="ultimaPagina">Última página: <?= $ultimaPagina + 1 ?></p>      
+    
+    <h2>Agregar Folios</h2>
+    <input type="text" id="titulo" placeholder="Describir" required style="width: 80%; height: 40px; font-size: 16px;">
+    <div class="form-row" style="display: flex; align-items: center; gap: 10px;">
+        <button type="button" id="grabarBoton">Grabar (F2)</button>
+        <p id="ultimaPagina">Última página: <?= $ultimaPagina + 1 ?></p>
         <input type="number" id="paginaFinal" placeholder="Página de Finalización" required>
         <button type="submit">Agregar Folios</button>
+        
     </div>
-</form>
-
-<form id="GrabarVoz">  
-        <button type="submit">Gravar</button>
 </form>
 
 <script>
@@ -444,6 +444,78 @@ function inicializarPaginas() {
         }
     });
 }
+
+
+
+//Grabar voz con el microfono y lo pasa a texto
+let grabando = false; // Estado de grabación
+let recognition; // Reconocimiento de voz
+
+function iniciarReconocimiento() {
+    // Comprobación del soporte para la API de reconocimiento de voz
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("Lo siento, tu navegador no soporta esta función.");
+        return;
+    }
+
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = 'es-ES'; // Configura el idioma según sea necesario
+    recognition.interimResults = true; // Mostrar resultados intermedios
+
+    recognition.onresult = function(event) {
+        // Procesar resultados intermedios
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const resultado = event.results[i];
+            if (resultado.isFinal) {
+                const texto = resultado[0].transcript;
+                document.getElementById('titulo').value += texto + " "; // Agregar texto al input
+            }
+        }
+    };
+
+    recognition.onend = function() {
+        // Reinicia el reconocimiento si se sigue grabando
+        if (grabando) {
+            recognition.start();
+        }
+    };
+
+    recognition.start(); // Iniciar reconocimiento
+    grabando = true; // Actualiza el estado
+    document.getElementById('grabarBoton').classList.add('grabando'); // Cambia color a verde
+}
+
+// Función para detener el reconocimiento
+function detenerReconocimiento() {
+    if (recognition) {
+        recognition.stop(); // Detiene reconocimiento
+    }
+    grabando = false; // Actualiza el estado
+    document.getElementById('grabarBoton').classList.remove('grabando'); // Cambia color a rojo
+}
+
+// Manejar el clic en el botón de grabar
+document.getElementById('grabarBoton').addEventListener('click', function() {
+    if (!grabando) {
+        iniciarReconocimiento(); // Inicia reconocimiento
+    } else {
+        detenerReconocimiento(); // Detiene reconocimiento
+    }
+});
+
+// Mantener grabando mientras se presiona "F2"
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'F2' && !grabando) { // Si se presiona F2 y no está grabando
+        iniciarReconocimiento(); // Inicia reconocimiento
+    }
+});
+
+// Detener la grabación al soltar "F2"
+document.addEventListener('keyup', function(event) {
+    if (event.key === 'F2' && grabando) { // Si se suelta F2 y se está grabando
+        detenerReconocimiento(); // Detiene reconocimiento
+    }
+});
 
 
 

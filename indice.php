@@ -62,86 +62,114 @@ $conec->close();
     <title>Reordenar Capítulos</title>
     <link rel="stylesheet" href="css/estiloindice.css">
     <link rel="stylesheet" href="css/botongrabar.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 </head>
 <body>
 
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-<div class="etiquetas">
-    <h5>Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?></h5>
-    <div class="etiquetas-container">
-        <?php
-        $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Constancia', 'Certificación', 'Listado', 'Proposición'];
-        foreach ($etiquetas as $etiqueta) {
-            echo "<div class='form-check form-check-inline'>
-                    <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}'>
-                    <label class='form-check-label' for='etiqueta-{$etiqueta}'>" . ucfirst($etiqueta) . "</label>
-                  </div>";
-        }
-        ?>
+<div class="container mt-4"> <!-- Reduce el margen superior -->
+    <div class="etiquetas mb-1"> <!-- Reduce el margen inferior -->
+        <h5 class="mb-2">Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?></h5>
+        <div class="etiquetas-container">
+            <?php
+            $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Constancia', 'Certificación', 'Listado', 'Proposición'];
+            foreach ($etiquetas as $etiqueta) {
+                echo "<div class='form-check form-check-inline'>
+                        <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}'>
+                        <label class='form-check-label' for='etiqueta-{$etiqueta}'>" . ucfirst($etiqueta) . "</label>
+                      </div>";
+            }
+            ?>
+        </div>
     </div>
+
+    <table class="table table-bordered table-sm" id="capitulosTable"> <!-- Añadido class 'table-sm' -->
+        <thead class="thead-light">
+            <tr>
+                <th></th>
+                <th>Descripción</th>
+                <th>Inicio</th>
+                <th>Final</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($capitulos)): ?>
+                <tr>
+                    <td colspan="5" class="text-center">No hay capítulos registrados. Página inicial: 1</td>
+                </tr>
+            <?php else: ?>
+                <?php foreach ($capitulos as $capitulo): ?>
+                    <?php
+                    // Calcular el número de páginas
+                    $numPaginas = (int)$capitulo['NoFolioFin'] - (int)$capitulo['NoFolioInicio'] + 1;
+                    ?>
+                    <tr data-id="<?= htmlspecialchars($capitulo['id2'], ENT_QUOTES, 'UTF-8'); ?>" 
+                        data-num-paginas="<?= $numPaginas; ?>">
+                        <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
+                        <td contenteditable="true" class="editable"><?= htmlspecialchars($capitulo['DescripcionUnidadDocumental'], ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?= htmlspecialchars($capitulo['NoFolioInicio'], ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?= htmlspecialchars($capitulo['NoFolioFin'], ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><button class="btn btn-success btn-sm eliminar">Eliminar</button></td> <!-- Añadido class 'btn-sm' -->
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+
+    <form id="capituloForm">
+        <h2 class="h6 mb-2">Agregar Folios</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
+        <div class="form-group">
+            <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required></textarea> <!-- Añadido class 'form-control-sm' -->
+        </div>
+        <div class="form-row align-items-center mb-2"> <!-- Reduce el margen inferior -->
+            <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar (F2)</button> <!-- Añadido class 'btn-sm' -->
+            <p id="ultimaPagina" class="ml-2 mb-0">Última página: <?= $ultimaPagina + 1 ?></p> <!-- Añadido clase 'mb-0' -->
+            <div class="col-auto">
+                <input type="number" id="paginaFinal" class="form-control form-control-sm" placeholder="Página de Finalización" required> <!-- Añadido class 'form-control-sm' -->
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar Folios</button> <!-- Añadido class 'btn-sm' -->
+        </div>
+    </form>
 </div>
 
-
-
-
-<table id="capitulosTable">
-    <thead>
-        <tr>
-            <th></th>
-            <th>Descripción</th>
-            <th>Inicio</th>
-            <th>Final</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if (empty($capitulos)): ?>
-            <tr>
-                <td colspan="5">No hay capítulos registrados. Página inicial: 1</td>
-            </tr>
-        <?php else: ?>
-            <?php foreach ($capitulos as $capitulo): ?>
-                <?php
-                // Calcular el número de páginas
-                $numPaginas = (int)$capitulo['NoFolioFin'] - (int)$capitulo['NoFolioInicio'] + 1;
-                ?>
-                <tr data-id="<?= htmlspecialchars($capitulo['id2'], ENT_QUOTES, 'UTF-8'); ?>" 
-                    data-num-paginas="<?= $numPaginas; ?>">
-                    <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
-                    <td contenteditable="true" class="editable"><?= htmlspecialchars($capitulo['DescripcionUnidadDocumental'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($capitulo['NoFolioInicio'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><?= htmlspecialchars($capitulo['NoFolioFin'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td><button class="eliminar">Eliminar</button></td>
-                </tr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </tbody>
-</table>
-
-
-<form id="capituloForm">
-    
-    <h2>Agregar Folios</h2>
-    <textarea id="titulo" placeholder="Describir" required style="width: 80%; height: 100px; font-size: 16px;"></textarea>
-    <div class="form-row" style="display: flex; align-items: center; gap: 10px;">
-        <button type="button" id="grabarBoton">Grabar (F2)</button>
-        <p id="ultimaPagina">Última página: <?= $ultimaPagina + 1 ?></p>
-        <input type="number" id="paginaFinal" placeholder="Página de Finalización" required>
-        <button type="submit">Agregar Folios</button>
-        
-    </div>
-</form>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
+
+//inicia el puntero  en el textarea
+document.addEventListener('DOMContentLoaded', function() {
+        // Enfocar el textarea
+        document.getElementById('titulo').focus();
+});
+
+// Esperar a que el DOM esté completamente cargado
+document.addEventListener('DOMContentLoaded', function() {
+        // Enfocar el textarea al cargar la página
+        const tituloTextarea = document.getElementById('titulo');
+        tituloTextarea.focus();
+
+        // Manejar el evento de pulsación de teclas en el textarea
+        tituloTextarea.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Evitar el comportamiento predeterminado de saltar de línea
+                const tituloValue = tituloTextarea.value.trim();
+                
+                // Solo desplazar si el textarea no está vacío
+            if (tituloValue) {
+                document.getElementById('paginaFinal').focus(); // Enfocar el siguiente input
+            }
+        }
+    });
+});
+
+
+
 $(document).ready(function() {
 let siguientePagina = <?= empty($capitulos) ? 1 : $paginaSiguiente ?? 1 ?>; // Página inicial
 inicializarPaginas();//Inicialisa las Paginas cuando se carla la pargian por primera vez
-
-
 
 
 // Agregar un nuevo capítulo
@@ -200,15 +228,18 @@ $("#capituloForm").submit(function(event) {
                         <td contenteditable="true" class="editable">${nuevoCapitulo.titulo}</td>
                         <td>${nuevoCapitulo.pagina_inicio}</td>
                         <td>${nuevoCapitulo.pagina_final}</td>
-                        <td><button class="eliminar">Eliminar</button></td>
+                        <td><button class="btn btn-success btn-sm eliminar">Eliminar</button></td>
                     </tr>
                 `);
 
                 // Actualiza la última página
                 siguientePagina = parseInt(nuevoCapitulo.pagina_final, 10) + 1;
                 $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
-                $("#titulo").val('');
-                $("#paginaFinal").val('');
+                $("#titulo").val(''); // Limpia el textarea
+                $("#paginaFinal").val(''); // Limpia el input de número
+
+                // Enfocar de nuevo el textarea
+                $("#titulo").focus(); // Enfocar el textarea
             } else {
                 alert(response.message || "Error al agregar el capítulo.");
             }
@@ -220,6 +251,7 @@ $("#capituloForm").submit(function(event) {
         }
     });
 });
+
 
 // Agregar un nuevo capítulo Tecla ENTER
 $("#titulo").keypress(function(event) {

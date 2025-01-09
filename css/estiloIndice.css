@@ -4,16 +4,16 @@ body {
 table {
     width: 80%;
     border-collapse: collapse;
-    margin: 20px auto;
+    margin: 15px auto;
 }
 th, td {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 5px;
     text-align: center;
 }
 th:nth-child(1) { width: 5%; } /* Columna para mover */
-th:nth-child(2) { width: 75%; } /* Descripción */
-th:nth-child(3), th:nth-child(4) { width: 10%; } /* Inicio y Final */
+th:nth-child(2) { width: 80%; } /* Descripción */
+th:nth-child(3), th:nth-child(4) { width: 5%; } /* Inicio y Final */
 tr {
     cursor: default; /* Cambiar el cursor por defecto en las filas */
 }
@@ -43,4 +43,6 @@ form {
 }
 
 
-/* Margen para las etiquetas */
+.etiquetas {
+    margin-bottom: 0.3rem; /* Ajusta el margen inferior de las etiquetas */
+}

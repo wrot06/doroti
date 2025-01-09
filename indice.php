@@ -122,6 +122,10 @@ $conec->close();
     </div>
 </form>
 
+<form id="GrabarVoz">  
+        <button type="submit">Gravar</button>
+</form>
+
 <script>
 $(document).ready(function() {
 let siguientePagina = <?= empty($capitulos) ? 1 : $paginaSiguiente ?? 1 ?>; // Página inicial
@@ -129,8 +133,6 @@ inicializarPaginas();//Inicialisa las Paginas cuando se carla la pargian por pri
 
 
 
-
-// Agregar un nuevo capítulo
 // Agregar un nuevo capítulo
 $("#capituloForm").submit(function(event) {
     event.preventDefault();
@@ -172,6 +174,15 @@ $("#capituloForm").submit(function(event) {
             if (response.status === 'success') {
                 // Procesar éxito
                 const nuevoCapitulo = response.capitulo;
+
+                // Eliminar el mensaje de "No hay capítulos registrados" si existe
+                $("#capitulosTable tbody").find("tr").each(function() {
+                    if ($(this).find("td").text().includes("No hay capítulos registrados")) {
+                        $(this).remove();
+                    }
+                });
+
+                // Agregar la nueva fila a la tabla
                 $("#capitulosTable tbody").append(`
                     <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
                         <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
@@ -188,7 +199,7 @@ $("#capituloForm").submit(function(event) {
                 $("#titulo").val('');
                 $("#paginaFinal").val('');
             } else {
-                alert(data.message || "Error al agregar el capítulo.");
+                alert(response.message || "Error al agregar el capítulo.");
             }
         },
         error: function(xhr, status, error) {
@@ -266,12 +277,20 @@ $("#capitulosTable tbody").sortable({
         
         // Obtener el nuevo orden y actualizar los IDs
         const nuevoOrden = $("#capitulosTable tbody tr").map(function(index) {
-            const id = index + 1; // Asignar nuevo ID basado en el índice
-            const titulo = $(this).find("td:eq(1)").text(); // Columna del título del capítulo
-            const inicio = parseInt($(this).find("td:eq(2)").text(), 10); // Columna de página de inicio
-            const fin = parseInt($(this).find("td:eq(3)").text(), 10); // Columna de página final
-            const paginas = fin - inicio + 1; // Calcular el número de páginas
-            return { id: id, titulo: titulo, inicio: inicio, fin: fin, paginas: paginas }; // Incluir título y páginas en el objeto
+            const $fila = $(this);
+
+            // Actualizar el `id2` visualmente en la tabla (columna del índice)
+            const nuevoId = index + 1;
+            $fila.data("id", nuevoId); // Actualizar el atributo `data-id`
+            $fila.find("td:first").html(`<span class="drag-icon">&#x21D5;</span>`); // Restaurar el ícono de arrastre
+            
+            // Obtener valores de la fila
+            const titulo = $fila.find("td:eq(1)").text(); // Columna del título del capítulo
+            const inicio = parseInt($fila.find("td:eq(2)").text(), 10); // Página de inicio
+            const fin = parseInt($fila.find("td:eq(3)").text(), 10); // Página final
+            const paginas = fin - inicio + 1; // Calcular número de páginas
+            
+            return { id: nuevoId, titulo: titulo, inicio: inicio, fin: fin, paginas: paginas };
         }).get();
 
         // Convertir los datos a JSON
@@ -287,8 +306,7 @@ $("#capitulosTable tbody").sortable({
             method: 'GET', // Cambia a 'POST' si prefieres
             data: { data: jsonData },
             success: function(response) {
-                // Manejar la respuesta aquí (por ejemplo, mostrar un mensaje de éxito)
-                //alert(response.message); // Muestra un mensaje de éxito o error
+                console.log("Actualización exitosa:", response);
             },
             error: function(xhr, status, error) {
                 console.error("Error en la actualización:", error);
@@ -297,6 +315,7 @@ $("#capitulosTable tbody").sortable({
         });
     }
 });
+
 
 
 

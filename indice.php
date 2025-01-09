@@ -120,7 +120,7 @@ $conec->close();
     </table>
 
     <form id="capituloForm">
-        <h2 class="h6 mb-2">Agregar Folios</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
+        <h2 class="h6 mb-2">Descripción</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
         <div class="form-group">
             <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required></textarea> <!-- Añadido class 'form-control-sm' -->
         </div>

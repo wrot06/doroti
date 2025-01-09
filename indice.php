@@ -130,7 +130,7 @@ $conec->close();
             <div class="col-auto">
                 <input type="number" id="paginaFinal" class="form-control form-control-sm" placeholder="Página de Finalización" required> <!-- Añadido class 'form-control-sm' -->
             </div>
-            <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar Folios</button> <!-- Añadido class 'btn-sm' -->
+            <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar Documento</button> <!-- Añadido class 'btn-sm' -->
         </div>
     </form>
 </div>

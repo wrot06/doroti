@@ -70,20 +70,7 @@ $conec->close();
 <body>
 
 <div class="container mt-4"> <!-- Reduce el margen superior -->
-    <div class="etiquetas mb-1"> <!-- Reduce el margen inferior -->
-        <h5 class="mb-2">Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?></h5>
-        <div class="etiquetas-container">
-            <?php
-            $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Constancia', 'Certificación', 'Listado', 'Proposición'];
-            foreach ($etiquetas as $etiqueta) {
-                echo "<div class='form-check form-check-inline'>
-                        <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}'>
-                        <label class='form-check-label' for='etiqueta-{$etiqueta}'>" . ucfirst($etiqueta) . "</label>
-                      </div>";
-            }
-            ?>
-        </div>
-    </div>
+<h5 class="mb-2">Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?></h5>
 
     <table class="table table-bordered table-sm" id="capitulosTable"> <!-- Añadido class 'table-sm' -->
         <thead class="thead-light">
@@ -118,6 +105,21 @@ $conec->close();
             <?php endif; ?>
         </tbody>
     </table>
+
+    <div class="etiquetas mb-1"> <!-- Reduce el margen inferior -->
+        
+        <div class="etiquetas-container">
+            <?php
+            $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Constancia', 'Certificación', 'Listado', 'Proposición'];
+            foreach ($etiquetas as $etiqueta) {
+                echo "<div class='form-check form-check-inline'>
+                        <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}'>
+                        <label class='form-check-label' for='etiqueta-{$etiqueta}'>" . ucfirst($etiqueta) . "</label>
+                      </div>";
+            }
+            ?>
+        </div>
+    </div>
 
     <form id="capituloForm">
         <h2 class="h6 mb-2">Descripción</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
@@ -368,12 +370,6 @@ $("#capitulosTable tbody").sortable({
 
 
 
-
-
-
-
-
-
 // Eliminar un capítulo
 $(document).on("click", ".eliminar", function() {
     const $fila = $(this).closest("tr");
@@ -398,6 +394,7 @@ $(document).on("click", ".eliminar", function() {
                     if (data.status === 'success') {
                         $fila.remove();
                         actualizarPaginas(); // Actualiza las páginas después de eliminar
+                        actualizarColumnasMover(); // Reestablece las columnas de movimiento
                     } else {
                         alert(data.message || "Error al eliminar el capítulo.");
                     }
@@ -412,6 +409,23 @@ $(document).on("click", ".eliminar", function() {
         });
     }
 });
+
+// Función para actualizar las columnas de movimiento
+function actualizarColumnasMover() {
+    $("#capitulosTable tbody tr").each(function() {
+        const $columnaMover = $(this).find(".drag-column");
+        if (!$columnaMover.length) {
+            // Si no hay columna de movimiento, añádela
+            $(this).prepend(`
+                <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
+            `);
+        } else {
+            // Si existe, asegúrate de que muestra el ícono correcto
+            $columnaMover.html('<span class="drag-icon">&#x21D5;</span>');
+        }
+    });
+}
+
 
 
 

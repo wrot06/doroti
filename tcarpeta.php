@@ -14,6 +14,7 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carpeta</title>
     <link rel="stylesheet" href="css/estiloindice.css">
+    <link rel="stylesheet" href="css/botongrabar.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
@@ -24,7 +25,7 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
         <form action="indice.php" method="post" class="ml-3">
             <input type="hidden" name="Caja" value="<?= $caja ?>">
             <input type="hidden" name="Car2" value="<?= $carpeta ?>">
-            <button type="submit" class="btn btn-primary btn-sm" style="padding: .25rem .5rem; font-size: .75rem;">Regresar</button>
+            <button type="submit" class="btn btn-primary btn-sm">Regresar</button>
         </form>
     </div>
 
@@ -41,17 +42,12 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 try {
                     // Realizar la consulta
                     $result = $conec->query("SELECT nombre FROM serie");
-
-                    // Comprobar si la consulta se realizó correctamente
                     if (!$result) {
                         throw new Exception("Error en la consulta: " . $conec->error);
                     }
 
                     // Obtener las etiquetas
-                    $etiquetas = [];
-                    while ($row = $result->fetch_assoc()) {
-                        $etiquetas[] = strtoupper($row['nombre']);
-                    }
+                    $etiquetas = array_map('strtoupper', array_column($result->fetch_all(MYSQLI_ASSOC), 'nombre'));
 
                     // Mostrar el desplegable
                     echo '<div class="form-group">';
@@ -60,7 +56,7 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                     echo '<option value="">Seleccione una serie</option>'; // Opción por defecto
 
                     foreach ($etiquetas as $etiqueta) {
-                        echo "<option value='" . htmlspecialchars($etiqueta) . "'>" . $etiqueta . "</option>"; // Ya está en mayúsculas
+                        echo "<option value='" . htmlspecialchars($etiqueta) . "'>" . htmlspecialchars($etiqueta) . "</option>";
                     }
 
                     echo '</select>';
@@ -74,13 +70,10 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 <div class="form-group">
                     <label for="subserie">Subserie:</label>
                     <select id="subserie" name="subserie" class="form-control form-control-sm" required>
-                        <option value="NULL" selected>Seleccione una Subserie</option>
+                        <option value="" disabled selected>Seleccione una Subserie</option>
                         <?php
                         $query = $conec->query("SELECT Subs FROM Subs");
-                        $subseries = $query->fetch_all(MYSQLI_ASSOC);
-
-                        // Generar las opciones del desplegable
-                        foreach ($subseries as $subserie) {
+                        while ($subserie = $query->fetch_assoc()) {
                             echo "<option value='" . htmlspecialchars($subserie['Subs']) . "'>" . htmlspecialchars($subserie['Subs']) . "</option>";
                         }
                         ?>
@@ -88,8 +81,9 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 </div>
 
                 <div class="form-group">
-                    <label for="tituloCarpeta">Título de Carpeta:</label>
+                    <label for="tituloCarpeta">Título de Carpeta:</label>                    
                     <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required></textarea>
+                    <button type="button" id="grabarBoton" class="btn btn-warning btn-sm float-right">Grabar (F2)</button>
                 </div>
 
                 <div class="form-row">
@@ -102,10 +96,11 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                         <input type="date" id="fechaFinal" name="fechaFinal" class="form-control form-control-sm" required>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label for="totalFolios">Folios: <?= $folios ?></label>
                 </div>
-                <button type="submit" class="btn btn-success btn-sm" style="padding: .25rem .5rem; font-size: .75rem;">Finalizar Carpeta</button>
+                <button type="submit" class="btn btn-success btn-sm">Finalizar Carpeta</button>
             </form>
         </div>
     </div>
@@ -113,4 +108,85 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></s
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+//Inicia el puntero  en el textarea
+document.addEventListener('DOMContentLoaded', function() {
+        // Enfocar el textarea
+        document.getElementById('tituloCarpeta').focus();
+});
+ 
+
+// Grabar voz con el micrófono y convertir a texto
+let grabando = false; 
+let recognition; 
+
+function iniciarReconocimiento() {
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("Lo siento, tu navegador no soporta esta función.");
+        return;
+    }
+
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = 'es-ES'; 
+    recognition.interimResults = true; 
+
+    recognition.onresult = function(event) {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const resultado = event.results[i];
+            if (resultado.isFinal) {
+                const texto = resultado[0].transcript;
+                const textarea = document.getElementById('tituloCarpeta');
+                textarea.value += texto + " "; 
+                textarea.focus();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            }
+        }
+    };
+
+    recognition.onend = function() {
+        if (grabando) {
+            recognition.start();
+        }
+    };
+
+    recognition.start(); 
+    grabando = true; 
+    document.getElementById('grabarBoton').classList.add('grabando'); 
+}
+
+function detenerReconocimiento() {
+    if (recognition) {
+        recognition.stop(); 
+    }
+    grabando = false; 
+    document.getElementById('grabarBoton').classList.remove('grabando'); 
+
+    const textarea = document.getElementById('tituloCarpeta');
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+}
+
+document.getElementById('grabarBoton').addEventListener('click', function() {
+    if (!grabando) {
+        iniciarReconocimiento(); 
+    } else {
+        detenerReconocimiento(); 
+    }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'F2' && !grabando) { 
+        iniciarReconocimiento(); 
+    }
+});
+
+document.addEventListener('keyup', function(event) {
+    if (event.key === 'F2' && grabando) { 
+        detenerReconocimiento(); 
+    }
+});
+</script>
+</body>
+</html>

@@ -77,7 +77,7 @@ $conec->close();
 <form action="tcarpeta.php" method="POST" style="display: inline;">
     <input type="hidden" name="caja" value="<?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" name="carpeta" value="<?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?>">
-    <input type="hidden" id="folios" name="folios" value="">
+    <input type="hidden" id="folios" name="folios" value="<?= $ultimaPagina ?>">
     <button type="submit" class="btn btn-primary btn-sm" style="padding: .25rem .5rem; font-size: .75rem; margin-left: 10px;">Terminar Carpeta</button>
 </form>
 

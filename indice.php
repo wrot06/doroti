@@ -1,4 +1,5 @@
 <?php
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -77,7 +78,7 @@ $conec->close();
 <form action="tcarpeta.php" method="POST" style="display: inline;">
     <input type="hidden" name="caja" value="<?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" name="carpeta" value="<?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?>">
-    <input type="hidden" id="folios" name="folios" value="<?= $ultimaPagina ?>">
+    <input type="hidden" id="ultimaPagina1" name="folios" value="<?= $ultimaPagina ?>">    
     <button type="submit" class="btn btn-primary btn-sm" style="padding: .25rem .5rem; font-size: .75rem; margin-left: 10px;">Terminar Carpeta</button>
 </form>
 
@@ -174,7 +175,7 @@ $conec->close();
             <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar (F2)</button> <!-- Añadido class 'btn-sm' -->
             <p id="ultimaPagina" class="ml-2 mb-0">Última página: <?= $ultimaPagina + 1 ?></p> <!-- Añadido clase 'mb-0' -->
             <div class="col-auto">
-                <input type="number" id="paginaFinal" class="form-control form-control-sm" placeholder="Página de Finalización" required> <!-- Añadido class 'form-control-sm' -->
+                <input type="number" id="paginaFinal" class="form-control form-control-sm" placeholder="Página de Finalización" value="<?= $ultimaPagina + 1 ?>" required> <!-- Añadido class 'form-control-sm' -->
             </div>
             <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar Documento</button> <!-- Añadido class 'btn-sm' -->
         </div>
@@ -287,6 +288,8 @@ $("#capituloForm").submit(function(event) {
                 // Actualiza la última página
                 siguientePagina = parseInt(nuevoCapitulo.pagina_final, 10) + 1;
                 $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
+                $("#paginaFinal").val(`${siguientePagina}`);
+                $("#ultimaPagina1").val(`${pagina_final}`);
                 $("#titulo").val(''); // Limpia el textarea
                 $("#paginaFinal").val(''); // Limpia el input de número
 
@@ -311,6 +314,7 @@ $("#titulo").keypress(function(event) {
     if (event.which === 13) { // 13 es el código de la tecla Enter
         event.preventDefault(); // Evita que se envíe el formulario
         agregarCapitulo(); // Llama a la función para agregar el capítulo
+        $("#titulo").val(''); // Limpia el textarea
     }
 });
 
@@ -323,6 +327,7 @@ function actualizarPaginas() {
     let siguientePagina = 1; // Página inicial para el primer capítulo
     let ultimaPaginaCalculada = 0; // Para calcular la última página global
     let nuevoId2 = 1; // ID inicial para el primer capítulo
+
 
     $("#capitulosTable tbody tr").each(function() {
         const $fila = $(this);
@@ -337,6 +342,7 @@ function actualizarPaginas() {
         // Calcular las nuevas páginas de inicio y fin
         const paginaInicio = siguientePagina;
         const paginaFinal = paginaInicio + numPaginas - 1;
+        $("#ultimaPagina1").val(`${paginaFinal}`);
 
         // Actualizar las celdas visibles en la tabla
         $fila.find("td:eq(2)").text(paginaInicio); // Página Inicio
@@ -364,9 +370,20 @@ function actualizarPaginas() {
 
 // Función para actualizar la última página en la interfaz
 function actualizarUltimaPagina(ultimaPagina) {
-    siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
-    $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
+    // Asegurar que la variable global se actualice
+    siguientePagina = ultimaPagina + 1;     
+    // Actualizar el texto que muestra la última página en la interfaz
+    $("#ultimaPagina").text(`Última página: ${siguientePagina}`);    
+    // Establecer el valor del input que muestra la página final
+    $("#paginaFinal").val(`${siguientePagina}`);    
+    // Asegúrate de que `pagina_final` tenga un valor válido y esté definido
+    if (typeof pagina_final !== 'undefined') {
+        $("#ultimaPagina1").val(`${ultimaPagina}`);
+    } else {
+        console.warn("La variable 'pagina_final' no está definida.");
+    }
 }
+
 
 
 // Reordenar las filas de la tabla
@@ -461,6 +478,7 @@ $(document).on("click", ".eliminar", function() {
     }
 });
 
+
 // Función para actualizar las columnas de movimiento
 function actualizarColumnasMover() {
     $("#capitulosTable tbody tr").each(function() {
@@ -494,9 +512,7 @@ $(document).on("blur", ".editable", function() {
 function actualizarUltimaPagina(ultimaPagina) {
     siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
     $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
-
-        // Actualizar el valor del campo oculto "folios"
-        $("#folios").val(ultimaPagina);
+    $("#ultimaPagina1").val(`${ultimaPagina}`);
 }
 
 

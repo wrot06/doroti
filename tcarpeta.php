@@ -83,7 +83,7 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 <div class="form-group">
                     <label for="tituloCarpeta">Título de Carpeta:</label>                    
                     <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required></textarea>
-                    <button type="button" id="grabarBoton" class="btn btn-warning btn-sm float-right">Grabar (F2)</button>
+                    <button type="button" id="grabarBoton" class="btn btn-warning btn-sm float-right" style="margin-top: 10px;">Grabar (F2)</button>
                 </div>
 
                 <div class="form-row">
@@ -97,9 +97,42 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="totalFolios">Folios: <?= $folios ?></label>
-                </div>
+                <?php
+
+                    // Verificar la conexión
+                    if ($conec->connect_error) {
+                        die("Conexión fallida: " . $conec->connect_error);
+                    }
+
+                    try {
+                        // Consulta para obtener la última página
+                        $sql = "SELECT MAX(NoFolioFin) AS ultima_pagina FROM indicetemp WHERE caja = ? AND carpeta = ?";
+                        $stmt = $conec->prepare($sql);
+                        $stmt->bind_param("ii", $caja, $carpeta); // Asumiendo que caja y carpeta son enteros
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+
+                        // Obtener la última página
+                        $ultimaPagina = 0; // Valor por defecto si no hay capítulos
+                        if ($row = $result->fetch_assoc()) {
+                            $ultimaPagina = $row['ultima_pagina'] !== null ? $row['ultima_pagina'] : 0; // Asignar la última página
+                        }
+
+                    } catch (Exception $e) {
+                        // Manejar el error
+                        error_log("Error al ejecutar la consulta: " . $e->getMessage());
+                    } finally {
+                        // Cerrar la declaración y la conexión
+                        $stmt->close();
+                        $conec->close();
+                    }
+                    ?>
+
+                    <div class="form-group">
+                        <label for="totalFolios">Folios: <?= $ultimaPagina ?></label>
+                    </div>
+
+
                 <button type="submit" class="btn btn-success btn-sm">Finalizar Carpeta</button>
             </form>
         </div>

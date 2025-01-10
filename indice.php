@@ -59,7 +59,7 @@ $conec->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reordenar Capítulos</title>
+    <title>Indice Documental</title>
     <link rel="stylesheet" href="css/estiloindice.css">
     <link rel="stylesheet" href="css/botongrabar.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -70,7 +70,19 @@ $conec->close();
 <body>
 
 <div class="container mt-4"> <!-- Reduce el margen superior -->
-<h5 class="mb-2">Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?></h5>
+
+<h5 class="mb-2 d-inline">
+    Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?>
+</h5>
+<form action="tcarpeta.php" method="POST" style="display: inline;">
+    <input type="hidden" name="caja" value="<?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="carpeta" value="<?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" id="folios" name="folios" value="">
+    <button type="submit" class="btn btn-primary btn-sm" style="padding: .25rem .5rem; font-size: .75rem; margin-left: 10px;">Terminar Carpeta</button>
+</form>
+
+
+
 
     <table class="table table-bordered table-sm" id="capitulosTable"> <!-- Añadido class 'table-sm' -->
         <thead class="thead-light">
@@ -106,19 +118,51 @@ $conec->close();
         </tbody>
     </table>
 
-<div class="etiquetas mb-1" style="font-size: 0.75rem;"> <!-- Reducir el tamaño global del texto -->
-    <div class="etiquetas-container d-flex flex-wrap align-items-center" style="gap: 5px;"> <!-- Espaciado compacto -->
-        <?php
-            $etiquetas = ['Correspondencia', 'Acuerdo', 'Resolución', 'Acta', 'Proposición', 'Constancia', 'Certificación', 'Listado', 'Circular', 'Memorando', 'Derecho de Petición', 'Inventario', 'Factura', 'Contenido Programático'];
+<div class="etiquetas mb-1" style="font-size: 0.75rem;">
+    <div class="etiquetas-container d-flex flex-wrap align-items-center" style="gap: 5px;">
+    <?php
+        // Incluir el archivo de conexión
+        require "rene/conexion3.php";
+
+        try {
+            // Realizar la consulta
+            $result = $conec->query("SELECT nombre FROM serie");
+
+            // Comprobar si la consulta se realizó correctamente
+            if (!$result) {
+                throw new Exception("Error en la consulta: " . $conec->error);
+            }
+
+            // Obtener las etiquetas
+            $etiquetas = [];
+            while ($row = $result->fetch_assoc()) {
+                $etiquetas[] = $row['nombre'];
+            }
+
+            // Mostrar las etiquetas
+            echo '<div class="etiquetas mb-1" style="font-size: 0.75rem;">';
+            echo '<div class="etiquetas-container d-flex flex-wrap align-items-center" style="gap: 5px;">';
+
             foreach ($etiquetas as $etiqueta) {
                 echo "<div class='form-check form-check-inline' style='margin-bottom: 2px;'>
                         <input class='form-check-input' type='radio' name='etiqueta' value='{$etiqueta}' id='etiqueta-{$etiqueta}' style='width: 0.85rem; height: 0.85rem;'>
                         <label class='form-check-label' for='etiqueta-{$etiqueta}' style='font-size: 0.75rem; margin-left: 3px;'>" . ucfirst($etiqueta) . "</label>
                     </div>";
             }
-        ?>
+
+            echo '</div></div>';
+
+        } catch (Exception $e) {
+            echo "Error: " . $e->getMessage();
+        }
+
+        // Cerrar la conexión
+        $conec->close();
+    ?>
+
     </div>
 </div>
+
 
 
     <form id="capituloForm">
@@ -450,6 +494,9 @@ $(document).on("blur", ".editable", function() {
 function actualizarUltimaPagina(ultimaPagina) {
     siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
     $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
+
+        // Actualizar el valor del campo oculto "folios"
+        $("#folios").val(ultimaPagina);
 }
 
 

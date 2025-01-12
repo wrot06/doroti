@@ -33,10 +33,11 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
     <div class="card">
         <div class="card-header">Detalles Carpeta</div>
         <div class="card-body">
-            <form action="procesar_tcarpeta.php" method="post">
+            <form action="procesar_finalizar_carpeta.php" method="post">
                 <input type="hidden" name="caja" value="<?= $caja ?>">
                 <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
-                <input type="hidden" id="folios" name="folios" value="<?= $folios ?>">
+                <input type="hidden" name="car2" value="<?= $carpeta ?>"> <!-- Aquí asegurarte de que se está usando el nombre correcto -->
+                <input type="hidden" name="folios" value="<?= $folios ?>">
 
                 <?php
                 try {
@@ -69,7 +70,7 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
 
                 <div class="form-group">
                     <label for="subserie">Subserie:</label>
-                    <select id="subserie" name="subserie" class="form-control form-control-sm" required>
+                    <select id="subserie" name="subserie" class="form-control form-control-sm">
                         <option value="" disabled selected>Seleccione una Subserie</option>
                         <?php
                         $query = $conec->query("SELECT Subs FROM Subs");
@@ -83,7 +84,7 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 <div class="form-group">
                     <label for="tituloCarpeta">Título de Carpeta:</label>                    
                     <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required></textarea>
-                    <button type="button" id="grabarBoton" class="btn btn-warning btn-sm float-right" style="margin-top: 10px;">Grabar (F2)</button>
+                    <button type="button" id="grabarBoton" class="btn btn-secondary btn-sm">Grabar Voz</button> <!-- Botón para grabar voz -->
                 </div>
 
                 <div class="form-row">
@@ -98,7 +99,6 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 </div>
 
                 <?php
-
                     // Verificar la conexión
                     if ($conec->connect_error) {
                         die("Conexión fallida: " . $conec->connect_error);
@@ -126,12 +126,11 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                         $stmt->close();
                         $conec->close();
                     }
-                    ?>
+                ?>
 
-                    <div class="form-group">
-                        <label for="totalFolios">Folios: <?= $ultimaPagina ?></label>
-                    </div>
-
+                <div class="form-group">
+                    <label for="totalFolios">Folios: <?= $ultimaPagina ?></label>
+                </div>
 
                 <button type="submit" class="btn btn-success btn-sm">Finalizar Carpeta</button>
             </form>
@@ -144,81 +143,149 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
-//Inicia el puntero  en el textarea
-document.addEventListener('DOMContentLoaded', function() {
-        // Enfocar el textarea
-        document.getElementById('tituloCarpeta').focus();
-});
- 
+document.addEventListener('DOMContentLoaded', function () {
+    const finalizarBtn = document.querySelector('button[type="submit"]'); // Botón "Finalizar Carpeta"
+    const form = document.querySelector('form'); // Formulario actual
 
-// Grabar voz con el micrófono y convertir a texto
-let grabando = false; 
-let recognition; 
+    finalizarBtn.addEventListener('click', function (event) {
+        event.preventDefault(); // Evitar envío automático del formulario
+        
+        // Depuración: muestra un alert simple
+        alert('Botón de finalizar clickeado');
 
-function iniciarReconocimiento() {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Lo siento, tu navegador no soporta esta función.");
-        return;
-    }
+        // Mostrar mensaje de confirmación
+        if (confirm('¿Desea terminar la Carpeta?')) {
+            // Crear un objeto con los datos del formulario
+            const formData = new FormData(form);
 
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = 'es-ES'; 
-    recognition.interimResults = true; 
+            // Enviar datos a la tabla `carpetas` usando AJAX
+            fetch('procesar_finalizar_carpeta.php', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Carpeta finalizada exitosamente.');
+                        window.location.href = 'indice.php'; // Redirigir a otra página si es necesario
+                    } else {
+                        alert('Error al finalizar la carpeta: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Ocurrió un error al procesar la solicitud.');
+                    console.error(error);
+                });
+        } else {
+            alert('Se ha cancelado la finalización de la Carpeta.');
+        }
+    });
 
-    recognition.onresult = function(event) {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const resultado = event.results[i];
-            if (resultado.isFinal) {
-                const texto = resultado[0].transcript;
-                const textarea = document.getElementById('tituloCarpeta');
-                textarea.value += texto + " "; 
-                textarea.focus();
-                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    // Mostrar alerta de confirmación al finalizar carpeta
+    const fechaInicialInput = document.getElementById('fechaInicial');
+    const fechaFinalInput = document.getElementById('fechaFinal');
+
+    const validarFechaActual = (input) => {
+        const fechaActual = new Date().toISOString().split('T')[0];
+        if (input.value > fechaActual) {
+            alert('La fecha ingresada no puede ser mayor a la fecha actual.');
+            input.value = '';
+            input.focus();
+        }
+    };
+
+    const validarRangoFechas = () => {
+        if (fechaInicialInput.value && fechaFinalInput.value) {
+            if (fechaInicialInput.value > fechaFinalInput.value) {
+                alert('La fecha final no puede ser menor que la fecha inicial.');
+                fechaFinalInput.value = ''; // Borra la fecha final si es menor
+                fechaFinalInput.focus();
             }
         }
     };
 
-    recognition.onend = function() {
-        if (grabando) {
-            recognition.start();
+    fechaInicialInput.addEventListener('change', function () {
+        validarFechaActual(fechaInicialInput);
+        validarRangoFechas();
+    });
+
+    fechaFinalInput.addEventListener('change', function () {
+        validarFechaActual(fechaFinalInput);
+        validarRangoFechas();
+    });
+
+    // Inicia el puntero en el textarea
+    document.getElementById('tituloCarpeta').focus();
+
+    // Grabar voz con el micrófono y convertir a texto
+    let grabando = false; 
+    let recognition; 
+
+    function iniciarReconocimiento() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Lo siento, tu navegador no soporta esta función.");
+            return;
         }
-    };
 
-    recognition.start(); 
-    grabando = true; 
-    document.getElementById('grabarBoton').classList.add('grabando'); 
-}
+        recognition = new webkitSpeechRecognition();
+        recognition.lang = 'es-ES'; 
+        recognition.interimResults = true; 
 
-function detenerReconocimiento() {
-    if (recognition) {
-        recognition.stop(); 
+        recognition.onresult = function(event) {
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const resultado = event.results[i];
+                if (resultado.isFinal) {
+                    const texto = resultado[0].transcript;
+                    const textarea = document.getElementById('tituloCarpeta');
+                    textarea.value += texto + " "; 
+                    textarea.focus();
+                    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                }
+            }
+        };
+
+        recognition.onend = function() {
+            if (grabando) {
+                recognition.start();
+            }
+        };
+
+        recognition.start(); 
+        grabando = true; 
+        document.getElementById('grabarBoton').classList.add('grabando'); 
     }
-    grabando = false; 
-    document.getElementById('grabarBoton').classList.remove('grabando'); 
 
-    const textarea = document.getElementById('tituloCarpeta');
-    textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-}
+    function detenerReconocimiento() {
+        if (recognition) {
+            recognition.stop(); 
+        }
+        grabando = false; 
+        document.getElementById('grabarBoton').classList.remove('grabando'); 
 
-document.getElementById('grabarBoton').addEventListener('click', function() {
-    if (!grabando) {
-        iniciarReconocimiento(); 
-    } else {
-        detenerReconocimiento(); 
+        const textarea = document.getElementById('tituloCarpeta');
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
     }
-});
 
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'F2' && !grabando) { 
-        iniciarReconocimiento(); 
-    }
-});
+    document.getElementById('grabarBoton').addEventListener('click', function() {
+        if (!grabando) {
+            iniciarReconocimiento(); 
+        } else {
+            detenerReconocimiento(); 
+        }
+    });
 
-document.addEventListener('keyup', function(event) {
-    if (event.key === 'F2' && grabando) { 
-        detenerReconocimiento(); 
-    }
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'F2' && !grabando) { 
+            iniciarReconocimiento(); 
+        }
+    });
+
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'F2' && grabando) { 
+            detenerReconocimiento(); 
+        }
+    });
 });
 </script>
 </body>

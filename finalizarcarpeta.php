@@ -3,35 +3,57 @@ require "rene/conexion3.php";
 
 $caja = htmlspecialchars($_POST['caja'] ?? '', ENT_QUOTES, 'UTF-8');
 $carpeta = htmlspecialchars($_POST['carpeta'] ?? '', ENT_QUOTES, 'UTF-8');
-$car2 = htmlspecialchars($_POST['Car2'] ?? '', ENT_QUOTES, 'UTF-8'); // Nueva variable
+$car2 = $carpeta; 
 $folios = max(1, intval($_POST['folios'] ?? 1));
-$Serie = htmlspecialchars($_POST['Serie'] ?? '', ENT_QUOTES, 'UTF-8');
+$Serie = htmlspecialchars($_POST['serie'] ?? '', ENT_QUOTES, 'UTF-8'); // Cambiado a 'serie'
 $subs = htmlspecialchars($_POST['subserie'] ?? '', ENT_QUOTES, 'UTF-8');
 $tituloCarpeta = htmlspecialchars($_POST['tituloCarpeta'] ?? '', ENT_QUOTES, 'UTF-8');
+$estado = 'C'; 
+
 $fechaInicial = htmlspecialchars($_POST['fechaInicial'] ?? '', ENT_QUOTES, 'UTF-8');
 $fechaFinal = htmlspecialchars($_POST['fechaFinal'] ?? '', ENT_QUOTES, 'UTF-8');
-$estado = 'A'; // Asignar 'A' a la variable estado
+
+// Depuración
+echo "<pre>";
+print_r($_POST);
+echo "</pre>";
+
+// Validar que todos los campos requeridos están completos
+$requiredFields = ['caja', 'carpeta', 'folios', 'serie', 'tituloCarpeta', 'fechaInicial', 'fechaFinal'];
+foreach ($requiredFields as $field) {
+    if (empty($_POST[$field])) {
+        echo "<div class='alert alert-danger'>Error: Todos los campos deben ser completados.</div>";
+        exit;
+    }
+}
+
+// Validar el formato de las fechas
+if (!DateTime::createFromFormat('Y-m-d', $fechaInicial) || !DateTime::createFromFormat('Y-m-d', $fechaFinal)) {
+    echo "<div class='alert alert-danger'>Error: Las fechas no son válidas. Formato esperado: YYYY-MM-DD.</div>";
+    exit;
+}
+
+// Resto del código para preparar y ejecutar la consulta...
+
+
+
 
 try {
-    $stmt = $conec->prepare("INSERT INTO carpetas (Caja, Carpeta, Car2, Serie, Subs, Titulo, FInicial, FFinal, Folios, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    // Prepara la consulta
+    $stmt = $conec->prepare("UPDATE carpetas SET Car2 = ?, Serie = ?, Subs = ?, Titulo = ?, FInicial = ?, FFinal = ?, Folios = ?, Estado = ? WHERE Caja = ? AND Car2 = ?
+");
     
-    // Cadena de tipos:
-    // - Caja: int (i)
-    // - Carpeta: int (i)
-    // - Car2: int (i)
-    // - Serie: string (s)
-    // - Subs: string (s)
-    // - Titulo: string (s)
-    // - FInicial: string (s)
-    // - FFinal: string (s)
-    // - Folios: int (i)
-    // - Estado: string (s)
-    $stmt->bind_param("iiisssssis", $caja, $carpeta, $car2, $Serie, $subs, $tituloCarpeta, $fechaInicial, $fechaFinal, $folios, $estado);
-    
+    // Vincula los parámetros
+    // El primer "s" en "ssssiissis" es para el primer parámetro ($car2) y el segundo es para $Serie, $subs, $tituloCarpeta, etc. 
+    // Aquí estás tratando las fechas como strings, que es correcto.
+    $stmt->bind_param("ssssssssii", $car2, $Serie, $subs, $tituloCarpeta, $fechaInicial, $fechaFinal, $folios, $estado, $caja, $car2);
+
+
+    // Ejecuta la consulta
     if ($stmt->execute()) {
-        echo "<div class='alert alert-success'>Carpeta finalizada con éxito.</div>";
+        echo "<div class='alert alert-success'>Carpeta actualizada con éxito.</div>";
     } else {
-        throw new Exception("Error al finalizar la carpeta: " . $stmt->error);
+        throw new Exception("Error al actualizar la carpeta: " . $stmt->error);
     }
 } catch (Exception $e) {
     echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";

@@ -53,7 +53,7 @@ $folios = max(1, intval($_POST['folios'] ?? 1));
                 <div class="form-group">
                     <label for="subserie">Subserie:</label>
                     <select id="subserie" name="subserie" class="form-control form-control-sm">
-                        <option value="'NULL'" selected>Seleccione una Subserie</option>
+                        <option value="" selected>Seleccione una Subserie</option>
                         <?php
                         $query = $conec->query("SELECT Subs FROM Subs");
                         while ($subserie = $query->fetch_assoc()) {

@@ -1,10 +1,10 @@
 <?php
 require "rene/conexion3.php";
 
-// Inicialización de variables desde POST
 $caja = htmlspecialchars($_POST['caja'] ?? '', ENT_QUOTES, 'UTF-8');
 $carpeta = htmlspecialchars($_POST['carpeta'] ?? '', ENT_QUOTES, 'UTF-8');
-$folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea negativo
+$folios = max(1, intval($_POST['folios'] ?? 1)); 
+
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +19,6 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
 </head>
 <body>
 <div class="container mt-4">
-    <!-- Título con botón "Regresar" -->
     <div class="d-flex align-items-center mb-3">
         <h5 class="mb-0">Caja <?= $caja ?> | Carpeta <?= $carpeta ?></h5>
         <form action="indice.php" method="post" class="ml-3">
@@ -29,49 +28,32 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
         </form>
     </div>
 
-    <!-- Detalles de la Carpeta -->
     <div class="card">
         <div class="card-header">Detalles Carpeta</div>
         <div class="card-body">
-            <form action="procesar_finalizar_carpeta.php" method="post">
+            <form action="finalizarcarpeta.php" method="post">
                 <input type="hidden" name="caja" value="<?= $caja ?>">
                 <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
-                <input type="hidden" name="car2" value="<?= $carpeta ?>"> <!-- Aquí asegurarte de que se está usando el nombre correcto -->
                 <input type="hidden" name="folios" value="<?= $folios ?>">
 
-                <?php
-                try {
-                    // Realizar la consulta
-                    $result = $conec->query("SELECT nombre FROM serie");
-                    if (!$result) {
-                        throw new Exception("Error en la consulta: " . $conec->error);
-                    }
+                <div class="form-group">
+                    <label for="serie">Serie:</label>
+                    <select id="serie" name="serie" class="form-control form-control-sm" required>
+                        <option value="" disabled selected>Seleccione una Serie</option>
+                        <?php
+                        $query = $conec->query("SELECT nombre FROM serie");
+                        while ($serie = $query->fetch_assoc()) {
+                            echo "<option value='" . htmlspecialchars($serie['nombre']) . "'>" . htmlspecialchars($serie['nombre']) . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
 
-                    // Obtener las etiquetas
-                    $etiquetas = array_map('strtoupper', array_column($result->fetch_all(MYSQLI_ASSOC), 'nombre'));
-
-                    // Mostrar el desplegable
-                    echo '<div class="form-group">';
-                    echo '<label for="tituloSerie">Serie:</label>';
-                    echo '<select id="tituloSerie" name="tituloSerie" class="form-control form-control-sm" required>';
-                    echo '<option value="">Seleccione una serie</option>'; // Opción por defecto
-
-                    foreach ($etiquetas as $etiqueta) {
-                        echo "<option value='" . htmlspecialchars($etiqueta) . "'>" . htmlspecialchars($etiqueta) . "</option>";
-                    }
-
-                    echo '</select>';
-                    echo '</div>';
-
-                } catch (Exception $e) {
-                    echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
-                }
-                ?>
 
                 <div class="form-group">
                     <label for="subserie">Subserie:</label>
                     <select id="subserie" name="subserie" class="form-control form-control-sm">
-                        <option value="" disabled selected>Seleccione una Subserie</option>
+                        <option value="'NULL'" selected>Seleccione una Subserie</option>
                         <?php
                         $query = $conec->query("SELECT Subs FROM Subs");
                         while ($subserie = $query->fetch_assoc()) {
@@ -82,9 +64,9 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 </div>
 
                 <div class="form-group">
-                    <label for="tituloCarpeta">Título de Carpeta:</label>                    
+                    <label for="tituloCarpeta">Título de Carpeta:</label>
                     <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required></textarea>
-                    <button type="button" id="grabarBoton" class="btn btn-secondary btn-sm">Grabar Voz</button> <!-- Botón para grabar voz -->
+                    <button type="button" id="grabarBoton" class="btn btn-secondary btn-sm">Grabar Voz</button>
                 </div>
 
                 <div class="form-row">
@@ -99,33 +81,19 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
                 </div>
 
                 <?php
-                    // Verificar la conexión
-                    if ($conec->connect_error) {
-                        die("Conexión fallida: " . $conec->connect_error);
-                    }
-
-                    try {
-                        // Consulta para obtener la última página
-                        $sql = "SELECT MAX(NoFolioFin) AS ultima_pagina FROM indicetemp WHERE caja = ? AND carpeta = ?";
-                        $stmt = $conec->prepare($sql);
-                        $stmt->bind_param("ii", $caja, $carpeta); // Asumiendo que caja y carpeta son enteros
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-
-                        // Obtener la última página
-                        $ultimaPagina = 0; // Valor por defecto si no hay capítulos
-                        if ($row = $result->fetch_assoc()) {
-                            $ultimaPagina = $row['ultima_pagina'] !== null ? $row['ultima_pagina'] : 0; // Asignar la última página
-                        }
-
-                    } catch (Exception $e) {
-                        // Manejar el error
-                        error_log("Error al ejecutar la consulta: " . $e->getMessage());
-                    } finally {
-                        // Cerrar la declaración y la conexión
-                        $stmt->close();
-                        $conec->close();
-                    }
+                try {
+                    $sql = "SELECT MAX(NoFolioFin) AS ultima_pagina FROM indicetemp WHERE caja = ? AND carpeta = ?";
+                    $stmt = $conec->prepare($sql);
+                    $stmt->bind_param("ii", $caja, $carpeta);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $ultimaPagina = $result->fetch_assoc()['ultima_pagina'] ?? 0;
+                } catch (Exception $e) {
+                    error_log("Error al ejecutar la consulta: " . $e->getMessage());
+                } finally {
+                    $stmt->close();
+                    $conec->close();
+                }
                 ?>
 
                 <div class="form-group">
@@ -138,9 +106,9 @@ $folios = max(1, intval($_POST['folios'] ?? 1)); // Asegura que folios nunca sea
     </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

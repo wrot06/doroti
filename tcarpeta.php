@@ -48,7 +48,11 @@ if (empty($caja) || empty($carpeta)) {
                         <?php
                         $query = $conec->query("SELECT nombre FROM Serie");
                         while ($serie = $query->fetch_assoc()) {
+<<<<<<< HEAD
                             echo "<option value='" . htmlspecialchars($serie['nombre']) . "'>" . htmlspecialchars($serie['nombre']) . "</option>";
+=======
+                            echo "<option value='" . htmlspecialchars(mb_strtoupper($serie['nombre'], 'UTF-8')) . "'>" . htmlspecialchars(mb_strtoupper($serie['nombre'], 'UTF-8')) . "</option>";
+>>>>>>> a53bbbd (Configuración inicial y subida de archivos)
                         }
                         ?>
                     </select>

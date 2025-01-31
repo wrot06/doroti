@@ -46,13 +46,13 @@ if (empty($caja) || empty($carpeta)) {
                     <select id="serie" name="serie" class="form-control form-control-sm" required>
                         <option value="" disabled selected>Seleccione una Serie</option>
                         <?php
-                        $query = $conec->query("SELECT nombre FROM Serie");
-                        while ($serie = $query->fetch_assoc()) {
-<<<<<<< HEAD
-                            echo "<option value='" . htmlspecialchars($serie['nombre']) . "'>" . htmlspecialchars($serie['nombre']) . "</option>";
-=======
-                            echo "<option value='" . htmlspecialchars(mb_strtoupper($serie['nombre'], 'UTF-8')) . "'>" . htmlspecialchars(mb_strtoupper($serie['nombre'], 'UTF-8')) . "</option>";
->>>>>>> a53bbbd (Configuración inicial y subida de archivos)
+                        $query = $conec->query("SELECT id, nombre FROM Serie ORDER BY nombre ASC");
+                        if ($query) {
+                            while ($serie = $query->fetch_assoc()) {
+                                $serieId = htmlspecialchars($serie['id']);
+                                $serieNombre = htmlspecialchars(mb_strtoupper($serie['nombre'], 'UTF-8'));
+                                echo "<option value='{$serieNombre}'>{$serieNombre}</option>";
+                            }
                         }
                         ?>
                     </select>
@@ -60,14 +60,8 @@ if (empty($caja) || empty($carpeta)) {
 
                 <div class="form-group">
                     <label for="subserie">Subserie:</label>
-                    <select id="subserie" name="subserie" class="form-control form-control-sm">
+                    <select id="subserie" name="subserie" class="form-control form-control-sm" >
                         <option value="" selected>Seleccione una Subserie</option>
-                        <?php
-                        $query = $conec->query("SELECT Subs FROM Subs");
-                        while ($subserie = $query->fetch_assoc()) {
-                            echo "<option value='" . htmlspecialchars($subserie['Subs']) . "'>" . htmlspecialchars($subserie['Subs']) . "</option>";
-                        }
-                        ?>
                     </select>
                 </div>
 
@@ -125,6 +119,40 @@ if (empty($caja) || empty($carpeta)) {
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
+$(document).ready(function () {
+    $('#serie').change(function () {
+        var serieNombre = $(this).find("option:selected").text(); // Obtener el nombre de la serie seleccionada
+        $('#subserie').empty(); // Limpiar el select de subseries
+        $('#subserie').append('<option value="" selected>Seleccione una Subserie</option>');
+
+        if (serieNombre) {
+            $.ajax({
+                url: 'rene/get_subseries.php', // Archivo PHP que obtendrá las subseries relacionadas
+                type: 'POST',
+                data: { serie_id: serieNombre }, // Enviar el nombre de la serie
+                success: function (response) {
+                    var subseries = JSON.parse(response); // Parsear la respuesta JSON
+                    if (Array.isArray(subseries)) {
+                        subseries.forEach(function (subserie) {
+                            $('#subserie').append(
+                                '<option value="' + subserie.nombre + '">' + subserie.nombre + '</option>'
+                            );
+                        });
+                    } else {
+                        alert(subseries.error); // Mostrar error si existe
+                    }
+                },
+                error: function () {
+                    alert('Error al cargar las subseries. Inténtalo de nuevo más tarde.');
+                }
+            });
+        }
+    });
+});
+
+
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const finalizarBtn = document.querySelector('button[type="submit"]'); // Botón "Finalizar Carpeta"
     const form = document.querySelector('form'); // Formulario actual

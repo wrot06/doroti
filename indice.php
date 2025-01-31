@@ -169,17 +169,19 @@ $conec->close();
     <form id="capituloForm">
         <h2 class="h6 mb-2">Asunto</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
         <div class="form-group">
-            <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required></textarea> <!-- Añadido class 'form-control-sm' -->
-        </div>
+        <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required style="font-size: 1.2rem; height: 150px;"></textarea>
+    </div>
+   
         <div class="form-row align-items-center mb-2"> <!-- Reduce el margen inferior -->
             <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar (F2)</button> <!-- Añadido class 'btn-sm' -->
-            <p id="ultimaPagina" class="ml-2 mb-0">Última página: <?= $ultimaPagina + 1 ?></p> <!-- Añadido clase 'mb-0' -->
+            <p id="ultimaPagina" class="ml-1 mb-0">Última página: <?= $ultimaPagina + 1 ?></p> <!-- Añadido clase 'mb-0' -->
             <div class="col-auto">
-                <input type="number" id="paginaFinal" class="form-control form-control-sm" placeholder="Página de Finalización" value="<?= $ultimaPagina + 1 ?>" required> <!-- Añadido class 'form-control-sm' -->
+                <input type="number" id="paginaFinal" class="form-control form-control" placeholder="Página de Finalización" value="<?= $ultimaPagina + 1 ?>" required style="font-size: 1.2rem;"> <!-- Añadido class 'form-control-sm' -->
             </div>
             <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar Documento</button> <!-- Añadido class 'btn-sm' -->
         </div>
     </form>
+    <br><br><br><br><br> <!-- espacio abajo del la grabación o del bloque de grabación -->
 </div>
 
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
@@ -219,8 +221,6 @@ let siguientePagina = <?= empty($capitulos) ? 1 : $paginaSiguiente ?? 1 ?>; // P
 inicializarPaginas();//Inicialisa las Paginas cuando se carla la pargian por primera vez
 
 
-
-// Agregar un nuevo capítulo
 // Agregar un nuevo capítulo
 $("#capituloForm").submit(function(event) {
     event.preventDefault();
@@ -244,10 +244,9 @@ $("#capituloForm").submit(function(event) {
         return;
     }
 
-    const paginaInicio = siguientePagina; // Suponiendo que esta variable se actualiza correctamente.
+    const paginaInicio = siguientePagina;
     const numPaginas = paginaFinal - paginaInicio + 1;
 
-    // Verificar si el número de páginas es mayor a 200
     if (numPaginas > 200) {
         alert("No se puede agregar un número de folio que exceda los 200 folios.");
         return;
@@ -260,13 +259,12 @@ $("#capituloForm").submit(function(event) {
             caja: <?= $caja ?>,
             carpeta: <?= $carpeta ?>,
             titulo: `${etiquetaSeleccionada}: ${titulo}`,
-            paginaFinal: paginaFinal // Mantén esto para el cálculo en el servidor
+            paginaFinal: paginaFinal
         },
-        dataType: 'json', // Asegúrate de que el tipo de respuesta sea JSON
+        dataType: 'json',
         success: function(response) {
-            console.log("Respuesta del servidor:", response); // Verificar qué está recibiendo
+            console.log("Respuesta del servidor:", response);
             if (response.status === 'success') {
-                // Procesar éxito
                 const nuevoCapitulo = response.capitulo;
 
                 // Eliminar el mensaje de "No hay capítulos registrados" si existe
@@ -276,7 +274,7 @@ $("#capituloForm").submit(function(event) {
                     }
                 });
 
-                // Agregar la nueva fila a la tabla
+                // Agregar el nuevo capítulo a la tabla
                 $("#capitulosTable tbody").append(`
                     <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
                         <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
@@ -287,30 +285,33 @@ $("#capituloForm").submit(function(event) {
                     </tr>
                 `);
 
-                // Actualiza la última página
-                siguientePagina = parseInt(nuevoCapitulo.pagina_final, 10) + 1; // Actualiza la siguiente página
+                // Actualizar la siguiente página
+                siguientePagina = parseInt(nuevoCapitulo.pagina_final, 10) + 1;
                 $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
+                $("#paginaFinal").val(siguientePagina);
+                $("#ultimaPagina1").val(nuevoCapitulo.pagina_final);
+                $("#titulo").val('');
+                $("#titulo").focus();
 
-                // Actualiza el input de la página final
-                $("#paginaFinal").val(siguientePagina); // Establece el siguiente valor de la página final
-                $("#ultimaPagina1").val(nuevoCapitulo.pagina_final); // Usar la variable correctamente
-
-                $("#titulo").val(''); // Limpia el textarea
-                // No limpies el input de página final aquí, ya que ya lo actualizamos
-
-                // Enfocar de nuevo el textarea
-                $("#titulo").focus(); // Enfocar el textarea
+                // Desplazar la pantalla al pie de página
+                $('html, body').animate({
+                    scrollTop: $(document).height() // Desplaza al final del documento
+                }, 500);
             } else {
                 alert(response.message || "Error al agregar el capítulo.");
             }
         },
         error: function(xhr, status, error) {
             console.error("Error en la solicitud AJAX:", error);
-            console.log("Respuesta del servidor:", xhr.responseText); // Muestra la respuesta completa
-            alert("Error al procesar la solicitud.");
+            console.log("Estado:", status);
+            console.log("Respuesta del servidor:", xhr.responseText);
+            alert(`Error: ${xhr.status} - ${xhr.statusText}\nDetalles: ${xhr.responseText}`);
         }
     });
 });
+
+
+
 
 
 
@@ -589,83 +590,86 @@ function inicializarPaginas() {
 
 // Grabar voz con el micrófono y convertir a texto
 let grabando = false; // Estado de grabación
-let recognition; // Reconocimiento de voz
+        let recognition; // Reconocimiento de voz
 
-function iniciarReconocimiento() {
-    // Comprobación del soporte para la API de reconocimiento de voz
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Lo siento, tu navegador no soporta esta función.");
-        return;
-    }
+        function iniciarReconocimiento() {
+            // Comprobación del soporte para la API de reconocimiento de voz
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Lo siento, tu navegador no soporta esta función.");
+                return;
+            }
 
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = 'es-ES'; // Configura el idioma según sea necesario
-    recognition.interimResults = true; // Mostrar resultados intermedios
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'es-CO'; // Español Colombia
+            recognition.continuous = true; // Mantener reconocimiento continuo
+            recognition.interimResults = false; // Desactivar resultados intermedios
 
-    recognition.onresult = function(event) {
-        // Procesar resultados intermedios
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const resultado = event.results[i];
-            if (resultado.isFinal) {
-                const texto = resultado[0].transcript;
-                const textarea = document.getElementById('titulo');
-                textarea.value += texto + " "; // Agregar texto al input
+            recognition.onresult = function(event) {
+                let textarea = document.getElementById('titulo');
+                let nuevoTexto = "";
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const resultado = event.results[i];
+                    if (resultado.isFinal) {
+                        nuevoTexto += (nuevoTexto ? " " : "") + resultado[0].transcript; // Acumular resultados finales
+                    }
+                }
+
+                // Agregar texto al input
+                textarea.value += nuevoTexto.trim() + " "; // Agregar el texto acumulado
                 // Enfocar y mover el cursor al final del texto
                 textarea.focus();
                 textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            };
+
+            recognition.onend = function() {
+                // Reinicia el reconocimiento si se sigue grabando
+                if (grabando) {
+                    recognition.start();
+                }
+            };
+
+            recognition.start(); // Iniciar reconocimiento
+            grabando = true; // Actualiza el estado
+            document.getElementById('grabarBoton').classList.add('grabando'); // Cambia color a verde
+        }
+
+        // Función para detener el reconocimiento
+        function detenerReconocimiento() {
+            if (recognition) {
+                recognition.stop(); // Detiene reconocimiento
             }
+            grabando = false; // Actualiza el estado
+            document.getElementById('grabarBoton').classList.remove('grabando'); // Cambia color a rojo
+
+            // Enfocar nuevamente el textarea y mover el cursor al final
+            const textarea = document.getElementById('titulo');
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
         }
-    };
 
-    recognition.onend = function() {
-        // Reinicia el reconocimiento si se sigue grabando
-        if (grabando) {
-            recognition.start();
-        }
-    };
+        // Manejar el clic en el botón de grabar
+        document.getElementById('grabarBoton').addEventListener('click', function() {
+            if (!grabando) {
+                iniciarReconocimiento(); // Inicia reconocimiento
+            } else {
+                detenerReconocimiento(); // Detiene reconocimiento
+            }
+        });
 
-    recognition.start(); // Iniciar reconocimiento
-    grabando = true; // Actualiza el estado
-    document.getElementById('grabarBoton').classList.add('grabando'); // Cambia color a verde
-}
+        // Mantener grabando mientras se presiona "F2"
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F2' && !grabando) { // Si se presiona F2 y no está grabando
+                iniciarReconocimiento(); // Inicia reconocimiento
+            }
+        });
 
-// Función para detener el reconocimiento
-function detenerReconocimiento() {
-    if (recognition) {
-        recognition.stop(); // Detiene reconocimiento
-    }
-    grabando = false; // Actualiza el estado
-    document.getElementById('grabarBoton').classList.remove('grabando'); // Cambia color a rojo
-
-    // Enfocar nuevamente el textarea y mover el cursor al final
-    const textarea = document.getElementById('titulo');
-    textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-}
-
-// Manejar el clic en el botón de grabar
-document.getElementById('grabarBoton').addEventListener('click', function() {
-    if (!grabando) {
-        iniciarReconocimiento(); // Inicia reconocimiento
-    } else {
-        detenerReconocimiento(); // Detiene reconocimiento
-    }
-});
-
-// Mantener grabando mientras se presiona "F2"
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'F2' && !grabando) { // Si se presiona F2 y no está grabando
-        iniciarReconocimiento(); // Inicia reconocimiento
-    }
-});
-
-// Detener la grabación al soltar "F2"
-document.addEventListener('keyup', function(event) {
-    if (event.key === 'F2' && grabando) { // Si se suelta F2 y se está grabando
-        detenerReconocimiento(); // Detiene reconocimiento
-    }
-});
-
+        // Detener la grabación al soltar "F2"
+        document.addEventListener('keyup', function(event) {
+            if (event.key === 'F2' && grabando) { // Si se suelta F2 y se está grabando
+                detenerReconocimiento(); // Detiene reconocimiento
+            }
+        });
 
 
 </script>

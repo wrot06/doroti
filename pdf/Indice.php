@@ -147,7 +147,7 @@ if ($result = $conec->query($sql) ) {
 }
 
 
-$pdf->Image('../img/Indice Pie de Pagina.jpg', $x, $SaltoLinea+4, $imageWidth, $imageHeight);
+$pdf->Image('../img/Indice Pie de Pagina.jpg', $x, $SaltoLinea+3, $imageWidth, $imageHeight);
 
 $meses = [
     1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
@@ -160,13 +160,13 @@ $anio = date('Y');
 $fecha_actual = "$dia de $mes de $anio";
 
 if ($SaltoLinea >= 180) {
-    $SaltoLinea+=13;
+    $SaltoLinea+=10.9;
 }else{
     $SaltoLinea+=13;
 }
 
 $pdf->SetXY(50, $SaltoLinea);
-$pdf->MultiCell(0, 2, utf8_decode("$fecha_actual"), 0, 1);
+$pdf->MultiCell(0, 0, utf8_decode("$fecha_actual"), 0, 1);
 
 
 $pdf->Output('', utf8_decode("Carpeta ".$Carpeta." Caja ".$Caja.".pdf"));

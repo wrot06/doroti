@@ -169,7 +169,11 @@ $conec->close();
     <form id="capituloForm">
         <h2 class="h6 mb-2">Asunto</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
         <div class="form-group">
+<<<<<<< HEAD
         <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required style="font-size: 1.2rem; height: 150px;"></textarea>
+=======
+        <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required style="font-size: 1.2rem;"></textarea>
+>>>>>>> ee1e5fb4c792c180dd9273ba8cb2d81832fb03fc
     </div>
    
         <div class="form-row align-items-center mb-2"> <!-- Reduce el margen inferior -->

@@ -67,7 +67,7 @@ if (empty($caja) || empty($carpeta)) {
 
                 <div class="form-group">
                     <label for="tituloCarpeta">Título de Carpeta:</label>
-                    <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required></textarea>
+                    <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required style="font-size: 1.2rem; height: 150px;"></textarea>
                     <div class="text-right mt-3">
                         <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar Voz (F2)</button>
                     </div>

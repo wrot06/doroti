@@ -7,7 +7,7 @@ session_start();
 
 // Configuración de la aplicación
 $correct_password = 'Rene';
-$session_expiration_time = 3600; // 1 hora
+$session_expiration_time = 14400; // 4 hora
 
 // Redirección simplificada
 function redirect($url) {

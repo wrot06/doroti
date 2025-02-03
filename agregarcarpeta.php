@@ -1,6 +1,8 @@
 <?php   
-require 'rene/head.php';  
+ob_start();
 session_start();
+require 'rene/head.php';  
+
 
 // Redirige si el usuario no está autenticado
 if (empty($_SESSION['authenticated'])) {
@@ -95,7 +97,7 @@ if (empty($_SESSION['csrf_token'])) {
     ?>
 
     <h1>Agregar Caja y Carpeta</h1>
-    <form action="guardarDatos.php" method="post" id="cajaCarpetaForm" onsubmit="validarFormulario(event)">
+    <form action="rene/guardarDatos.php" method="post" id="cajaCarpetaForm" onsubmit="validarFormulario(event)">
         <!-- Campo CSRF Token -->
         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 

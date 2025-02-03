@@ -1,5 +1,5 @@
 <?php
-require "rene/conexion3.php";
+require "conexion3.php";
 
 // Captura y sanitiza datos del formulario
 $caja = htmlspecialchars($_POST['caja'] ?? '', ENT_QUOTES, 'UTF-8');
@@ -100,7 +100,7 @@ try {
     <div class="card shadow-sm" style="max-width: 500px; width: 100%;">
         <div class="card-body text-center">
             <h2 class="card-title mb-4">Gestión de Carpetas</h2>
-            <a href="index.php" class="btn btn-primary btn-lg">Regresar al Inicio</a>
+            <a href="../index.php" class="btn btn-primary btn-lg">Regresar al Inicio</a>
         </div>
     </div>
 </div>

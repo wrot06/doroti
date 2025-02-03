@@ -1,11 +1,10 @@
 <?php
+session_start();
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require "rene/conexion3.php"; // Archivo de conexión a la base de datos
-
-session_start();
 
 if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     header('Location: login.php');
@@ -20,8 +19,8 @@ if (isset($_POST['cerrar_seccion'])) {
 
 // Validar y asignar valores POST a variables de sesión
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $_SESSION['caja'] = filter_input(INPUT_POST, 'Caja', FILTER_SANITIZE_NUMBER_INT);
-    $_SESSION['car2'] = filter_input(INPUT_POST, 'Car2', FILTER_SANITIZE_NUMBER_INT);
+    $_SESSION['caja'] = filter_input(INPUT_POST, 'caja', FILTER_SANITIZE_NUMBER_INT); // Ajustado para usar 'caja'
+    $_SESSION['car2'] = filter_input(INPUT_POST, 'carpeta', FILTER_SANITIZE_NUMBER_INT); // Ajustado para usar 'carpeta'
 }
 
 $caja = $_SESSION['caja'] ?? null;
@@ -72,15 +71,19 @@ $conec->close();
 
 <div class="container mt-4"> <!-- Reduce el margen superior -->
 
-<h5 class="mb-2 d-inline">
-    Caja <?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?> | Carpeta <?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?>
-</h5>
-<form action="tcarpeta.php" method="POST" style="display: inline;">
-    <input type="hidden" name="caja" value="<?= htmlspecialchars($caja, ENT_QUOTES, 'UTF-8'); ?>">
-    <input type="hidden" name="carpeta" value="<?= htmlspecialchars($carpeta, ENT_QUOTES, 'UTF-8'); ?>">
-    <input type="hidden" id="ultimaPagina1" name="folios" value="<?= $ultimaPagina ?>">    
-    <button type="submit" class="btn btn-primary btn-sm" style="padding: .25rem .5rem; font-size: .75rem; margin-left: 10px;">Terminar Carpeta</button>
-</form>
+<div style="display: flex; align-items: center; gap: 1rem; white-space: nowrap;">
+    <h5 style="margin: 0;">Caja <?= htmlspecialchars($caja) ?> | Carpeta <?= htmlspecialchars($carpeta) ?></h5>
+    <form action="tcarpeta.php" method="POST" style="margin: 0;">
+        <input type="hidden" name="caja" value="<?= htmlspecialchars($caja) ?>">
+        <input type="hidden" name="carpeta" value="<?= htmlspecialchars($carpeta) ?>">
+        <input type="hidden" name="folios" value="<?= $ultimaPagina ?>">    
+        <button type="submit" class="btn btn-primary btn-sm" style="padding: .25rem .5rem;">Terminar Carpeta</button>
+    </form>
+    <form action="index.php" method="POST" style="margin: 0;">
+        <button type="submit" class="btn btn-primary btn-sm" style="padding: .25rem .5rem;">Inicio</button>
+    </form>
+</div>
+
 
 
 

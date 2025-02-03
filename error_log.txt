@@ -1,2 +1,0 @@
-2025-01-12 04:56:54 - Datos incompletos: caja=95, carpeta=2, car2=, serie=MEMORANDOS, titulo=sgasdfgdf 3 tergdsfg, fechaInicial=2025-01-07, fechaFinal=2025-01-10, folios=91
-2025-01-13 01:16:15 - Datos incompletos: caja=95, carpeta=2, car2=, serie=CONTRATOS, titulo=dfgdfgdfgdf, fechaInicial=2020-02-12, fechaFinal=2025-01-07, folios=91

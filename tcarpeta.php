@@ -36,7 +36,7 @@ if (empty($caja) || empty($carpeta)) {
     <div class="card">
         <div class="card-header">Detalles Carpeta</div>
         <div class="card-body">
-            <form action="finalizarcarpeta.php" method="post">
+            <form action="rene/finalizarcarpeta.php" method="post">
                 <input type="hidden" name="caja" value="<?= $caja ?>">
                 <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
                 <input type="hidden" name="folios" value="<?= $folios ?>">

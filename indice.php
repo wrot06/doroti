@@ -642,6 +642,11 @@ let grabando = false; // Estado de grabación
                         textoReconocido = textoReconocido.replace(/\bvela\b/gi, "Vela");
                         textoReconocido = textoReconocido.replace(/\bmadroñero\b/gi, "Madroñero");
                         textoReconocido = textoReconocido.replace(/\bparedes\b/gi, "Paredes");
+                        textoReconocido = textoReconocido.replace(/\bvillota\b/gi, "Villota");
+                        textoReconocido = textoReconocido.replace(/\bmunera\b/gi, "Munera");
+                        textoReconocido = textoReconocido.replace(/\buniversidad\b/gi, "Universidad");
+                        textoReconocido = textoReconocido.replace(/\bnariño\b/gi, "Nariño");
+
 
 
 

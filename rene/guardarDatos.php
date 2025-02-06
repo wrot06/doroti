@@ -30,6 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Validación de campos
     $caja = isset($_POST['caja']) ? intval($_POST['caja']) : 0;
     $car2 = isset($_POST['car2']) ? intval($_POST['car2']) : 0;
+    
 
     // Asegúrate de que el user_id esté disponible
     $user_id = 1; // Cambia esto por $_SESSION['user_id'] si es necesario

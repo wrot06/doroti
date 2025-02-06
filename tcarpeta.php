@@ -39,7 +39,7 @@ if (empty($caja) || empty($carpeta)) {
             <form action="rene/finalizarcarpeta.php" method="post">
                 <input type="hidden" name="caja" value="<?= $caja ?>">
                 <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
-                <input type="hidden" name="folios" value="<?= $folios ?>">
+                
 
                 <div class="form-group">
                     <label for="serie">Serie:</label>
@@ -104,6 +104,8 @@ if (empty($caja) || empty($carpeta)) {
                     }
                 }
                 ?>
+
+                <input type="hidden" name="folios" value="<?= $ultimaPagina ?>">
 
                 <div class="form-group">
                     <label for="totalFolios">Folios: <?= $ultimaPagina ?></label>

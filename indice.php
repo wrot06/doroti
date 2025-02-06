@@ -615,12 +615,42 @@ let grabando = false; // Estado de grabación
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const resultado = event.results[i];
                     if (resultado.isFinal) {
-                        nuevoTexto += (nuevoTexto ? " " : "") + resultado[0].transcript; // Acumular resultados finales
+                        let textoReconocido = resultado[0].transcript;
+                        // Reemplazar "goyes" con "Goyes"
+                        textoReconocido = textoReconocido.replace(/\bgoyes\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\bgoyes\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\blibardo\b/gi, "Libardo");
+                        textoReconocido = textoReconocido.replace(/\briascos\b/gi, "Riascos");
+                        textoReconocido = textoReconocido.replace(/\blagos\b/gi, "Lagos");
+                        textoReconocido = textoReconocido.replace(/\bramos\b/gi, "Ramos");
+                        textoReconocido = textoReconocido.replace(/\bcoral\b/gi, "Coral");
+                        textoReconocido = textoReconocido.replace(/\bbastidas\b/gi, "Bastidas");
+                        textoReconocido = textoReconocido.replace(/\bburbano\b/gi, "Burbano");
+                        textoReconocido = textoReconocido.replace(/\btajumbina\b/gi, "Tajumbina");
+                        textoReconocido = textoReconocido.replace(/\bocaña\b/gi, "Ocaña");
+                        textoReconocido = textoReconocido.replace(/\bderecho\b/gi, "Derecho");
+                        textoReconocido = textoReconocido.replace(/\bcalvachí\b/gi, "Calvachy");
+                        textoReconocido = textoReconocido.replace(/\bhoyos\b/gi, "Hoyos");
+                        textoReconocido = textoReconocido.replace(/\bsotelo\b/gi, "Sotelo");
+                        textoReconocido = textoReconocido.replace(/\bcalpa\b/gi, "Calpa");
+                        textoReconocido = textoReconocido.replace(/\bpasos\b/gi, "Pasos");
+                        textoReconocido = textoReconocido.replace(/\bdolores\b/gi, "Dolores");
+                        textoReconocido = textoReconocido.replace(/\brisueño\b/gi, "Risueño");
+                        textoReconocido = textoReconocido.replace(/\bsolarte\b/gi, "Solarte");
+                        textoReconocido = textoReconocido.replace(/\bcortés\b/gi, "Cortés");
+                        textoReconocido = textoReconocido.replace(/\bespecialización\b/gi, "Especialización");
+                        textoReconocido = textoReconocido.replace(/\bvela\b/gi, "Vela");
+                        textoReconocido = textoReconocido.replace(/\bmadroñero\b/gi, "Madroñero");
+                        textoReconocido = textoReconocido.replace(/\bparedes\b/gi, "Paredes");
+
+
+
+                        nuevoTexto += (nuevoTexto ? " " : "") + textoReconocido;
                     }
                 }
 
                 // Agregar texto al input
-                textarea.value += nuevoTexto.trim() + " "; // Agregar el texto acumulado
+                textarea.value += nuevoTexto.trim() + " "; 
                 // Enfocar y mover el cursor al final del texto
                 textarea.focus();
                 textarea.setSelectionRange(textarea.value.length, textarea.value.length);

@@ -67,7 +67,7 @@ if (empty($caja) || empty($carpeta)) {
 
                 <div class="form-group">
                     <label for="tituloCarpeta">Título de Carpeta:</label>
-                    <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required style="font-size: 1.2rem; height: 150px;"></textarea>
+                    <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required style="font-size: 1.2rem; height: 150px;" maxlength="56" onkeypress="return event.charCode < 32 || this.value.length < 56"></textarea>
                     <div class="text-right mt-3">
                         <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar Voz (F2)</button>
                     </div>
@@ -150,6 +150,12 @@ $(document).ready(function () {
     });
 });
 
+//solo permite 56 caracteres en el textarea
+document.getElementById('tituloCarpeta').addEventListener('input', function() {
+    if (this.value.length > 56) {
+        this.value = this.value.substring(0, 56);
+    }
+});
 
 
 
@@ -211,73 +217,87 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Grabar voz con el micrófono y convertir a texto
     let grabando = false; 
-    let recognition; 
+let recognition; 
 
-    function iniciarReconocimiento() {
-        if (!('webkitSpeechRecognition' in window)) {
-            alert("Lo siento, tu navegador no soporta esta función.");
-            return;
-        }
+function iniciarReconocimiento() {
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("Lo siento, tu navegador no soporta esta función.");
+        return;
+    }
 
-        recognition = new webkitSpeechRecognition();
-        recognition.lang = 'es-ES'; 
-        recognition.interimResults = true; 
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = 'es-ES'; 
+    recognition.interimResults = true; 
 
-        recognition.onresult = function(event) {
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const resultado = event.results[i];
-                if (resultado.isFinal) {
-                    const texto = resultado[0].transcript;
-                    const textarea = document.getElementById('tituloCarpeta');
+    recognition.onresult = function(event) {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const resultado = event.results[i];
+            if (resultado.isFinal) {
+                const texto = resultado[0].transcript;
+                const textarea = document.getElementById('tituloCarpeta');
+
+                if (textarea.value.length + texto.length > 56) {
+                    const espacioLibre = 56 - textarea.value.length;
+                    textarea.value += texto.substring(0, espacioLibre) + " "; 
+                } else {
                     textarea.value += texto + " "; 
-                    textarea.focus();
-                    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
                 }
+
+                textarea.focus();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
             }
-        };
+        }
+    };
 
-        recognition.onend = function() {
-            if (grabando) {
-                recognition.start();
-            }
-        };
+    recognition.onend = function() {
+        if (grabando) {
+            recognition.start();
+        }
+    };
 
-        recognition.start(); 
-        grabando = true; 
-        document.getElementById('grabarBoton').classList.add('grabando'); 
+    recognition.start(); 
+    grabando = true; 
+    document.getElementById('grabarBoton').classList.add('grabando'); 
+}
+
+function detenerReconocimiento() {
+    if (recognition) {
+        recognition.stop(); 
     }
+    grabando = false; 
+    document.getElementById('grabarBoton').classList.remove('grabando'); 
 
-    function detenerReconocimiento() {
-        if (recognition) {
-            recognition.stop(); 
-        }
-        grabando = false; 
-        document.getElementById('grabarBoton').classList.remove('grabando'); 
+    const textarea = document.getElementById('tituloCarpeta');
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+}
 
-        const textarea = document.getElementById('tituloCarpeta');
-        textarea.focus();
-        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+function validarCaracteres(textarea) {
+    const maxLength = 56;
+    if (textarea.value.length > maxLength) {
+        textarea.value = textarea.value.substring(0, maxLength);
     }
+}
 
-    document.getElementById('grabarBoton').addEventListener('click', function() {
-        if (!grabando) {
-            iniciarReconocimiento(); 
-        } else {
-            detenerReconocimiento(); 
-        }
-    });
+document.getElementById('grabarBoton').addEventListener('click', function() {
+    if (!grabando) {
+        iniciarReconocimiento(); 
+    } else {
+        detenerReconocimiento(); 
+    }
+});
 
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'F2' && !grabando) { 
-            iniciarReconocimiento(); 
-        }
-    });
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'F2' && !grabando) { 
+        iniciarReconocimiento(); 
+    }
+});
 
-    document.addEventListener('keyup', function(event) {
-        if (event.key === 'F2' && grabando) { 
-            detenerReconocimiento(); 
-        }
-    });
+document.addEventListener('keyup', function(event) {
+    if (event.key === 'F2' && grabando) { 
+        detenerReconocimiento(); 
+    }
+});
 });
 </script>
 </body>

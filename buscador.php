@@ -20,7 +20,7 @@ if (isset($_POST['cerrar_seccion'])) {
 }
 
 // Obtención de datos de la base de datos
-$sql = "SELECT * FROM Carpetas ORDER BY Caja";
+$sql = "SELECT * FROM Carpetas ORDER BY Caja DESC, Car2 ASC;";
 $resultado = mysqli_query($conec, $sql);
 $carpetas = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
 ?>

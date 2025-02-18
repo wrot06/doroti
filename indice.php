@@ -58,6 +58,7 @@ $conec->close();
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="hueso.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Indice Documental</title>
     <link rel="stylesheet" href="css/estiloindice.css">
@@ -616,37 +617,64 @@ let grabando = false; // Estado de grabación
                     const resultado = event.results[i];
                     if (resultado.isFinal) {
                         let textoReconocido = resultado[0].transcript;
-                        // Reemplazar "goyes" con "Goyes"
+                        // Reemplazar las pablas a cambiar
+                        textoReconocido = textoReconocido.replace(/\balirio\b/gi, "Alirio");
+                        textoReconocido = textoReconocido.replace(/\bargotti\b/gi, "Argoty");
                         textoReconocido = textoReconocido.replace(/\bgoyes\b/gi, "Goyes");
-                        textoReconocido = textoReconocido.replace(/\bgoyes\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\bgoyés\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\bgoyez\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\bgoyis\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\bcoyez\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\bgoiles\b/gi, "Goyes");
+                        textoReconocido = textoReconocido.replace(/\bgoiz\b/gi, "Goyes");
                         textoReconocido = textoReconocido.replace(/\blibardo\b/gi, "Libardo");
                         textoReconocido = textoReconocido.replace(/\briascos\b/gi, "Riascos");
                         textoReconocido = textoReconocido.replace(/\blagos\b/gi, "Lagos");
+                        textoReconocido = textoReconocido.replace(/\bleyton\b/gi, "Leyton");
                         textoReconocido = textoReconocido.replace(/\bramos\b/gi, "Ramos");
                         textoReconocido = textoReconocido.replace(/\bcoral\b/gi, "Coral");
+                        textoReconocido = textoReconocido.replace(/\bcorrea\b/gi, "Correa");
                         textoReconocido = textoReconocido.replace(/\bbastidas\b/gi, "Bastidas");
                         textoReconocido = textoReconocido.replace(/\bburbano\b/gi, "Burbano");
+                        textoReconocido = textoReconocido.replace(/\bbarreiro\b/gi, "Barreiro");
+                        textoReconocido = textoReconocido.replace(/\bbelalcázar\b/gi, "Belalcázar");
+                        textoReconocido = textoReconocido.replace(/\bbravo\b/gi, "Bravo");
                         textoReconocido = textoReconocido.replace(/\btajumbina\b/gi, "Tajumbina");
                         textoReconocido = textoReconocido.replace(/\bocaña\b/gi, "Ocaña");
+                        textoReconocido = textoReconocido.replace(/\bosejo\b/gi, "Osejo");
+                        textoReconocido = textoReconocido.replace(/\boliva\b/gi, "Oliva");
                         textoReconocido = textoReconocido.replace(/\bderecho\b/gi, "Derecho");
                         textoReconocido = textoReconocido.replace(/\bcalvachí\b/gi, "Calvachy");
+                        textoReconocido = textoReconocido.replace(/\bcalvacci\b/gi, "Calvachy");
+                        textoReconocido = textoReconocido.replace(/\bcalvachi\b/gi, "Calvachy");
                         textoReconocido = textoReconocido.replace(/\bhoyos\b/gi, "Hoyos");
                         textoReconocido = textoReconocido.replace(/\bsotelo\b/gi, "Sotelo");
                         textoReconocido = textoReconocido.replace(/\bcalpa\b/gi, "Calpa");
                         textoReconocido = textoReconocido.replace(/\bpasos\b/gi, "Pasos");
+                        textoReconocido = textoReconocido.replace(/\bpalacios\b/gi, "Palacios");
+                        textoReconocido = textoReconocido.replace(/\bpinilla\b/gi, "Pinilla");
                         textoReconocido = textoReconocido.replace(/\bdolores\b/gi, "Dolores");
                         textoReconocido = textoReconocido.replace(/\brisueño\b/gi, "Risueño");
+                        textoReconocido = textoReconocido.replace(/\breina\b/gi, "Reina");
                         textoReconocido = textoReconocido.replace(/\bsolarte\b/gi, "Solarte");
                         textoReconocido = textoReconocido.replace(/\bcortés\b/gi, "Cortés");
                         textoReconocido = textoReconocido.replace(/\bespecialización\b/gi, "Especialización");
+                        textoReconocido = textoReconocido.replace(/\bedilma\b/gi, "Edilma");
                         textoReconocido = textoReconocido.replace(/\bvela\b/gi, "Vela");
                         textoReconocido = textoReconocido.replace(/\bmadroñero\b/gi, "Madroñero");
+                        textoReconocido = textoReconocido.replace(/\bmaterón\b/gi, "Materón"); 
+                        textoReconocido = textoReconocido.replace(/\bmorasurco\b/gi, "Morasurco");                       
                         textoReconocido = textoReconocido.replace(/\bparedes\b/gi, "Paredes");
                         textoReconocido = textoReconocido.replace(/\bvillota\b/gi, "Villota");
+                        textoReconocido = textoReconocido.replace(/\bvinueza\b/gi, "Vinueza");
+                        textoReconocido = textoReconocido.replace(/\bviteri\b/gi, "Viteri");
                         textoReconocido = textoReconocido.replace(/\bmunera\b/gi, "Munera");
                         textoReconocido = textoReconocido.replace(/\buniversidad\b/gi, "Universidad");
                         textoReconocido = textoReconocido.replace(/\bnariño\b/gi, "Nariño");
+                        textoReconocido = textoReconocido.replace(/\bnavia\b/gi, "Navia");
                         textoReconocido = textoReconocido.replace(/\brevelo\b/gi, "Revelo");
+                        textoReconocido = textoReconocido.replace(/\bjojoa\b/gi, "Jojoa");
+                        textoReconocido = textoReconocido.replace(/\burbano\b/gi, "Urbano");
 
 
 

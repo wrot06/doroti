@@ -135,7 +135,7 @@ if (!$resultado) {
         
         <div class="d-flex align-items-center gap-3">
             <!-- Botón Buscador -->
-            <form method="POST" action="buscador.php" target="_blank">
+            <form method="POST" action="buscador.php">
                 <button type="submit" name="agregarcarpeta" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-search me-2"></i>Buscador
                 </button>

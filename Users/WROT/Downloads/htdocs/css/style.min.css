@@ -760,3 +760,10 @@ section {
     font-size: 16px; } }
 
 /*=====  End of RESPONSIVE  ======*/
+
+.buscador input[type=text] {
+    height: 1.5rem;
+    font-size: 0.8rem;
+    padding: 0 0.25rem;
+    width: 400px;
+}

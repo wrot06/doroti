@@ -99,7 +99,7 @@ $conec->close();
         <tbody>
             <?php if (empty($capitulos)): ?>
                 <tr>
-                    <td colspan="5" class="text-center">No hay capítulos registrados. Página inicial: 1</td>
+                    <td colspan="5" class="text-center">No hay folios registrados. folio inicial: 1</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($capitulos as $capitulo): ?>
@@ -176,7 +176,7 @@ $conec->close();
    
         <div class="form-row align-items-center mb-2"> <!-- Reduce el margen inferior -->
             <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar (F2)</button> <!-- Añadido class 'btn-sm' -->
-            <p id="ultimaPagina" class="ml-1 mb-0">Última página: <?= $ultimaPagina + 1 ?></p> <!-- Añadido clase 'mb-0' -->
+            <p id="ultimaPagina" class="ml-1 mb-0">Último folio: <?= $ultimaPagina + 1 ?></p> <!-- Añadido clase 'mb-0' -->
             <div class="col-auto">
                 <input type="number" id="paginaFinal" class="form-control form-control" placeholder="Página de Finalización" value="<?= $ultimaPagina + 1 ?>" required style="font-size: 1.2rem;"> <!-- Añadido class 'form-control-sm' -->
             </div>
@@ -278,7 +278,8 @@ $(document).ready(() => {
                 caja: <?= $caja ?>,
                 carpeta: <?= $carpeta ?>,
                 titulo: tituloCompleto,
-                paginaFinal: paginaFinal
+                paginaFinal: paginaFinal,
+                serie: etiquetaSeleccionada
             },
             dataType: 'json'
         })
@@ -305,7 +306,7 @@ $(document).ready(() => {
 
                 // Actualizar la siguiente página y otros elementos de la UI
                 siguientePagina = Number(nuevoCapitulo.pagina_final) + 1;
-                $ultimaPagina.text(`Última página: ${siguientePagina}`);
+                $ultimaPagina.text(`Último folio: ${siguientePagina}`);
                 $paginaFinalInput.val(siguientePagina);
                 $ultimaPagina1.val(nuevoCapitulo.pagina_final);
                 $tituloInput.val('').focus();
@@ -393,7 +394,7 @@ function actualizarUltimaPagina(ultimaPagina) {
     // Asegurar que la variable global se actualice
     siguientePagina = ultimaPagina + 1;     
     // Actualizar el texto que muestra la última página en la interfaz
-    $("#ultimaPagina").text(`Última página: ${siguientePagina}`);    
+    $("#ultimaPagina").text(`Último folio: ${siguientePagina}`);    
     // Establecer el valor del input que muestra la página final
     $("#paginaFinal").val(`${siguientePagina}`);    
     // Asegúrate de que `pagina_final` tenga un valor válido y esté definido
@@ -531,7 +532,7 @@ $(document).on("blur", ".editable", function() {
 //Actuliza la ultima Pagina
 function actualizarUltimaPagina(ultimaPagina) {
     siguientePagina = ultimaPagina + 1; // Asegurar que la variable global se actualice
-    $("#ultimaPagina").text(`Última página: ${siguientePagina}`);
+    $("#ultimaPagina").text(`Último folio: ${siguientePagina}`);
     $("#ultimaPagina1").val(`${ultimaPagina}`);
 }
 

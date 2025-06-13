@@ -24,6 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $carpeta = filter_var($_POST['carpeta'], FILTER_VALIDATE_INT);
         $titulo = strip_tags($_POST['titulo']);
         $paginaFinal = filter_var($_POST['paginaFinal'], FILTER_VALIDATE_INT);
+        $serie = strip_tags($_POST['serie']);
+
 
         // Registro de depuración de entradas
         file_put_contents('debug_agregar_capitulo.log', date('Y-m-d H:i:s') . " - Caja: $caja, Carpeta: $carpeta, Titulo: $titulo, Pagina Final: $paginaFinal\n", FILE_APPEND);
@@ -58,15 +60,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_last_id->close();
         $id2 = $last_id + 1;
 
-        $sql = "INSERT INTO IndiceTemp (id2, Caja, Carpeta, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas)
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $conec->prepare($sql);
+
+$sql = "INSERT INTO IndiceTemp (id2, Caja, Carpeta, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+$stmt = $conec->prepare($sql);
 
         if ($stmt === false) {
             throw new Exception("Error en la preparación de la consulta: " . $conec->error);
         }
 
-        $stmt->bind_param("iiisiii", $id2, $caja, $carpeta, $titulo, $paginaInicio, $paginaFinal, $paginas);
+$stmt->bind_param("iiissiii", $id2, $caja, $carpeta, $serie, $titulo, $paginaInicio, $paginaFinal, $paginas);
 
         if ($stmt->execute()) {
             echo json_encode([

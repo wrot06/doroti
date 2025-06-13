@@ -78,24 +78,35 @@ if (!$resultado) {
             <img src="img/Doroti Logo Horizontal.jpg" alt="Logo Doroti" height="30">
         </a>
         <div class="d-flex align-items-center gap-3">
-            <!-- Botón Buscador -->
-            <form method="POST" action="buscador.php">
-                <button type="submit" name="agregarcarpeta" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-search me-2"></i>Buscador
-                </button>
-            </form>
-            <!-- Botón Salir -->
-            <form method="POST">
-                <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm">
-                    <i class="bi bi-box-arrow-right me-2"></i>Salir
-                </button>
-            </form>
             <!-- Búsqueda -->
             <div class="search-container position-relative">
                 <input type="text" id="search" class="form-control form-control-sm shadow-sm" 
                        placeholder="Buscar carpetas..." aria-label="Buscar carpetas" onkeyup="searchItems()">
                 <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2 text-muted"></i>
             </div>
+
+            <!-- Botón Buscador -->
+            <form method="POST" action="buscador.php">
+                <button type="submit" name="agregarcarpeta" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-search me-2"></i>Buscador
+                </button>
+            </form>
+
+           
+            <form method="POST" action="documents.php">
+                <button type="submit" name="documents" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-file-earmark-pdf-fill me-2"></i>Digital
+                </button>
+            </form>
+
+
+            <!-- Botón Salir -->
+            <form method="POST">
+                <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm">
+                    <i class="bi bi-box-arrow-right me-2"></i>Salir
+                </button>
+            </form>
+
         </div>
     </div>
 </nav>
@@ -103,7 +114,7 @@ if (!$resultado) {
 <main class="container-fluid">
     <div class="folder-grid">
         <!-- Tarjeta para crear nueva carpeta -->
-        <div class="folder-card" style="background: #28a745; color: white;">
+        <div class="folder-card" style="background:rgb(40, 167, 163); color: white;">
             <form method="POST" action="agregarcarpeta.php" class="h-100">
                 <div class="text-center p-3 h-100">
                     <img src="img/Carpeta.png" class="folder-icon" alt="Icono de carpeta">

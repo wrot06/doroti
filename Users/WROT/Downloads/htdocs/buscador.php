@@ -88,7 +88,7 @@ if (isset($_POST['cerrar_seccion'])) {
         </thead>
         <tbody id="tableBody">
             <?php
-            $sql = "SELECT * FROM Carpetas ORDER BY Caja DESC, Car2 ASC";
+            $sql = "SELECT * FROM Carpetas WHERE Estado = 'C' ORDER BY Caja DESC, Car2 ASC";
             $resultado = mysqli_query($conec, $sql);
                         
             while($fila = $resultado->fetch_assoc()) {
@@ -100,9 +100,12 @@ if (isset($_POST['cerrar_seccion'])) {
                     <td style="text-align: center;"><?= htmlspecialchars($fila["Car2"] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                     <td>
                         <b><?= htmlspecialchars($fila["Serie"], ENT_QUOTES, 'UTF-8') ?></b><br>
-                        <span style="line-height: 1; font-size: 12px;">
-                            <?= htmlspecialchars($fila["Subs"], ENT_NOQUOTES) ?>
-                        </span>
+<?php if (!empty($fila["Subs"])): ?>
+    <span style="line-height: 1; font-size: 12px;">
+        <?= htmlspecialchars($fila["Subs"], ENT_NOQUOTES) ?>
+    </span>
+<?php endif; ?>
+
                     </td>
 
                     <?php
@@ -161,26 +164,45 @@ if (isset($_POST['cerrar_seccion'])) {
                             <button style="margin-right: 25px; height: 18px;" type="submit" name="Caja" value="<?= htmlspecialchars($Caja, ENT_QUOTES, 'UTF-8') ?>">Indice Carpeta <?= htmlspecialchars($fila['Car2'], ENT_QUOTES, 'UTF-8') ?></button>
                 </form>
  
-                <div style="width: 90%; display: flex; justify-content: center; padding-right: 5%;">
-                    <table class="mi-tabla2">
-                        <?php
-                        
-                        $sql2 = "SELECT * FROM IndiceDocumental WHERE Caja = '" . $fila['Caja'] . "' AND Carpeta = '" . $fila['Car2'] . "'";
-                        $resultado2 = mysqli_query($conec, $sql2);
-                        
-                        if ($resultado2) {
-                            while ($row = mysqli_fetch_assoc($resultado2)) {
-                                echo "<tr>";
-                                echo "<td style='text-align: left;'><i>{$row['DescripcionUnidadDocumental']}</i></td>";
-                                echo "<td style='text-align: center;'>{$row['NoFolioInicio']}</td>";
-                                echo "<td style='text-align: center;'>{$row['NoFolioFin']}</td>";
-                                echo "<td style='text-align: center;'>{$row['Soporte']}</td>";
-                                echo "</tr>";
-                            }
-                        }
-                        ?>
-                    </table>
-                </div>
+<div style="width: 90%; display: flex; justify-content: center; padding-right: 5%;">
+    <table class="mi-tabla2">
+        <?php
+        $sql2 = "SELECT * FROM IndiceDocumental WHERE Caja = " . intval($fila['Caja']) . " AND Carpeta = " . intval($fila['Car2']);
+        $resultado2 = mysqli_query($conec, $sql2);
+
+        if ($resultado2) {
+            while ($row = mysqli_fetch_assoc($resultado2)) {
+                ?>
+                <tr>
+                    <td style="text-align: left;"><i><?= htmlspecialchars($row['DescripcionUnidadDocumental']) ?></i></td>
+                    <td style="text-align: center;"><?= htmlspecialchars($row['NoFolioInicio']) ?></td>
+                    <td style="text-align: center;"><?= htmlspecialchars($row['NoFolioFin']) ?></td>                    
+<td style="text-align: center;">
+    <?php if (!empty($row['archivo_pdf'])): ?>
+        <form action="download.php" method="get" target="_blank">
+            <input type="hidden" name="id2" value="<?= intval($row['id']) ?>">
+            <button type="submit" style="height: 18px;">Ver PDF</button>
+        </form>
+<?php else: ?>
+    <form action="idcargar.php" method="post" target="_blank">
+        <input type="hidden" name="id" value="<?= intval($row['id']) ?>">
+        <!-- Token CSRF -->
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+        <button type="submit" style="height: 18px;">Subir</button>
+    </form>
+<?php endif; ?>
+
+</td>
+
+                </tr>
+                <?php
+            }
+        }
+        ?>
+    </table>
+</div>
+
+
 
                 </td>
                 </tr>

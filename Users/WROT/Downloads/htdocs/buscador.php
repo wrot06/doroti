@@ -179,7 +179,7 @@ if (isset($_POST['cerrar_seccion'])) {
                     <td style="text-align: center;"><?= htmlspecialchars($row['NoFolioFin']) ?></td>                    
 <td style="text-align: center;">
     <?php if (!empty($row['archivo_pdf'])): ?>
-        <form action="download.php" method="get" target="_blank">
+        <form action="download2.php" method="get" target="_blank">
             <input type="hidden" name="id2" value="<?= intval($row['id']) ?>">
             <button type="submit" style="height: 18px;">Ver PDF</button>
         </form>

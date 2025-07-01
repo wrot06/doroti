@@ -126,12 +126,19 @@ if (empty($caja) || empty($carpeta)) {
 
 <script>
 
-document.getElementById('tituloCarpeta').addEventListener('input', function () {
-    let texto = this.value;
-    if (texto.length > 0) {
-        this.value = texto.charAt(0).toUpperCase() + texto.slice(1);
-    }
+document.addEventListener('DOMContentLoaded', function () {
+    const textarea = document.getElementById('tituloCarpeta');
+
+    textarea.addEventListener('input', function () {
+        let texto = this.value;
+
+        if (texto.length > 0) {
+            // Convierte la primera letra a mayúscula y conserva el resto tal como está
+            this.value = texto.charAt(0).toUpperCase() + texto.slice(1);
+        }
+    });
 });
+
 
 $(document).ready(function () {
     $('#serie').change(function () {

@@ -168,19 +168,23 @@ $conec->close();
 
 
     <form id="capituloForm">
-        <h2 class="h6 mb-2">Asunto</h2> <!-- Añadido clase 'h6' y reducido el margen inferior -->
-
-        <div class="form-group">
-        <textarea id="titulo" class="form-control form-control-sm" placeholder="Describir" required style="font-size: 1.2rem; height: 150px;"></textarea>
-        </div>
+<div class="form-group">
+  <div class="input-group mb-2">
+    <input type="text" id="textoInput" class="form-control" placeholder="" aria-label="Texto para insertar" />
+    <div class="input-group-append">
+      <button class="btn btn-outline-primary" type="button" onclick="agregarAlTextarea()">+</button>
+    </div>
+  </div>
+  <textarea id="titulo" class="form-control form-control-sm" placeholder="Asunto" required style="font-size: 1.2rem; height: 150px;"></textarea>
+</div>
    
         <div class="form-row align-items-center mb-2"> <!-- Reduce el margen inferior -->
-            <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar (F2)</button> <!-- Añadido class 'btn-sm' -->
+            <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar (F2-F9)</button> <!-- Añadido class 'btn-sm' -->
             <p id="ultimaPagina" class="ml-1 mb-0">Último folio: <?= $ultimaPagina + 1 ?></p> <!-- Añadido clase 'mb-0' -->
             <div class="col-auto">
                 <input type="number" id="paginaFinal" class="form-control form-control" placeholder="Página de Finalización" value="<?= $ultimaPagina + 1 ?>" required style="font-size: 1.2rem;"> <!-- Añadido class 'form-control-sm' -->
             </div>
-            <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar Documento</button> <!-- Añadido class 'btn-sm' -->
+            <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar (ENTER)</button> <!-- Añadido class 'btn-sm' -->
         </div>
     </form>
     <br><br><br><br><br> <!-- espacio abajo del la grabación o del bloque de grabación -->
@@ -601,9 +605,9 @@ function inicializarPaginas() {
     });
 }
 
-
 </script>
 
+<script src="js/textotareainsert.js"></script>
 <script src="js/voice.js"></script>
 
 </body>

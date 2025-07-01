@@ -1,36 +1,32 @@
 <?php
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
-
 session_start();
 require_once __DIR__ . "/rene/conexion3.php";
 
 ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
-
 
 function flash(string $msg, string $type = 'success'): void {
     $_SESSION['flash'] = ['message' => $msg, 'type' => $type];
 }
+
 function redirect(string $url): void {
     header("Location: {$url}");
     exit();
 }
 
-
+// Generar token CSRF si no existe
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-
+// Obtener ID
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT)
     ?: filter_input(INPUT_GET,  'id', FILTER_VALIDATE_INT);
 if (!$id) {
     flash("ID inválido.", 'error');
     redirect('subido.php');
 }
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo_pdf'])) {
     // Validar CSRF
@@ -41,16 +37,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo_pdf'])) {
     }
 
     // Verificar existencia del registro
-    $stmt = $conec->prepare("SELECT 1 FROM IndiceDocumental WHERE id = ?");
+    $stmt = $conec->prepare("SELECT Soporte FROM IndiceDocumental WHERE id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
-    $stmt->store_result();
-    if ($stmt->num_rows === 0) {
+    $stmt->bind_result($soporteActual);
+    if (!$stmt->fetch()) {
         $stmt->close();
         flash("No existe documento con ID {$id}.", 'error');
         redirect('subido.php');
     }
     $stmt->close();
+
+    // Establecer nuevo valor de Soporte
+    $nuevoSoporte = ($soporteActual === 'F') ? 'FD' : $soporteActual;
+    if ($soporteActual === 'F') {
+        file_put_contents(__DIR__ . "/debug_upload.log", date('[Y-m-d H:i:s] ') .
+            "ID {$id}: Soporte actualizado de 'F' a 'FD'\n", FILE_APPEND);
+    }
 
     // Validar serie
     $serie = filter_input(INPUT_POST, 'etiqueta', FILTER_SANITIZE_STRING);
@@ -59,49 +62,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo_pdf'])) {
         redirect("idcargar.php?id={$id}");
     }
 
-    // ... sigue la lógica del archivo PDF y la base de datos
-
-
-
-    // 4.4) Validar archivo PDF
+    // Validar PDF
     if (empty($_FILES['archivo_pdf']) || $_FILES['archivo_pdf']['error'] !== UPLOAD_ERR_OK) {
         flash("Error al cargar el archivo.", 'error');
         redirect("idcargar.php?id={$id}");
     }
-    // MIME
+
     $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime  = $finfo->file($_FILES['archivo_pdf']['tmp_name']);
+    $mime = $finfo->file($_FILES['archivo_pdf']['tmp_name']);
     if ($mime !== 'application/pdf') {
         flash("El archivo debe ser un PDF.", 'error');
         redirect("idcargar.php?id={$id}");
     }
-    // Tamaño máximo 5MB
+
     if ($_FILES['archivo_pdf']['size'] > 5 * 1024 * 1024) {
         flash("El PDF supera 5 MB.", 'error');
         redirect("idcargar.php?id={$id}");
     }
 
-    // 4.5) Leer contenido y comprobar
     $pdfData = file_get_contents($_FILES['archivo_pdf']['tmp_name']);
     if ($pdfData === false) {
         flash("No se pudo leer el archivo PDF.", 'error');
         redirect("idcargar.php?id={$id}");
     }
-    // Log de debug (opcional)
-    file_put_contents(__DIR__ . "/debug_upload.log", date('[Y-m-d H:i:s] ') . 
+
+    file_put_contents(__DIR__ . "/debug_upload.log", date('[Y-m-d H:i:s] ') .
         "ID {$id}: PDF leído " . strlen($pdfData) . " bytes\n", FILE_APPEND);
 
-    // 4.6) Guardar en BLOB dentro de transacción
+    // Guardar en la base de datos
     $fecha = date('Y-m-d H:i:s');
     $conec->begin_transaction();
+
     $upd = $conec->prepare("
         UPDATE IndiceDocumental
-        SET archivo_pdf = ?, serie = ?, cargaFecha = ?
+        SET archivo_pdf = ?, serie = ?, cargaFecha = ?, Soporte = ?
         WHERE id = ?
     ");
-    // Para BLOB usamos send_long_data
-    $null = null;
-    $upd->bind_param("bssi", $null, $serie, $fecha, $id);
+    $upd->bind_param("bsssi", $null, $serie, $fecha, $nuevoSoporte, $id);
     $upd->send_long_data(0, $pdfData);
 
     if ($upd->execute()) {
@@ -109,20 +106,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo_pdf'])) {
         flash("PDF subido y serie actualizada correctamente.", 'success');
     } else {
         $conec->rollback();
-        // Log del error SQL
-        file_put_contents(__DIR__ . "/debug_upload.log", date('[Y-m-d H:i:s] ') . 
+        file_put_contents(__DIR__ . "/debug_upload.log", date('[Y-m-d H:i:s] ') .
             "ID {$id}: Error SQL: " . $upd->error . "\n", FILE_APPEND);
         flash("Error al guardar: " . $upd->error, 'error');
     }
+
     $upd->close();
     redirect("subido.php?id={$id}");
 }
 
+// Mostrar formulario
 
 $stmt = $conec->prepare("SELECT * FROM IndiceDocumental WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
-$result   = $stmt->get_result();
+$result = $stmt->get_result();
 $registro = $result->fetch_assoc();
 $stmt->close();
 if (!$registro) {
@@ -130,7 +128,7 @@ if (!$registro) {
     redirect('subido.php');
 }
 
-// Cargar series
+// Cargar lista de series
 $series = [];
 $res = $conec->query("SELECT nombre FROM Serie ORDER BY nombre ASC");
 while ($row = $res->fetch_assoc()) {

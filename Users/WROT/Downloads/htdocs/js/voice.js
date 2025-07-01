@@ -3,21 +3,33 @@
   let recognition;
 
   const reemplazos = [
-    ["alirio", "Alirio"], ["arles", "Arles"], ["argotti", "Argoty"], ["barreiro", "Barreiro"], ["bastidas", "Bastidas"],
-    ["belalcázar", "Belalcázar"], ["bravo", "Bravo"], ["brisueno", "Risueño"], ["burbano", "Burbano"], ["calpa", "Calpa"],
-    ["cuadros", "Cuadros"], ["calvache", "Calvache"], ["calvacci", "Calvachy"], ["calvachi", "Calvachy"], ["calvachí", "Calvachy"],
+    ["alirio", "Alirio"], ["arles", "Arles"], ["arcos", "Arcos"], ["ardila", "Ardila"], ["argotti", "Argoty"], 
+    ["barreiro", "Barreiro"], ["bastidas", "Bastidas"],
+    ["belalcázar", "Belalcázar"], ["bravo", "Bravo"], ["brisueno", "Risueño"], ["burbano", "Burbano"], 
+    ["calpa", "Calpa"], ["cuadros", "Cuadros"], ["calvache", "Calvache"], ["calvacci", "Calvachy"], 
+    ["calvachi", "Calvachy"], ["calvachí", "Calvachy"], ["cedeño", "Cedeño"],
     ["collés", "Goyes"], ["canal", "Canal"], ["coral", "Coral"], ["correa", "Correa"], ["cortés", "Cortés"], ["cadena", "Cadena"],
-    ["flores", "Flores"], ["coyez", "Goyes"], ["derecho", "Derecho"], ["dolores", "Dolores"], ["edilma", "Edilma"],
-    ["especialización", "Especialización"], ["especialización", "Especialización"], ["erazo", "Erazo"], ["estupiñán", "Estupiñán"], ["galán", "Galán"], ["giraldo", "Giraldo"], ["goiles", "Goyes"], ["goyes", "Goyes"],
-    ["goyés", "Goyes"], ["goyez", "Goyes"], ["goyis", "Goyes"], ["goiz", "Goyes"], ["guerra", "Guerra"], ["gloria", "Gloria"],
-    ["hoyos", "Hoyos"], ["insuasti", "Insuasty"], ["jojoa", "Jojoa"], ["lagos", "Lagos"], ["leyton", "Leyton"],
-    ["legis", "LEGIS"], ["legarda", "Legarda"], ["libardo", "Libardo"], ["liborio", "Liborio"], ["livorio", "Livorio"], ["madroñero", "Madroñero"],
-    ["maturana", "Maturana"], ["marco", "Marco"], ["materón", "Materón"], ["miriam", "Myriam"], ["morasurco", "Morasurco"], ["monsalve", "Monsalve"],
+    ["flores", "Flores"], ["coyez", "Goyes"], 
+    ["derecho", "Derecho"], ["dolores", "Dolores"], ["edilma", "Edilma"], ["escudero", "Escudero"],
+    ["especialización", "Especialización"], ["especialización", "Especialización"], ["erazo", "Erazo"], 
+    ["estupiñán", "Estupiñán"], 
+    ["galán", "Galán"], ["giraldo", "Giraldo"], ["goiles", "Goyes"], ["goyes", "Goyes"],
+    ["goyés", "Goyes"], ["goyez", "Goyes"], ["goyis", "Goyes"], ["goiz", "Goyes"], ["guerra", "Guerra"], ["gloria", "Gloria"], ["familia", "Familia"],
+    ["hoyos", "Hoyos"], ["insuasti", "Insuasty"], ["jojoa", "Jojoa"], 
+    ["lagos", "Lagos"], ["leyton", "Leyton"],
+    ["legis", "LEGIS"], ["legarda", "Legarda"], ["libardo", "Libardo"], ["liborio", "Liborio"], ["livorio", "Livorio"],
+    ["luz", "Luz"], 
+    ["mafla", "Mafla"], ["madroñero", "Madroñero"], 
+    ["maturana", "Maturana"], ["marco", "Marco"], ["materón", "Materón"], ["mesa", "Mesa"], ["miriam", "Myriam"], 
+    ["morasurco", "Morasurco"], ["monsalve", "Monsalve"], ["monsalvo", "Monsalvo"],["morillo", "Morillo"],
     ["munera", "Munera"], ["maigual", "Maigual"], ["moncayo", "Moncayo"], ["nariño", "Nariño"], ["navia", "Navia"],
-    ["ocaña", "Ocaña"], ["oliva", "Oliva"], ["osejo", "Osejo"], ["ocara", "OCARA"], ["palacios", "Palacios"],
-    ["paredes", "Paredes"], ["pasos", "Pasos"], ["pinilla", "Pinilla"], ["ramos", "Ramos"], ["reina", "Reina"],
-    ["risueño", "Risueño"], ["revelo", "Revelo"], ["riascos", "Riascos"], ["rosa", "Rosa"], ["rojas", "Rojas"],
-    ["solarte", "Solarte"], ["sotelo", "Sotelo"], ["tajumbina", "Tajumbina"], ["tazcón", "Tascón"], ["tutistar", "Tutistar"],
+    ["ocaña", "Ocaña"], ["oliva", "Oliva"], ["osejo", "Osejo"], ["ocara", "OCARA"], 
+    ["palacios", "Palacios"],
+    ["paredes", "Paredes"], ["pasos", "Pasos"], ["peñafiel", "Peñafiel"], ["pinilla", "Pinilla"],
+    ["ramos", "Ramos"], ["reina", "Reina"],
+    ["risueño", "Risueño"], ["revelo", "Revelo"], ["riascos", "Riascos"], ["ríos", "Ríos"], ["rosa", "Rosa"], ["rojas", "Rojas"], ["rugeles", "Rugeles"],
+    ["sevillano", "Sevillano"], ["solarte", "Solarte"], ["sotelo", "Sotelo"], 
+    ["tajumbina", "Tajumbina"], ["tazcón", "Tascón"], ["toscano", "Toscano"], ["tutistar", "Tutistar"],
     ["universidad", "Universidad"], ["urresta", "Urresta"], ["urbano", "Urbano"], ["vela", "Vela"], ["villota", "Villota"],
     ["vinueza", "Vinueza"], ["viteri", "Viteri"], ["zarama", "Zarama"], ["montanchez", "Montanchez"]
   ];
@@ -106,12 +118,17 @@ function aplicarReemplazos(texto) {
       grabando ? detenerReconocimiento() : iniciarReconocimiento();
     });
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'F2' && !grabando) iniciarReconocimiento();
-    });
+      document.addEventListener('keydown', e => {
+        if ((e.key === 'F2' || e.key === 'F9') && !grabando) {
+          iniciarReconocimiento();
+        }
+      });
 
-    document.addEventListener('keyup', e => {
-      if (e.key === 'F2' && grabando) detenerReconocimiento();
-    });
+      document.addEventListener('keyup', e => {
+        if ((e.key === 'F2' || e.key === 'F9') && grabando) {
+          detenerReconocimiento();
+        }
+      });
+      
   });
 })();

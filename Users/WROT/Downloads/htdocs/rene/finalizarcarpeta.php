@@ -2,9 +2,9 @@
 require "conexion3.php";
 
 // Captura y sanitiza datos del formulario
-$caja = htmlspecialchars($_POST['caja'] ?? '', ENT_QUOTES, 'UTF-8');
-$carpeta = htmlspecialchars($_POST['carpeta'] ?? '', ENT_QUOTES, 'UTF-8');
-$car2 = $carpeta; 
+$caja = intval($_POST['caja'] ?? 0);
+$carpeta = intval($_POST['carpeta'] ?? 0);
+$car2 = $carpeta;
 $folios = max(1, intval($_POST['folios'] ?? 1));
 $Serie = htmlspecialchars($_POST['serie'] ?? '', ENT_QUOTES, 'UTF-8');
 $subs = htmlspecialchars($_POST['subserie'] ?? '', ENT_QUOTES, 'UTF-8');
@@ -13,14 +13,11 @@ $estado = 'C';
 $fechaInicial = htmlspecialchars($_POST['fechaInicial'] ?? '', ENT_QUOTES, 'UTF-8');
 $fechaFinal = htmlspecialchars($_POST['fechaFinal'] ?? '', ENT_QUOTES, 'UTF-8');
 
-// Elimina espacios al inicio y al final
+// Limpieza adicional del título
 $tituloCarpeta = trim($tituloCarpeta);
-
-// Reemplaza múltiples espacios o tabulaciones con un solo espacio
 $tituloCarpeta = preg_replace('/\s+/', ' ', $tituloCarpeta);
 
-
-// Validar campos requeridos y fechas
+// Validación de campos requeridos
 function validarCampos($campos, $data) {
     foreach ($campos as $campo) {
         if (empty($data[$campo])) {
@@ -50,7 +47,7 @@ try {
         SET Car2 = ?, Serie = ?, Subs = ?, Titulo = ?, FInicial = ?, FFinal = ?, Folios = ?, Estado = ? 
         WHERE Caja = ? AND Car2 = ?"
     );
-    $stmt->bind_param("ssssssssii", $car2, $Serie, $subs, $tituloCarpeta, $fechaInicial, $fechaFinal, $folios, $estado, $caja, $car2);
+    $stmt->bind_param("ssssssisii", $car2, $Serie, $subs, $tituloCarpeta, $fechaInicial, $fechaFinal, $folios, $estado, $caja, $car2);
 
     if ($stmt->execute()) {
         echo "<div class='alert alert-success'>Carpeta actualizada con éxito.</div>";
@@ -59,14 +56,20 @@ try {
     }
 
     // Transferencia de datos de IndiceTemp a IndiceDocumental
-    $transferQuery = 
-        "INSERT INTO IndiceDocumental (Caja, Carpeta, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso) 
-        SELECT Caja, Carpeta, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, 'Físico', FechaIngreso 
-        FROM IndiceTemp 
-        WHERE Caja = ? AND Carpeta = ?";
+    $transferQuery = "
+        INSERT INTO IndiceDocumental (
+            Caja, Carpeta, serie, DescripcionUnidadDocumental,
+            NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
+        )
+        SELECT 
+            Caja, Carpeta, serie, DescripcionUnidadDocumental,
+            NoFolioInicio, NoFolioFin, paginas, ?, NOW()
+        FROM IndiceTemp
+        WHERE Caja = ? AND Carpeta = ?
+    ";
     $stmtTransfer = $conec->prepare($transferQuery);
-    $stmtTransfer->bind_param("ii", $caja, $carpeta);
-
+    $soporte = 'F';
+    $stmtTransfer->bind_param("sii", $soporte, $caja, $carpeta);
 
     if ($stmtTransfer->execute()) {
         echo "<div class='alert alert-success'>Datos transferidos a IndiceDocumental con éxito.</div>";
@@ -102,7 +105,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalización de Carpeta</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="..css/finalizarcarpeta.css">
+    <link rel="stylesheet" href="../css/finalizarcarpeta.css">
 </head>
 <body>
 <div class="container mt-5 d-flex justify-content-center">
@@ -113,6 +116,5 @@ try {
         </div>
     </div>
 </div>
-
 </body>
 </html>

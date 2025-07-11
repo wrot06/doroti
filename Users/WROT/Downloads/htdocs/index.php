@@ -75,7 +75,7 @@ if (!$resultado) {
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
-            <img src="img/Doroti Logo Horizontal.jpg" alt="Logo Doroti" height="30">
+            <img src="img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
         </a>
         <div class="d-flex align-items-center gap-3">
             <!-- Búsqueda -->

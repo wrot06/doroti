@@ -3,7 +3,8 @@
   let recognition;
 
   const reemplazos = [
-    ["alirio", "Alirio"], ["arles", "Arles"], ["arcos", "Arcos"], ["ardila", "Ardila"], ["argotti", "Argoty"], 
+    ["alirio", "Alirio"], ["arles", "Arles"], ["alier", "Alier"], ["arcos", "Arcos"], 
+    ["ardila", "Ardila"], ["argotti", "Argoty"], ["anuario", "Anuario"], ["aponte", "Aponte"],
     ["barreiro", "Barreiro"], ["bastidas", "Bastidas"],
     ["belalcázar", "Belalcázar"], ["bravo", "Bravo"], ["brisueno", "Risueño"], ["burbano", "Burbano"], 
     ["calpa", "Calpa"], ["cuadros", "Cuadros"], ["calvache", "Calvache"], ["calvacci", "Calvachy"], 
@@ -16,22 +17,23 @@
     ["galán", "Galán"], ["giraldo", "Giraldo"], ["goiles", "Goyes"], ["goyes", "Goyes"],
     ["goyés", "Goyes"], ["goyez", "Goyes"], ["goyis", "Goyes"], ["goiz", "Goyes"], ["guerra", "Guerra"], ["gloria", "Gloria"], ["familia", "Familia"],
     ["hoyos", "Hoyos"], ["insuasti", "Insuasty"], ["jojoa", "Jojoa"], 
-    ["lagos", "Lagos"], ["leyton", "Leyton"],
+    ["llano", "Llano"], ["lafon", "Lafon"], ["lagos", "Lagos"], ["leyton", "Leyton"],
     ["legis", "LEGIS"], ["legarda", "Legarda"], ["libardo", "Libardo"], ["liborio", "Liborio"], ["livorio", "Livorio"],
-    ["luz", "Luz"], 
+    ["luz", "Luz"], ["luna", "Luna"],
     ["mafla", "Mafla"], ["madroñero", "Madroñero"], 
     ["maturana", "Maturana"], ["marco", "Marco"], ["materón", "Materón"], ["mesa", "Mesa"], ["miriam", "Myriam"], 
-    ["morasurco", "Morasurco"], ["monsalve", "Monsalve"], ["monsalvo", "Monsalvo"],["morillo", "Morillo"],
+    ["morasurco", "Morasurco"], ["monsalve", "Monsalve"], ["monsalvo", "Monsalvo"],["morillo", "Morillo"], ["montanchez", "Montanchez"],
     ["munera", "Munera"], ["maigual", "Maigual"], ["moncayo", "Moncayo"], ["nariño", "Nariño"], ["navia", "Navia"],
     ["ocaña", "Ocaña"], ["oliva", "Oliva"], ["osejo", "Osejo"], ["ocara", "OCARA"], 
     ["palacios", "Palacios"],
-    ["paredes", "Paredes"], ["pasos", "Pasos"], ["peñafiel", "Peñafiel"], ["pinilla", "Pinilla"],
+    ["paredes", "Paredes"], ["pasos", "Pasos"], ["peñafiel", "Peñafiel"], ["pinilla", "Pinilla"], ["poveda", "Poveda"],
     ["ramos", "Ramos"], ["reina", "Reina"],
     ["risueño", "Risueño"], ["revelo", "Revelo"], ["riascos", "Riascos"], ["ríos", "Ríos"], ["rosa", "Rosa"], ["rojas", "Rojas"], ["rugeles", "Rugeles"],
     ["sevillano", "Sevillano"], ["solarte", "Solarte"], ["sotelo", "Sotelo"], 
     ["tajumbina", "Tajumbina"], ["tazcón", "Tascón"], ["toscano", "Toscano"], ["tutistar", "Tutistar"],
-    ["universidad", "Universidad"], ["urresta", "Urresta"], ["urbano", "Urbano"], ["vela", "Vela"], ["villota", "Villota"],
-    ["vinueza", "Vinueza"], ["viteri", "Viteri"], ["zarama", "Zarama"], ["montanchez", "Montanchez"]
+    ["umaña", "Umaña"], ["universidad", "Universidad"], ["urresta", "Urresta"], ["urbano", "Urbano"], ["vela", "Vela"], ["villota", "Villota"],
+    ["Wanda", "Whanda"],
+    ["vinueza", "Vinueza"], ["viteri", "Viteri"], ["zarama", "Zarama"]
   ];
 
   const mapaReemplazos = new Map(

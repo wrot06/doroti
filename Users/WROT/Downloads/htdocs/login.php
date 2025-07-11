@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
       <div class="card-body">
         <div class="text-center mb-4">
-          <img src="img/Doroti logo1.jpg" alt="Logo" class="img-fluid" style="max-width: 120px;">
+          <img src="img/Doroti logo1.png" alt="Logo" class="img-fluid" style="max-width: 120px;">
         </div>    
         <?php if (!empty($error)): ?>
           <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>

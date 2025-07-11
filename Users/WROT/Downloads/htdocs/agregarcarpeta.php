@@ -35,6 +35,9 @@ if (empty($_SESSION['csrf_token'])) {
     <link rel="stylesheet" href="css/agregarcarpeta.css">
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+
+        document.getElementById('caja').focus();
+
         const form = document.getElementById('cajaCarpetaForm');
         form.addEventListener('submit', e => {
             const caja = parseInt(document.getElementById('caja').value, 10);
@@ -52,6 +55,12 @@ if (empty($_SESSION['csrf_token'])) {
     </script>
 </head>
 <body>
+
+
+
+
+
+
     <?php if (!empty($_SESSION['mensaje'])): ?>
         <div id="mensaje"><?= htmlspecialchars($_SESSION['mensaje']) ?></div>
         <?php unset($_SESSION['mensaje']); ?>
@@ -59,7 +68,23 @@ if (empty($_SESSION['csrf_token'])) {
         <div id="mensaje"></div>
     <?php endif; ?>
 
-    <h1>Agregar Carpeta</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h3 style="margin: 0;">Agregar Carpeta</h3>
+    <form action="index.php" method="POST" style="margin: 0;">
+        <button type="submit" style="
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color:rgb(50, 136, 26);
+            color: white;
+            border: none;
+            cursor: pointer;
+        ">Inicio</button>
+    </form>
+</div>
+
+
+
     <form action="rene/guardardatos.php" method="post" id="cajaCarpetaForm">
         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
     <div class="form-inline">

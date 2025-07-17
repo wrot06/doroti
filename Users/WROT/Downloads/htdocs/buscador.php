@@ -64,7 +64,7 @@ if (isset($_POST['cerrar_seccion'])) {
             <input type="submit" name="inicio" value="Inicio">
         </form>    
 
-        <img src="img/Doroti Logo Horizontal.jpg" style="margin-right: 15px; height: 18px;">
+        <img src="img/Doroti Logo Horizontal.png" style="margin-right: 15px; height: 18px;">
         <input type="text" id="search" placeholder="Buscar..." onkeyup="searchTable()">
     </div>
 </div>

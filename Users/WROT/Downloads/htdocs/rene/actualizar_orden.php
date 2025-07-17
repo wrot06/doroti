@@ -3,57 +3,57 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require "conexion3.php"; // Asegúrate de incluir tu archivo de conexión
+require "conexion3.php"; // Conexión a la BD
 
-// Obtener los datos de la URL
-if (isset($_GET['data'])) {
-    $data = $_GET['data'];
-    // Decodificar los datos JSON
-    $jsonData = json_decode(urldecode($data), true);
+// Leer el JSON del cuerpo de la solicitud POST
+$inputJSON = file_get_contents('php://input');
+$data = json_decode($inputJSON, true);
 
-    // Verificar la conexión
-    if ($conec->connect_error) {
-        die("Connection failed: " . $conec->connect_error);
-    }
-
-    $cambios = $jsonData['cambios'];
-    $caja = $jsonData['caja'];
-    $carpeta = $jsonData['carpeta'];
-
-    // Preparar la consulta de actualización
-    $sql = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ?, DescripcionUnidadDocumental = ?, paginas = ? WHERE id2 = ? AND Caja = ? AND Carpeta = ?";
-    $stmt = $conec->prepare($sql);
-
-    // Verificar que la preparación de la consulta fue exitosa
-    if (!$stmt) {
-        die("Prepare failed: " . $conec->error);
-    }
-
-    // Vincular parámetros y ejecutar la consulta para cada cambio
-    foreach ($cambios as $capitulo) {
-        $inicio = $capitulo['inicio'];
-        $fin = $capitulo['fin'];
-        $titulo = $capitulo['titulo'];
-        $paginas = $capitulo['paginas'];
-        $id2 = $capitulo['id']; // Asegúrate de que estás usando el id correcto
-
-        // Vincular los parámetros (usar "i" para enteros y "s" para strings)
-        $stmt->bind_param("iisiiii", $inicio, $fin, $titulo, $paginas, $id2, $caja, $carpeta);
-
-        // Ejecutar la consulta
-        if (!$stmt->execute()) {
-            echo json_encode(['status' => 'error', 'message' => 'Error al actualizar: ' . $stmt->error]);
-            exit;
-        }
-    }
-
-    // Cerrar la declaración y la conexión
-    $stmt->close();
-    $conec->close();
-
-    // Retornar un mensaje de éxito
-    echo json_encode(['status' => 'success', 'message' => 'Actualización exitosa']);
-} else {
-    echo json_encode(['status' => 'error', 'message' => 'No se recibieron datos']);
+// Validar estructura
+if (!isset($data['cambios'], $data['caja'], $data['carpeta'])) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Datos incompletos']);
+    exit;
 }
-?>
+
+$cambios = $data['cambios'];
+$caja = (int) $data['caja'];
+$carpeta = (int) $data['carpeta'];
+
+// Verificar conexión
+if ($conec->connect_error) {
+    echo json_encode(['status' => 'error', 'message' => 'Error de conexión: ' . $conec->connect_error]);
+    exit;
+}
+
+// Preparar consulta
+$sql = "UPDATE IndiceTemp 
+        SET NoFolioInicio = ?, NoFolioFin = ?, DescripcionUnidadDocumental = ?, paginas = ?
+        WHERE id2 = ? AND Caja = ? AND Carpeta = ?";
+$stmt = $conec->prepare($sql);
+
+if (!$stmt) {
+    echo json_encode(['status' => 'error', 'message' => 'Error preparando la consulta: ' . $conec->error]);
+    exit;
+}
+
+// Ejecutar actualizaciones
+foreach ($cambios as $capitulo) {
+    $inicio = (int) $capitulo['inicio'];
+    $fin = (int) $capitulo['fin'];
+    $titulo = trim($capitulo['titulo']);
+    $paginas = (int) $capitulo['paginas'];
+    $id2 = (int) $capitulo['id'];
+
+    $stmt->bind_param("iisiiii", $inicio, $fin, $titulo, $paginas, $id2, $caja, $carpeta);
+
+    if (!$stmt->execute()) {
+        echo json_encode(['status' => 'error', 'message' => 'Error al actualizar: ' . $stmt->error]);
+        exit;
+    }
+}
+
+$stmt->close();
+$conec->close();
+
+echo json_encode(['status' => 'success', 'message' => 'Actualización exitosa']);

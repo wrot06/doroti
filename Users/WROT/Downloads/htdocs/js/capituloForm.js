@@ -46,27 +46,31 @@ $(document).ready(function () {
                 serie: etiquetaSeleccionada
             },
             dataType: 'json',
-            success: function (response) {
-                if (response.status === 'success') {
-                    const nuevoCapitulo = response.capitulo;
-                    const nuevaFila = $(`
-                        <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
-                            <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
-                            <td contenteditable="true" class="editable">${nuevoCapitulo.titulo}</td>
-                            <td>${nuevoCapitulo.pagina_inicio}</td>
-                            <td>${nuevoCapitulo.pagina_final}</td>
-                            <td><button class="btn btn-success btn-sm eliminar">Eliminar</button></td>
-                        </tr>
-                    `);
-                    $capitulosTableBody.append(nuevaFila);
-                    window.siguientePagina = parseInt(nuevoCapitulo.pagina_final) + 1;
-                    $ultimaPagina.text(`Último folio: ${window.siguientePagina}`);
-                    $paginaFinalInput.val(window.siguientePagina);
-                    $tituloInput.val('').focus();
-                } else {
-                    alert(response.message || "Error al agregar el capítulo.");
-                }
-            },
+success: function (response) {
+    if (response.status === 'success') {
+        const nuevoCapitulo = response.capitulo;
+        const nuevaFila = $(`
+            <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
+                <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
+                <td contenteditable="true" class="editable">${nuevoCapitulo.titulo}</td>
+                <td>${nuevoCapitulo.pagina_inicio}</td>
+                <td>${nuevoCapitulo.pagina_final}</td>
+                <td><button class="btn btn-dark btn-sm editar">Editar</button></td>
+            </tr>
+        `);
+        $capitulosTableBody.append(nuevaFila);
+        window.siguientePagina = parseInt(nuevoCapitulo.pagina_final) + 1;
+        $ultimaPagina.text(`Último folio: ${window.siguientePagina}`);
+        $paginaFinalInput.val(window.siguientePagina);
+        $tituloInput.val('').focus();
+
+        // 🔔 Aquí centramos la vista nuevamente en el textarea
+        document.dispatchEvent(new Event("capitulo-agregado"));
+    } else {
+        alert(response.message || "Error al agregar el capítulo.");
+    }
+},
+
             error: function (xhr) {
                 console.error("Error:", xhr.responseText);
                 alert("Fallo la solicitud.");

@@ -2,10 +2,12 @@
   let grabando = false;
   let recognition;
 
+  const LIMITE = 56;
+
   const reemplazos = [
     ["albanely", "Albanely"],
     ["alirio", "Alirio"], ["arles", "Arles"], ["alier", "Alier"], ["arcos", "Arcos"], 
-    ["ardila", "Ardila"], ["argotti", "Argoty"], ["anuario", "Anuario"], ["aponte", "Aponte"], ["aura", "Aura"],
+    ["ardila", "Ardila"], ["argotti", "Argoty"], ["anuario", "Anuario"], ["aponte", "Aponte"],
     ["barreiro", "Barreiro"], ["bastidas", "Bastidas"],
     ["belalcázar", "Belalcázar"], ["bravo", "Bravo"], ["brisueno", "Risueño"], ["burbano", "Burbano"], 
     ["calpa", "Calpa"], ["cuadros", "Cuadros"], ["calvache", "Calvache"], ["calvacci", "Calvachy"], ["coyez", "Goyes"], ["coyes", "Goyes"],
@@ -53,100 +55,114 @@
   ];
 
   const mapaReemplazos = new Map(
-  reemplazos.map(([clave, valor]) => [
-    clave.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(),
-    valor
-  ])
-);
+    reemplazos.map(([clave, valor]) => [
+      clave.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(),
+      valor
+    ])
+  );
 
+  function aplicarReemplazos(texto) {
+    return texto.split(/\s+/).map(palabra => {
+      const match = palabra.match(/^([\wáéíóúüñÁÉÍÓÚÜÑ]+)([.,;:]*)$/);
+      const base = match ? match[1] : palabra;
+      const puntuacion = match ? match[2] : '';
 
-function aplicarReemplazos(texto) {
-  return texto.split(/\s+/).map(palabra => {
-    const match = palabra.match(/^([\wáéíóúüñÁÉÍÓÚÜÑ]+)([.,;:]*)$/); // separa palabra y puntuación
-    const base = match ? match[1] : palabra;
-    const puntuacion = match ? match[2] : '';
+      const clave = base.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const reemplazo = mapaReemplazos.get(clave);
 
-    const clave = base
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+      return reemplazo ? reemplazo + puntuacion : base + puntuacion;
+    }).join(' ');
+  }
 
-    const reemplazo = mapaReemplazos.get(clave);
+  function colocarCursorAlFinal(textarea) {
+    textarea.focus();
+    const len = textarea.value.length;
+    textarea.setSelectionRange(len, len);
+  }
 
-    // DEBUG opcional
-    console.log({ original: palabra, base, clave, reemplazo });
+  window.iniciarVoz = function (textareaId, botonId) {
+    const textarea = document.getElementById(textareaId);
+    const boton = document.getElementById(botonId);
 
-    return reemplazo ? reemplazo + puntuacion : base + puntuacion;
-  }).join(' ');
-}
-
-
-
-  function iniciarReconocimiento() {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert("Tu navegador no soporta reconocimiento de voz.");
+    if (!textarea || !boton) {
+      console.warn("No se encontró textarea o botón.");
       return;
     }
 
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = 'es-CO';
-    recognition.continuous = true;
-    recognition.interimResults = false;
+    function iniciarReconocimiento() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Tu navegador no soporta reconocimiento de voz.");
+        return;
+      }
 
-    recognition.onresult = function (evt) {
-      const fragmentos = [];
-      for (let i = evt.resultIndex; i < evt.results.length; i++) {
-        if (evt.results[i].isFinal) {
-          const transcrito = evt.results[i][0].transcript.trim();
-          fragmentos.push(aplicarReemplazos(transcrito));
+      const espacioDisponible = LIMITE - textarea.value.length;
+      if (espacioDisponible <= 0) {
+        alert("Campo lleno. No se puede agregar más texto.");
+        return;
+      }
+
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'es-CO';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onresult = function (evt) {
+        const fragmentos = [];
+
+        for (let i = evt.resultIndex; i < evt.results.length; i++) {
+          if (evt.results[i].isFinal) {
+            const transcrito = evt.results[i][0].transcript.trim();
+            const corregido = aplicarReemplazos(transcrito);
+            fragmentos.push(corregido);
+          }
         }
-      }
 
-      if (fragmentos.length) {
-        const ta = document.getElementById('titulo');
-        const textoFinal = fragmentos.join(' ');
-        ta.value += (ta.value ? ' ' : '') + textoFinal;
-        ta.focus();
-        ta.setSelectionRange(ta.value.length, ta.value.length);
-      }
-    };
+        if (fragmentos.length) {
+          const textoActual = textarea.value.trim();
+          let textoFinal = (textoActual ? textoActual + " " : "") + fragmentos.join(" ");
+          if (textoFinal.length > LIMITE) {
+            textoFinal = textoFinal.substring(0, LIMITE);
+          }
+          textarea.value = textoFinal;
+          colocarCursorAlFinal(textarea);
+        }
+      };
 
-    recognition.onend = () => {
-      if (grabando) recognition.start();
-    };
+      recognition.onend = () => {
+        if (grabando) recognition.start();
+      };
 
-    recognition.start();
-    grabando = true;
-    document.getElementById('grabarBoton').classList.add('grabando');
-  }
+      recognition.onerror = (e) => {
+        console.error("Error en reconocimiento:", e);
+        detenerReconocimiento();
+      };
 
-  function detenerReconocimiento() {
-    if (recognition) recognition.stop();
-    grabando = false;
-    document.getElementById('grabarBoton').classList.remove('grabando');
+      recognition.start();
+      grabando = true;
+      boton.classList.add('grabando');
+    }
 
-    const ta = document.getElementById('titulo');
-    ta.focus();
-    ta.setSelectionRange(ta.value.length, ta.value.length);
-  }
+    function detenerReconocimiento() {
+      if (recognition) recognition.stop();
+      grabando = false;
+      boton.classList.remove('grabando');
+      colocarCursorAlFinal(textarea);
+    }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('grabarBoton');
-    btn.addEventListener('click', () => {
+    boton.addEventListener('click', () => {
       grabando ? detenerReconocimiento() : iniciarReconocimiento();
     });
 
-      document.addEventListener('keydown', e => {
-        if ((e.key === 'F2' || e.key === 'F9') && !grabando) {
-          iniciarReconocimiento();
-        }
-      });
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'F2' || e.key === 'F9') && !grabando && boton.offsetParent !== null) {
+        iniciarReconocimiento();
+      }
+    });
 
-      document.addEventListener('keyup', e => {
-        if ((e.key === 'F2' || e.key === 'F9') && grabando) {
-          detenerReconocimiento();
-        }
-      });
-      
-  });
+    document.addEventListener('keyup', (e) => {
+      if ((e.key === 'F2' || e.key === 'F9') && grabando && boton.offsetParent !== null) {
+        detenerReconocimiento();
+      }
+    });
+  };
 })();

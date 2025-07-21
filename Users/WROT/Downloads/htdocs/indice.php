@@ -113,7 +113,7 @@ $conec->close();
                         <td contenteditable="true" class="editable" ><?= htmlspecialchars($capitulo['DescripcionUnidadDocumental'], ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?= htmlspecialchars($capitulo['NoFolioInicio'], ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?= htmlspecialchars($capitulo['NoFolioFin'], ENT_QUOTES, 'UTF-8'); ?></td>
-                        <td><button class="btn btn-success btn-sm eliminar">Eliminar</button></td> <!-- Añadido class 'btn-sm' -->
+                        <td><button class="btn-dark btn-sm editar">Editar</button></td> <!-- Añadido class 'btn-sm' -->
                     </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -219,8 +219,8 @@ $conec->close();
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Descartar Cambios</button>
-        <button type="button" class="btn btn-primary" id="guardarCambios">Guardar Cambios</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Descartar</button>
+        <button type="button" class="btn btn-primary" id="guardarCambios">Guardar (ENTER)</button>
       </div>
     </div>
   </div>
@@ -245,8 +245,7 @@ $conec->close();
     });
 </script>
 <script src="js/editcapitulo.js"></script>
-
-
+<script src="js/centrarpantalla.js"></script>
 
 </body>
 </html>

@@ -5,11 +5,8 @@ $(document).on("focus", ".editable", function () {
     const $fila = $(this).closest("tr");
     const $boton = $fila.find("button");
 
-    // Quitar botón editar de otros
-    $(".editar").removeClass("editar btn-dark").addClass("eliminar btn-success").text("Eliminar");
-
-    // Este se vuelve "Editar"
-    $boton.removeClass("eliminar btn-success").addClass("editar btn-dark").text("Editar");
+    // Este botón se vuelve "Eliminar"
+    $boton.removeClass("btn-dark editar").addClass("btn-success eliminar").text("Eliminar");
 
     // Marcar visualmente esta celda
     $(".editable").removeClass("editable-focus");
@@ -17,23 +14,25 @@ $(document).on("focus", ".editable", function () {
 });
 
 // =======================
-// 2. Revertir botón y fondo al perder foco
+// 2. Revertir botón al perder foco
 // =======================
 $(document).on("blur", ".editable", function () {
     const $fila = $(this).closest("tr");
-    const $celda = $(this);
 
     setTimeout(() => {
+        // Solo si ningún otro elemento en la fila tiene el focus
         if (!$fila.find(":focus").length) {
             const $boton = $fila.find("button");
-            $boton.removeClass("editar btn-dark").addClass("eliminar btn-success").text("Eliminar");
-            $celda.removeClass("editable-focus");
+            $boton.removeClass("btn-success eliminar").addClass("btn-dark btn-sm editar").text("Editar");
+
+            // Quitar clase de enfoque visual
+            $(".editable").removeClass("editable-focus");
         }
     }, 150);
 });
 
 // =======================
-// 3. Hover visual en celda editable
+// 3. Hover visual (sin cambios)
 // =======================
 $(document).on("mouseenter", ".editable", function () {
     $(this).addClass("editable-hover");
@@ -43,14 +42,14 @@ $(document).on("mouseleave", ".editable", function () {
 });
 
 // =======================
-// 4. Cerrar modal: restaurar botones y enfocar textarea
+// 4. Al cerrar modal, restaurar todos los botones como "Editar"
 // =======================
 $('#editarCapituloModal').on('hidden.bs.modal', function () {
-    $(".editar").each(function () {
+    $("button.eliminar").each(function () {
         $(this)
-            .removeClass("editar btn-info")
-            .addClass("eliminar btn-success")
-            .text("Eliminar");
+            .removeClass("btn-success eliminar")
+            .addClass("btn-dark btn-sm editar")
+            .text("Editar");
     });
 
     $(".editable").removeClass("editable-focus");
@@ -59,6 +58,7 @@ $('#editarCapituloModal').on('hidden.bs.modal', function () {
         $("#titulo").focus();
     }, 300);
 });
+
 
 // =======================
 // 5. Abrir modal para editar

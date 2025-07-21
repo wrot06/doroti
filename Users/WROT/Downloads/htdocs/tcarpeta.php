@@ -69,7 +69,7 @@ if (empty($caja) || empty($carpeta)) {
                     <label for="tituloCarpeta">Título de Carpeta:</label>
                     <textarea id="tituloCarpeta" name="tituloCarpeta" class="form-control form-control-sm" placeholder="Ingrese el título de la carpeta" rows="3" required style="font-size: 1.2rem; height: 70px;" maxlength="56" onkeypress="return event.charCode < 32 || this.value.length < 56"></textarea>
                     <div class="text-right mt-3">
-                        <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar Voz (F2)</button>
+                        <button type="button" id="grabarBoton" class="btn btn-warning btn-sm">Grabar(F2-F9)</button>
                     </div>
                 </div>
 
@@ -123,204 +123,35 @@ if (empty($caja) || empty($carpeta)) {
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="js/finalizarCarpeta.js"></script>
+<script src="js/voz.js"></script>
+<script src="js/validacionesFecha.js"></script>
+<script src="js/subseries.js"></script>
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function () {
     const textarea = document.getElementById('tituloCarpeta');
 
+    // Capitalizar y limitar
     textarea.addEventListener('input', function () {
-        let texto = this.value;
-
-        if (texto.length > 0) {
-            // Convierte la primera letra a mayúscula y conserva el resto tal como está
-            this.value = texto.charAt(0).toUpperCase() + texto.slice(1);
+        this.value = this.value.slice(0, 56);
+        if (this.value.length > 0) {
+            this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
         }
     });
-});
 
+    // Inicializar funciones individuales
+    configurarFechas('fechaInicial', 'fechaFinal');
+    configurarSubseries('serie', 'subserie');
+    iniciarVoz('tituloCarpeta', 'grabarBoton');
 
-$(document).ready(function () {
-    $('#serie').change(function () {
-        var serieNombre = $(this).find("option:selected").text(); // Obtener el nombre de la serie seleccionada
-        $('#subserie').empty(); // Limpiar el select de subseries
-        $('#subserie').append('<option value="" selected>Seleccione una Subserie</option>');
-
-        if (serieNombre) {
-            $.ajax({
-                url: 'rene/get_subseries.php', // Archivo PHP que obtendrá las subseries relacionadas
-                type: 'POST',
-                data: { serie_id: serieNombre }, // Enviar el nombre de la serie
-                success: function (response) {
-                    var subseries = JSON.parse(response); // Parsear la respuesta JSON
-                    if (Array.isArray(subseries)) {
-                        subseries.forEach(function (subserie) {
-                            $('#subserie').append(
-                                '<option value="' + subserie.nombre + '">' + subserie.nombre + '</option>'
-                            );
-                        });
-                    } else {
-                        alert(subseries.error); // Mostrar error si existe
-                    }
-                },
-                error: function () {
-                    alert('Error al cargar las subseries. Inténtalo de nuevo más tarde.');
-                }
-            });
-        }
-    });
-});
-
-//solo permite 56 caracteres en el textarea
-document.getElementById('tituloCarpeta').addEventListener('input', function() {
-    if (this.value.length > 56) {
-        this.value = this.value.substring(0, 56);
-    }
-});
-
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    const finalizarBtn = document.querySelector('button[type="submit"]'); // Botón "Finalizar Carpeta"
-    const form = document.querySelector('form'); // Formulario actual
-
-    finalizarBtn.addEventListener('click', function (event) {
-        event.preventDefault(); // Evitar el envío automático del formulario
-
-        // Obtener los valores de Caja y Carpeta del formulario
-        const formData = new FormData(form);
-        const caja = formData.get('caja'); // Valor de Caja
-        const carpeta = formData.get('carpeta'); // Valor de Carpeta
-
-        // Redirigir directamente a indice.php con los parámetros
-        const url = new URL('indice.php', window.location.origin);
-   
-
-        // Redirigir a la URL generada
-        window.location.href = url;
-    });
-
-    // Mostrar alerta de confirmación al finalizar carpeta
-    const fechaInicialInput = document.getElementById('fechaInicial');
-    const fechaFinalInput = document.getElementById('fechaFinal');
-
-    const validarFechaActual = (input) => {
-        const fechaActual = new Date().toISOString().split('T')[0];
-        if (input.value > fechaActual) {
-            alert('La fecha ingresada no puede ser mayor a la fecha actual.');
-            input.value = '';
-            input.focus();
-        }
-    };
-
-    const validarRangoFechas = () => {
-        if (fechaInicialInput.value && fechaFinalInput.value) {
-            if (fechaInicialInput.value > fechaFinalInput.value) {
-                alert('La fecha final no puede ser menor que la fecha inicial.');
-                fechaFinalInput.value = ''; // Borra la fecha final si es menor
-                fechaFinalInput.focus();
-            }
-        }
-    };
-
-    fechaInicialInput.addEventListener('change', function () {
-        validarFechaActual(fechaInicialInput);
-        validarRangoFechas();
-    });
-
-    fechaFinalInput.addEventListener('change', function () {
-        validarFechaActual(fechaFinalInput);
-        validarRangoFechas();
-    });
-
-    // Inicia el puntero en el textarea
-    document.getElementById('tituloCarpeta').focus();
-    
-
-// Grabar voz con el micrófono y convertir a texto
-let grabando = false; 
-let recognition; 
-
-function iniciarReconocimiento() {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Lo siento, tu navegador no soporta esta función.");
-        return;
-    }
-
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = 'es-ES'; 
-    recognition.interimResults = true; 
-
-    recognition.onresult = function(event) {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const resultado = event.results[i];
-            if (resultado.isFinal) {
-                const texto = resultado[0].transcript;
-                const textarea = document.getElementById('tituloCarpeta');
-
-                if (textarea.value.length + texto.length > 56) {
-                    const espacioLibre = 56 - textarea.value.length;
-                    textarea.value += texto.substring(0, espacioLibre) + " "; 
-                } else {
-                    textarea.value += texto + " "; 
-                }
-
-                textarea.focus();
-                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-            }
-        }
-    };
-
-    recognition.onend = function() {
-        if (grabando) {
-            recognition.start();
-        }
-    };
-
-    recognition.start(); 
-    grabando = true; 
-    document.getElementById('grabarBoton').classList.add('grabando'); 
-}
-
-function detenerReconocimiento() {
-    if (recognition) {
-        recognition.stop(); 
-    }
-    grabando = false; 
-    document.getElementById('grabarBoton').classList.remove('grabando'); 
-
-    const textarea = document.getElementById('tituloCarpeta');
+    // Enfocar al cargar
     textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-}
-
-function validarCaracteres(textarea) {
-    const maxLength = 56;
-    if (textarea.value.length > maxLength) {
-        textarea.value = textarea.value.substring(0, maxLength);
-    }
-}
-
-document.getElementById('grabarBoton').addEventListener('click', function() {
-    if (!grabando) {
-        iniciarReconocimiento(); 
-    } else {
-        detenerReconocimiento(); 
-    }
-});
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'F2' && !grabando) { 
-        iniciarReconocimiento(); 
-    }
-});
-
-document.addEventListener('keyup', function(event) {
-    if (event.key === 'F2' && grabando) { 
-        detenerReconocimiento(); 
-    }
-});
 });
 </script>
+
+
+
+
 </body>
 </html>

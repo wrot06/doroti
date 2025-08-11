@@ -27,9 +27,8 @@ $(document).ready(function () {
             return;
         }
 
-        const numPaginas = paginaFinal - window.siguientePagina + 1;
-        if (numPaginas > 200) {
-            alert("No se permite más de 200 folios.");
+        if (paginaFinal > 200) {
+            alert("La página final no puede ser mayor a 200.");
             return;
         }
 
@@ -49,6 +48,14 @@ $(document).ready(function () {
 success: function (response) {
     if (response.status === 'success') {
         const nuevoCapitulo = response.capitulo;
+
+        // Eliminar el mensaje de "No hay folios registrados..." si existe
+        const filaMensaje = $capitulosTableBody.find("tr td[colspan='5']").closest("tr");
+        if (filaMensaje.length) {
+            filaMensaje.remove();
+        }
+    
+
         const nuevaFila = $(`
             <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
                 <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
@@ -63,6 +70,8 @@ success: function (response) {
         $ultimaPagina.text(`Último folio: ${window.siguientePagina}`);
         $paginaFinalInput.val(window.siguientePagina);
         $tituloInput.val('').focus();
+        window.textoFinal = ''; // ✅ reinicia el texto para evitar que se acumule el dictado anterior
+
 
         // 🔔 Aquí centramos la vista nuevamente en el textarea
         document.dispatchEvent(new Event("capitulo-agregado"));

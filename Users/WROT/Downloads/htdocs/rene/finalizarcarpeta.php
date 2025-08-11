@@ -39,6 +39,19 @@ if (!DateTime::createFromFormat('Y-m-d', $fechaInicial) || !DateTime::createFrom
     exit;
 }
 
+// ✅ VALIDACIÓN: verificar si existen capítulos
+$verificarCapitulos = $conec->prepare("SELECT COUNT(*) AS total FROM IndiceTemp WHERE Caja = ? AND Carpeta = ?");
+$verificarCapitulos->bind_param("ii", $caja, $carpeta);
+$verificarCapitulos->execute();
+$resultadoCapitulos = $verificarCapitulos->get_result();
+$totalCapitulos = $resultadoCapitulos->fetch_assoc()['total'] ?? 0;
+$verificarCapitulos->close();
+
+if ($totalCapitulos == 0) {
+    echo "<div class='alert alert-warning text-center mt-4'>No se puede finalizar la carpeta porque no se ha agregado ningún capítulo.</div>";
+    exit;
+}
+
 // Inicio de la lógica principal
 try {
     // Actualización de la tabla Carpetas

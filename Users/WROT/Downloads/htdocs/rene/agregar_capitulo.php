@@ -26,6 +26,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $paginaFinal = filter_var($_POST['paginaFinal'], FILTER_VALIDATE_INT);
         $serie = strip_tags($_POST['serie']);
 
+        if ($paginaFinal > 200) {
+            throw new Exception("La página final no puede ser mayor a 200.");
+        }
+
+
 
         // Registro de depuración de entradas
         file_put_contents('debug_agregar_capitulo.log', date('Y-m-d H:i:s') . " - Caja: $caja, Carpeta: $carpeta, Titulo: $titulo, Pagina Final: $paginaFinal\n", FILE_APPEND);

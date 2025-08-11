@@ -9,6 +9,24 @@ $folios = max(1, intval($_POST['folios'] ?? 1));
 if (empty($caja) || empty($carpeta)) {
     die("Error: Caja o carpeta no definidas.");
 }
+
+
+$ultimaPagina = 0;
+
+try {
+    $sql = "SELECT MAX(NoFolioFin) AS ultima_pagina FROM IndiceTemp WHERE caja = ? AND carpeta = ?";
+    $stmt = $conec->prepare($sql);
+    $stmt->bind_param("ii", $caja, $carpeta);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($fila = $result->fetch_assoc()) {
+        $ultimaPagina = intval($fila['ultima_pagina'] ?? 0);
+    }
+    $stmt->close();
+} catch (Exception $e) {
+    error_log("Error al obtener última página: " . $e->getMessage());
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -25,17 +43,22 @@ if (empty($caja) || empty($carpeta)) {
 <div class="container mt-4">
     <div class="d-flex align-items-center mb-3">
         <h5 class="mb-0">Caja <?= $caja ?> | Carpeta <?= $carpeta ?></h5>
-        <form action="index.php" method="post" class="ml-3">
-            <input type="hidden" name="caja" value="<?= $caja ?>">
-            <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
-            <button type="submit" class="btn btn-primary btn-sm">Regresar</button>
-        </form>
+        
+    <form action="indice.php" method="post" class="ml-3">
+        <input type="hidden" name="consulta" value="<?= $caja ?>"> <!-- ¡este nombre es clave! -->
+        <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
+        <button type="submit" class="btn btn-primary btn-sm">Regresar</button>
+    </form>
+
     </div>
 
 
     <div class="card" style="background-color:rgb(235, 255, 216); line-height: 1.2;">
         <div class="card-header">Detalles Carpeta</div>
         <div class="card-body">
+
+
+
             <form action="rene/finalizarcarpeta.php" method="post">
                 <input type="hidden" name="caja" value="<?= $caja ?>">
                 <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
@@ -86,23 +109,24 @@ if (empty($caja) || empty($carpeta)) {
 
                 <?php
                 // Consultar la última página
+                $ultimaPagina = 0; // Valor por defecto
+
                 try {
                     $sql = "SELECT MAX(NoFolioFin) AS ultima_pagina FROM IndiceTemp WHERE caja = ? AND carpeta = ?";
                     $stmt = $conec->prepare($sql);
                     $stmt->bind_param("ii", $caja, $carpeta);
                     $stmt->execute();
                     $result = $stmt->get_result();
-                    $ultimaPagina = $result->fetch_assoc()['ultima_pagina'] ?? 0;
+                    if ($fila = $result->fetch_assoc()) {
+                        $ultimaPagina = intval($fila['ultima_pagina'] ?? 0);
+                    }
                 } catch (Exception $e) {
                     error_log("Error al ejecutar la consulta: " . $e->getMessage());
                 } finally {
-                    if (isset($stmt)) {
-                        $stmt->close();
-                    }
-                    if (isset($conec)) {
-                        $conec->close();
-                    }
+                    if (isset($stmt)) $stmt->close();
+                    if (isset($conec)) $conec->close();
                 }
+
                 ?>
 
                 <input type="hidden" name="folios" value="<?= $ultimaPagina ?>">
@@ -111,9 +135,21 @@ if (empty($caja) || empty($carpeta)) {
                     <label for="totalFolios">Folios: <?= $ultimaPagina ?></label>
                 </div>
 
+
+            <?php if ($ultimaPagina < 1): ?>
+                <div class="alert alert-warning">
+                    No se puede finalizar la carpeta sin haber agregado al menos un capítulo.
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" disabled>
+                    Finalizar Carpeta
+                </button>
+            <?php else: ?>
                 <button type="submit" class="btn btn-sm" style="background-color: #28a745; color: black; font-weight: bold;" onmouseover="this.style.backgroundColor='#218838'" onmouseout="this.style.backgroundColor='#28a745'">
                     Finalizar Carpeta
                 </button>
+            <?php endif; ?>
+
+
 
 
             </form>

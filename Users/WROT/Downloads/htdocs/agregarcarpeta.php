@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-ob_start();
 session_start();
 
 // Control de caché
@@ -11,13 +10,6 @@ header("Expires: 0");
 // Redirigir si no está autenticado
 if (empty($_SESSION['authenticated'])) {
     header('Location: login.php');
-    exit();
-}
-
-// Cerrar sesión
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cerrar_seccion'])) {
-    session_destroy();
-    header("Location: login.php");
     exit();
 }
 
@@ -35,7 +27,6 @@ if (empty($_SESSION['csrf_token'])) {
     <link rel="stylesheet" href="css/agregarcarpeta.css">
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         document.getElementById('caja').focus();
 
         const form = document.getElementById('cajaCarpetaForm');
@@ -44,9 +35,9 @@ if (empty($_SESSION['csrf_token'])) {
             const car2 = parseInt(document.getElementById('car2').value, 10);
             const mensaje = document.getElementById('mensaje');
 
-            if (caja <= 0 || car2 <= 0 || isNaN(caja) || isNaN(car2)) {
+            if (!Number.isInteger(caja) || !Number.isInteger(car2) || caja < 1 || car2 < 1) {
                 e.preventDefault();
-                mensaje.textContent = "Ambos campos deben ser números positivos.";
+                mensaje.textContent = "Ambos campos deben ser números enteros positivos.";
             } else {
                 mensaje.textContent = "";
             }
@@ -56,37 +47,27 @@ if (empty($_SESSION['csrf_token'])) {
 </head>
 <body>
 
+<?php
+$mensaje = $_SESSION['mensaje'] ?? '';
+unset($_SESSION['mensaje']);
+?>
 
-
-
-
-
-    <?php if (!empty($_SESSION['mensaje'])): ?>
-        <div id="mensaje"><?= htmlspecialchars($_SESSION['mensaje']) ?></div>
-        <?php unset($_SESSION['mensaje']); ?>
-    <?php else: ?>
-        <div id="mensaje"></div>
-    <?php endif; ?>
+<div id="mensaje"><?= htmlspecialchars($mensaje) ?></div>
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h3 style="margin: 0;">Agregar Carpeta</h3>
-    <form action="index.php" method="POST" style="margin: 0;">
-        <button type="submit" style="
-            font-size: 14px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background-color:rgb(50, 136, 26);
-            color: white;
-            border: none;
-            cursor: pointer;
-        ">Inicio</button>
-    </form>
+    <a href="index.php" style="
+        font-size: 14px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background-color:rgb(50, 136, 26);
+        color: white;
+        text-decoration: none;
+    ">Inicio</a>
 </div>
 
-
-
-    <form action="rene/guardardatos.php" method="post" id="cajaCarpetaForm">
-        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+<form action="rene/guardardatos.php" method="post" id="cajaCarpetaForm">
+    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
     <div class="form-inline">
         <label for="caja">C</label>
         <input type="number" id="caja" name="caja" required min="1" style="font-size: 55px;">
@@ -96,15 +77,13 @@ if (empty($_SESSION['csrf_token'])) {
     <div style="display: flex; justify-content: center;">
         <button type="submit">Agregar</button>
     </div>
+</form>
 
-    </form>
-
-<!-- Agregar al final del <body>, antes del cierre -->
 <?php
 require "rene/conexion3.php";
 
 $sql = "
-    SELECT c.Caja, c.Car2, COALESCE(u.username, 'Desconocido') AS username
+    SELECT c.Caja, c.Car2, COALESCE(u.username, 'Usuario no registrado') AS username
     FROM Carpetas c
     LEFT JOIN users u ON c.user_id = u.id
     ORDER BY c.FechaIngreso DESC
@@ -112,7 +91,7 @@ $sql = "
 ";
 
 function getPastelColor(int $caja): string {
-    return $caja % 2 === 0 ? '#a3d2ca' : '#f7d9d9'; // par: verde pastel, impar: rosa pastel
+    return $caja % 2 === 0 ? '#a3d2ca' : '#f7d9d9'; // verde pastel / rosa pastel
 }
 
 if ($resultado = $conec->query($sql)):
@@ -138,14 +117,5 @@ else:
     echo '<p style="text-align:center; color:red; font-family: Arial, sans-serif;">Error en la consulta.</p>';
 endif;
 ?>
-
-
-
-
-
-
-
-    
 </body>
 </html>
-<?php ob_end_flush(); ?>

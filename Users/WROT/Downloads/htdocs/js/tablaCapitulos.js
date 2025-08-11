@@ -59,6 +59,15 @@ $(document).on("click", ".eliminar", function () {
             if (res.status === 'success') {
                 $row.remove();
                 actualizarPaginas();
+
+                // ✅ Mostrar mensaje si no hay más capítulos
+                if ($("#capitulosTable tbody tr").length === 0) {
+                    $("#capitulosTable tbody").append(`
+                        <tr>
+                            <td colspan="5" class="text-center">No hay folios registrados. folio inicial: 1</td>
+                        </tr>
+                    `);
+                }
             } else {
                 alert(res.message || "Error al eliminar.");
             }

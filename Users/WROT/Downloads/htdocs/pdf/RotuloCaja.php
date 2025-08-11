@@ -18,6 +18,8 @@ $fecha_actual = date('Y-m-d');
 $FInicial = $fecha_actual;
 $serieA = [];
 $titulo_array = [];
+$subs_array = [];
+$Subs = '';
 
 if ($result = $conec->query($sql)) {
     while ($row = $result->fetch_assoc()) {
@@ -26,7 +28,7 @@ if ($result = $conec->query($sql)) {
         $Serie = $row['Serie'];
         $Subs = $row['Subs'];
         $Titulo = $row['Titulo'];
-        
+
         if ($FInicial > $row['FInicial']) {
             $FInicial = $row['FInicial']; 
         }
@@ -36,8 +38,22 @@ if ($result = $conec->query($sql)) {
 
         $serieA[] = $Serie;
         $titulo_array[] = $Titulo;
+
+        if (is_string($Subs) || is_int($Subs)) {
+            $subs_array[] = $Subs;
+        }
     }
     $result->free();
+}
+
+$subs_array = array_filter($subs_array, fn($v) => is_string($v) || is_int($v));
+$subs_frequencies = array_count_values($subs_array);
+$Subs = '';
+foreach ($subs_frequencies as $valor => $cantidad) {
+    if ($cantidad >= 2) {
+        $Subs = iconv('UTF-8', 'windows-1252', $valor);
+        break;
+    }
 }
 
 $frequencies = [];
@@ -86,8 +102,6 @@ foreach ($titulo_array as $titulo) {
         $salto += 5;
         $salto2 += 5;
     }
-
-   
 }
 
 $pdf->SetXY(10, 117);
@@ -102,6 +116,10 @@ if ($contador == 9) $Saltoimagen += 0;
 if ($contador == 10) $Saltoimagen += 5;
 if ($contador == 11) $Saltoimagen += 10;
 if ($contador == 12) $Saltoimagen += 15;
+if ($contador == 13) $Saltoimagen += 20;
+if ($contador == 14) $Saltoimagen += 25;
+if ($contador == 15) $Saltoimagen += 30;
+if ($contador == 16) $Saltoimagen += 35;
 
 $salto += 7.5;
 $pdf->Image('../img/Caja AYC-GDO-FR-18 below.png', 0, $Saltoimagen, 175);

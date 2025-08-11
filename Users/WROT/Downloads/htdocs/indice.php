@@ -1,5 +1,8 @@
 <?php
 session_start();
+$mensaje = $_SESSION['mensaje'] ?? '';
+unset($_SESSION['mensaje']);
+
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -246,6 +249,8 @@ $conec->close();
 </script>
 <script src="js/editcapitulo.js"></script>
 <script src="js/centrarpantalla.js"></script>
+<script src="js/validarCapitulo.js"></script>
+
 
 </body>
 </html>

@@ -1,0 +1,135 @@
+* {
+    box-sizing: border-box; /* Asegura que el padding y los bordes se incluyan en el ancho total */
+}
+
+body {
+    margin: 0 5px; /* Aplica un margen de 5px a ambos lados */
+    font-family: Arial, sans-serif;
+    overflow-x: hidden; /* Evita el desbordamiento horizontal */
+}
+
+.container {
+    margin: 0 auto;
+    padding: 10px; /* Incrementé el padding para mayor espacio interno */
+    max-width: 100%; /* Asegura que el contenedor no exceda el ancho de la pantalla */
+}
+
+table {
+    width: 99%;
+    border-collapse: collapse;
+    margin: 0 0 2px; /* Margen inferior para separación entre tablas */
+}
+
+table th, table td {
+    border: 1px solid #ccc;
+    padding: 2px 5px; /* Aumenté el padding para mejorar la legibilidad */
+    text-align: left;
+}
+
+/* Establecer el ancho de cada columna */
+table th:nth-child(1),
+table td:nth-child(1) {
+    width: 4%; /* Primera columna: 4% */
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+    width: 75%; /* Segunda columna: 75% */
+}
+
+table th:nth-child(3),
+table td:nth-child(3),
+table th:nth-child(4),
+table td:nth-child(4),
+table th:nth-child(5),
+table td:nth-child(5) {
+    width: 4%; /* Tercera, cuarta y quinta columnas: 4% */
+}
+
+.drag-column {
+    cursor: move;
+    text-align: center;
+}
+
+.drag-icon {
+    font-size: 12px;
+    color: #555;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.highlight {
+    background-color: #f0f8ff;
+    height: 40px;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    table th, table td {
+        padding: 15px; /* Ajuste de padding para pantallas medianas */
+    }
+
+    .form-row {
+        flex-direction: column; /* Cambia la dirección de la fila a columna */
+        align-items: flex-start;
+    }
+
+    button {
+        width: 100%; /* Botón ocupa todo el ancho disponible */
+        padding: 5px; /* Consistencia en el padding */
+    }
+}
+
+@media (max-width: 480px) {
+    table th, table td {
+        padding: 2px; /* Ajuste menor de padding para pantallas pequeñas */
+    }
+
+    .form-row {
+        gap: 2px; /* Espacio reducido entre elementos */
+    }
+
+    button {
+        padding: 2px; /* Consistencia en el padding */
+    }
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between; /* Alinea los elementos en los extremos */
+    align-items: center; /* Centra verticalmente */
+    margin-bottom: 3px; 
+    padding: 5px; /* Espaciado uniforme en todos los lados */
+    font-size: 10px;
+    padding: 5px 10px; /* Reduce el tamaño del botón */
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin-right: 4px; /* Agrega margen derecho */ /* Tamaño de fuente */
+}
+
+.header-container h3 {
+    font-size: 14px;
+    margin: 0; /* Elimina el margen por defecto del h3 */
+    font-weight: normal; /* Asegura un peso de fuente uniforme */
+    color: #333; /* Color del texto para mayor legibilidad */
+}

@@ -1,0 +1,129 @@
+.accordion {
+    background-color: #eee;
+    border-radius: 50%;
+
+}
+
+.accordion.active, .accordion:hover {
+    background-color: #ccc;
+}
+
+.panel {
+    padding: 10px;
+    display: none; /* Ocultar inicialmente */
+    background-color: white;
+}
+
+.mi-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.mi-tabla th, .mi-tabla td {
+    border: 1px solid #ddd;
+    padding: 2px;
+}
+
+.mi-tabla th {
+    background-color: #00964042;
+    text-align: left;
+    font-size: 10px;
+}
+
+.even-row {
+    background-color: #BEC6DA;
+}
+
+.contenedor{
+    margin-right: 5px;
+}
+
+.buscador{
+    text-align: right;
+    margin-right: 15px;
+    margin-bottom: 4px;
+    
+}
+
+.mi-tabla2 {
+    width: 99%;
+    max-width: 99%;
+    overflow-x: auto;
+    text-align: left;
+  }
+
+.alinear-derecha {
+    
+    text-align: right; /* Alinea el contenido a la derecha */
+  }
+
+
+
+
+/* Barra de menu del Buscado */
+  
+
+.buscador {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px;
+}
+
+.buscador form {
+    margin: 0;
+}
+
+.acciones {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.acciones form {
+    margin: 0;
+}
+
+.filtro-anio {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filtro-anio input[type="number"] {
+    width: 80px;
+    text-align: center;
+    padding: 3px;
+}
+
+.filtro-anio button {
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+#search {
+    padding: 2px 8px;
+    margin-left: 10px;
+}
+
+.acciones img {
+    height: 28px;
+    margin-left: 7px;
+}
+
+
+
+/* espacio entra el texto y las columnas */
+
+.mi-tabla {
+    width: 99%;
+    border-collapse: collapse;
+}
+
+.boton-input{
+    margin-right: 10px;
+}
+
+.letra-buscador{
+    font-size: 12px;
+}

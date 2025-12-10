@@ -1,0 +1,144 @@
+/* ===== Contenedor general ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 420px;
+    margin: 20px auto;
+    padding: 30px;
+    background: linear-gradient(135deg, #ffffff, #f0f4f8);
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Mensajes ===== */
+#mensaje {
+    text-align: center;
+    color: #e74c3c;
+    font-size: 15px;
+    margin-bottom: 15px;
+}
+
+/* ===== Encabezado ===== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #2c3e50;
+}
+.btn-inicio {
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background-color: rgb(50, 136, 26);
+    color: white;
+    text-decoration: none;
+}
+.btn-inicio:hover {
+    background-color: rgb(35, 100, 18);
+}
+
+/* ===== Formulario ===== */
+.formulario {
+    text-align: center;
+}
+.form-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.form-inline label {
+    font-size: 55px;
+    font-weight: 500;
+    color: #34495e;
+}
+.form-inline input {
+    width: 100px;
+    padding: 8px 10px;
+    font-size: 55px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+.form-inline input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+    outline: none;
+}
+.form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+button {
+    width: 200px;
+    padding: 12px 15px;
+    font-size: 20px;
+    border: none;
+    border-radius: 6px;
+    background-color: #007bff;
+    color: #ffffff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+/* Quitar flechas a los number inputs */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* ===== Lista de carpetas ===== */
+.list-group {
+    max-width: 400px;
+    margin: 25px auto 0;
+    padding: 0;
+    list-style: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    background-color: #fff;
+}
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid #ffffff;
+    font-size: 13px;
+    color: #222;
+    cursor: default;
+}
+.list-group-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 8px 8px;
+}
+.list-group-item:hover {
+    background-color: #dceeff;
+}
+.badge {
+    background-color: #007bff;
+    color: #403176;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 11px;
+    min-width: 25px;
+    text-align: center;
+    line-height: 1.2;
+}

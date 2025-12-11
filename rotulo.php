@@ -199,5 +199,6 @@ while ($row = $resIndices->fetch_assoc()) {
 </div>
 
 <script src="js/buscador.js"></script>
+<script src="js/rotulo.js"></script>
 </body>
 </html>

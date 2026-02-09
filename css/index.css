@@ -1,0 +1,71 @@
+:root {
+    --main-color: #2c3e50;
+    --accent-color: #3498db;
+    --hover-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding-top: 70px;
+}
+
+
+
+.folder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    padding: 20px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.folder-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    transition: var(--hover-transition);
+    overflow: hidden;
+    position: relative;
+}
+
+.folder-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.folder-icon {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    margin: 1rem auto;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.folder-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent-color);
+    color: white;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    z-index: 2;
+}
+
+.search-container {
+    max-width: 300px;
+    transition: var(--hover-transition);
+}
+
+.stretched-link-overlay::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
+}

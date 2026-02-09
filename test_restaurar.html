@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Restaurar Carpeta</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .card { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px; max-width: 500px; }
+        label { display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { margin-top: 15px; padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button.delete { background: #dc3545; }
+        pre { background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+    <h1>Prueba de Funciones (restaurar_carpeta.php)</h1>
+
+    <!-- Formulario para Modificar -->
+    <div class="card">
+        <h2>1. Modificar Caja y Carpeta</h2>
+        <form id="formModificar">
+            <input type="hidden" name="accion" value="modificar_caja_carpeta">
+            
+            <label>ID Carpeta:</label>
+            <input type="number" name="id_carpeta" required placeholder="Ej: 15">
+            
+            <label>Nueva Caja:</label>
+            <input type="text" name="nueva_caja" required placeholder="Ej: 2024-A">
+            
+            <label>Nueva Carpeta:</label>
+            <input type="text" name="nueva_carpeta" required placeholder="Ej: 5">
+            
+            <button type="submit">Modificar</button>
+        </form>
+        <pre id="resModificar"></pre>
+    </div>
+
+    <!-- Formulario para Eliminar -->
+    <div class="card">
+        <h2>2. Eliminar Carpeta</h2>
+        <form id="formEliminar">
+            <input type="hidden" name="accion" value="eliminar_carpeta">
+            
+            <label>ID Carpeta a Eliminar:</label>
+            <input type="number" name="id_carpeta" required placeholder="Ej: 15">
+            
+            <button type="submit" class="delete">Eliminar Definitivamente</button>
+        </form>
+        <pre id="resEliminar"></pre>
+    </div>
+
+    <script>
+        async function enviarFormulario(idForm, idRes) {
+            const form = document.getElementById(idForm);
+            const resContainer = document.getElementById(idRes);
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                resContainer.textContent = "Procesando...";
+                
+                const formData = new FormData(form);
+                
+                try {
+                    const response = await fetch('restaurar_carpeta.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const text = await response.text();
+                    try {
+                        const json = JSON.parse(text);
+                        resContainer.textContent = JSON.stringify(json, null, 2);
+                        resContainer.style.color = json.success ? 'green' : 'red';
+                    } catch (err) {
+                        resContainer.textContent = "Error parsing JSON: " + text;
+                        resContainer.style.color = 'red';
+                    }
+                } catch (error) {
+                    resContainer.textContent = "Error de conexión: " + error.message;
+                    resContainer.style.color = 'red';
+                }
+            });
+        }
+
+        enviarFormulario('formModificar', 'resModificar');
+        enviarFormulario('formEliminar', 'resEliminar');
+    </script>
+</body>
+</html>

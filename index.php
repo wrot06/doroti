@@ -100,6 +100,21 @@ if ($res_dep && mysqli_num_rows($res_dep) === 1) {
 
 $stmt->close();
 $stmt2->close();
+
+// Obtener avatar del usuario actual
+$userAvatar = 'uploads/avatars/default.png'; // Default
+if (!empty($_SESSION['user_id'])) {
+    $stmt3 = $conec->prepare("SELECT avatar FROM users WHERE id = ?");
+    $stmt3->bind_param("i", $user_id);
+    $stmt3->execute();
+    $result3 = $stmt3->get_result();
+    if ($row3 = $result3->fetch_assoc()) {
+        if ($row3['avatar'] && file_exists('uploads/avatars/' . basename($row3['avatar']))) {
+            $userAvatar = 'uploads/avatars/' . basename($row3['avatar']);
+        }
+    }
+    $stmt3->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -124,7 +139,12 @@ $stmt2->close();
 
         <!-- Usuario + Oficina -->
         <div class="ms-3 d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm">
-            <i class="bi bi-person-circle me-2 text-secondary fs-4"></i>
+            <img src="<?= h($userAvatar) ?>" 
+                 class="rounded-circle me-2" 
+                 width="32" 
+                 height="32" 
+                 style="object-fit: cover; border: 2px solid #0d6efd;"
+                 alt="Avatar de <?= h($usuario) ?>">
             <div class="d-flex flex-column lh-sm">
                 <span class="fw-semibold"><?= h($usuario) ?></span>
                 <small class="text-muted"><?= h($oficina) ?></small>

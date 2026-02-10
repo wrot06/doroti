@@ -110,7 +110,7 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 
 <?php if(empty($resultados)&&$search===''): ?>
 <div class="alert alert-info" id="mensaje-inicio">
-Para empezar la búsqueda, escribe una palabra y haz clic en <b>Buscar</b>.
+Para empezar la búsqueda, escribe una palabra y haz clic en "<b>Buscar</b>"
 </div>
 
 <?php elseif(!empty($resultados)): ?>

@@ -52,6 +52,12 @@ try {
         case 'delete_user':
             deleteUser($conec);
             break;
+        case 'upload_avatar':
+            uploadAvatar($conec);
+            break;
+        case 'delete_avatar':
+            deleteAvatar($conec);
+            break;
         default:
             throw new Exception("Acción no válida");
     }
@@ -65,6 +71,16 @@ if (ob_get_length()) ob_end_flush();
 
 
 /**
+ * Helper: Obtener URL del avatar del usuario
+ */
+function getAvatarUrl($avatar) {
+    if ($avatar && file_exists("../uploads/avatars/" . basename($avatar))) {
+        return "../uploads/avatars/" . basename($avatar);
+    }
+    return "../uploads/avatars/default.png";
+}
+
+/**
  * Listar todos los usuarios con información de oficina
  */
 function listUsers($conn) {
@@ -76,6 +92,7 @@ function listUsers($conn) {
             u.phone, 
             u.rol,
             u.dependencia_id,
+            u.avatar,
             COALESCE(d.nombre, 'Sin oficina') as oficina
         FROM users u
         LEFT JOIN dependencias d ON u.dependencia_id = d.id
@@ -87,6 +104,7 @@ function listUsers($conn) {
     $users = [];
     if ($res) {
         while ($row = $res->fetch_assoc()) {
+            $row['avatar_url'] = getAvatarUrl($row['avatar']);
             $users[] = $row;
         }
     }
@@ -106,7 +124,7 @@ function getUser($conn) {
     }
 
     $stmt = $conn->prepare("
-        SELECT id, username, email, phone, rol, dependencia_id 
+        SELECT id, username, email, phone, rol, dependencia_id, avatar 
         FROM users 
         WHERE id = ?
     ");
@@ -118,6 +136,8 @@ function getUser($conn) {
     if (!$user) {
         throw new Exception("Usuario no encontrado");
     }
+    
+    $user['avatar_url'] = getAvatarUrl($user['avatar']);
     
     if (ob_get_length()) ob_clean();
     echo json_encode(['success' => true, 'data' => $user]);
@@ -313,5 +333,225 @@ function deleteUser($conn) {
     
     if (ob_get_length()) ob_clean();
     echo json_encode(['success' => true, 'message' => 'Usuario eliminado correctamente']);
+}
+
+/**
+ * Subir avatar de usuario
+ */
+function uploadAvatar($conn) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception("Método no permitido");
+    }
+
+    $user_id = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
+    
+    if (!$user_id) {
+        throw new Exception("ID de usuario inválido");
+    }
+
+    if (empty($_FILES['avatar']['tmp_name'])) {
+        throw new Exception("Archivo de imagen requerido");
+    }
+
+    $file = $_FILES['avatar'];
+    
+    // Validar tipo MIME
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($mimeType, $allowedTypes)) {
+        throw new Exception("Formato de imagen no permitido. Use JPG, PNG o WEBP");
+    }
+    
+    // Validar tamaño (2MB máximo)
+    if ($file['size'] > 2 * 1024 * 1024) {
+        throw new Exception("La imagen es muy grande. Máximo 2MB");
+    }
+    
+    // Verificar que es una imagen válida
+    $imageInfo = getimagesize($file['tmp_name']);
+    if (!$imageInfo) {
+        throw new Exception("El archivo no es una imagen válida");
+    }
+
+    $conn->begin_transaction();
+
+    try {
+        // Verificar que el usuario existe
+        $stmt = $conn->prepare("SELECT avatar FROM users WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception("Usuario no encontrado");
+        }
+        
+        $currentAvatar = $result->fetch_assoc()['avatar'];
+        
+        // Determinar extensión
+        $extension = match($mimeType) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            default => 'jpg'
+        };
+        
+        $filename = "user_{$user_id}.{$extension}";
+        $uploadDir = __DIR__ . '/../uploads/avatars/';
+        $targetPath = $uploadDir . $filename;
+        
+        // Eliminar avatar anterior si existe y no es el mismo archivo
+        if ($currentAvatar && $currentAvatar !== $filename) {
+            $oldPath = $uploadDir . basename($currentAvatar);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+        
+        // Redimensionar imagen a 200x200
+        $resized = resizeImage($file['tmp_name'], $mimeType, 200, 200);
+        
+        if (!$resized) {
+            throw new Exception("Error al procesar la imagen");
+        }
+        
+        // Guardar imagen redimensionada
+        $saved = match($mimeType) {
+            'image/jpeg' => imagejpeg($resized, $targetPath, 90),
+            'image/png' => imagepng($resized, $targetPath, 8),
+            'image/webp' => imagewebp($resized, $targetPath, 90),
+            default => false
+        };
+        
+        imagedestroy($resized);
+        
+        if (!$saved) {
+            throw new Exception("Error al guardar la imagen");
+        }
+        
+        chmod($targetPath, 0644);
+        
+        // Actualizar BD
+        $stmt = $conn->prepare("UPDATE users SET avatar = ? WHERE id = ?");
+        $stmt->bind_param("si", $filename, $user_id);
+        $stmt->execute();
+        
+        $conn->commit();
+        
+        if (ob_get_length()) ob_clean();
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Avatar actualizado correctamente',
+            'avatar_url' => "../uploads/avatars/" . $filename
+        ]);
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        throw $e;
+    }
+}
+
+/**
+ * Eliminar avatar de usuario
+ */
+function deleteAvatar($conn) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception("Método no permitido");
+    }
+
+    $user_id = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
+    
+    if (!$user_id) {
+        throw new Exception("ID de usuario inválido");
+    }
+
+    $conn->begin_transaction();
+
+    try {
+        // Obtener avatar actual
+        $stmt = $conn->prepare("SELECT avatar FROM users WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception("Usuario no encontrado");
+        }
+        
+        $avatar = $result->fetch_assoc()['avatar'];
+        
+        // Eliminar archivo si existe
+        if ($avatar) {
+            $uploadDir = __DIR__ . '/../uploads/avatars/';
+            $filePath = $uploadDir . basename($avatar);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+        
+        // Actualizar BD a NULL
+        $stmt = $conn->prepare("UPDATE users SET avatar = NULL WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        
+        $conn->commit();
+        
+        if (ob_get_length()) ob_clean();
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Avatar eliminado correctamente',
+            'avatar_url' => "../uploads/avatars/default.png"
+        ]);
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        throw $e;
+    }
+}
+
+/**
+ * Helper: Redimensionar imagen manteniendo aspecto
+ */
+function resizeImage($sourcePath, $mimeType, $maxWidth, $maxHeight) {
+    // Crear imagen desde archivo
+    $source = match($mimeType) {
+        'image/jpeg' => imagecreatefromjpeg($sourcePath),
+        'image/png' => imagecreatefrompng($sourcePath),
+        'image/webp' => imagecreatefromwebp($sourcePath),
+        default => false
+    };
+    
+    if (!$source) {
+        return false;
+    }
+    
+    $width = imagesx($source);
+    $height = imagesy($source);
+    
+    // Calcular nuevas dimensiones (cuadrado)
+    $size = min($width, $height);
+    $x = ($width - $size) / 2;
+    $y = ($height - $size) / 2;
+    
+    // Crear imagen cuadrada
+    $dest = imagecreatetruecolor($maxWidth, $maxHeight);
+    
+    // Preservar transparencia para PNG
+    if ($mimeType === 'image/png') {
+        imagealphablending($dest, false);
+        imagesavealpha($dest, true);
+        $transparent = imagecolorallocatealpha($dest, 255, 255, 255, 127);
+        imagefilledrectangle($dest, 0, 0, $maxWidth, $maxHeight, $transparent);
+    }
+    
+    // Copiar y redimensionar
+    imagecopyresampled($dest, $source, 0, 0, (int)$x, (int)$y, $maxWidth, $maxHeight, (int)$size, (int)$size);
+    
+    imagedestroy($source);
+    
+    return $dest;
 }
 ?>

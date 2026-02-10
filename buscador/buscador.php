@@ -43,6 +43,22 @@ if(isset($_GET['search'])&&trim($_GET['search'])!==''){
 $usuario=$_SESSION['username']??'Usuario';
 $oficina=$_SESSION['oficina']??'';
 
+/* ================== AVATAR ================== */
+$userAvatar='../uploads/avatars/default.png';
+$user_id=(int)($_SESSION['user_id']??0);
+if($user_id>0){
+    $stmt_av=$conec->prepare("SELECT avatar FROM users WHERE id=?");
+    $stmt_av->bind_param("i",$user_id);
+    $stmt_av->execute();
+    $res_av=$stmt_av->get_result();
+    if($row_av=$res_av->fetch_assoc()){
+        if($row_av['avatar'] && file_exists('../uploads/avatars/'.basename($row_av['avatar']))){
+            $userAvatar='../uploads/avatars/'.basename($row_av['avatar']);
+        }
+    }
+    $stmt_av->close();
+}
+
 function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 
 
@@ -73,7 +89,12 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 
         <!-- Usuario + Oficina -->
         <div class="ms-3 d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm">
-            <i class="bi bi-person-circle me-2 text-secondary fs-4"></i>
+            <img src="<?= h($userAvatar) ?>" 
+                 class="rounded-circle me-2" 
+                 width="32" 
+                 height="32" 
+                 style="object-fit: cover; border: 2px solid #0d6efd;"
+                 alt="Avatar de <?= h($usuario) ?>">
             <div class="d-flex flex-column lh-sm">
                 <span class="fw-semibold"><?= h($usuario) ?></span>
                 <small class="text-muted"><?= h($oficina) ?></small>

@@ -23,6 +23,22 @@ function h(mixed $str): string {
 }
 
 $usuario = $_SESSION['username'] ?? 'Admin';
+
+// Obtener avatar del usuario actual
+$userAvatar = '../uploads/avatars/default.png'; // Default
+if (!empty($_SESSION['user_id'])) {
+    $stmt = $conec->prepare("SELECT avatar FROM users WHERE id = ?");
+    $userId = (int)$_SESSION['user_id'];
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        if ($row['avatar'] && file_exists('../uploads/avatars/' . basename($row['avatar']))) {
+            $userAvatar = '../uploads/avatars/' . basename($row['avatar']);
+        }
+    }
+    $stmt->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -44,7 +60,18 @@ $usuario = $_SESSION['username'] ?? 'Admin';
         </a>
         
         <div class="d-flex align-items-center gap-3 ms-auto">
-            <span class="text-muted">Hola, <?= h($usuario) ?></span>
+            <div class="d-flex align-items-center gap-2">
+                <img src="<?= h($userAvatar) ?>" 
+                     class="rounded-circle" 
+                     width="35" 
+                     height="35" 
+                     style="object-fit: cover; border: 2px solid #0d6efd;"
+                     alt="Avatar de <?= h($usuario) ?>">
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-dark" style="font-size: 0.9rem;"><?= h($usuario) ?></span>
+                    <span class="text-muted" style="font-size: 0.75rem;"><?= h($_SESSION['dependencia'] ?? 'Admin') ?></span>
+                </div>
+            </div>
             <a href="../index.php" class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-house me-2"></i>Volver al Inicio
             </a>
@@ -75,6 +102,19 @@ $usuario = $_SESSION['username'] ?? 'Admin';
                 </div>
             </div>
         </div>
+
+        <!-- Gestionar Dependencias -->
+        <div class="col-md-4">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-building fs-1 text-success mb-3"></i>
+                    <h5 class="card-title">Gestionar Dependencias</h5>
+                    <p class="card-text">Agregar y eliminar dependencias del sistema.</p>
+                    <a href="gestionar_dependencias.php" class="btn btn-success">Ir a Dependencias</a>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Restaurar Carpetas -->
         <div class="col-md-3">

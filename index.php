@@ -1,116 +1,41 @@
 <?php
 declare(strict_types=1);
-ob_start();
-session_start();
 
-// Control de caché
-header("Cache-Control: no-cache, no-store, must-revalidate");
-header("Pragma: no-cache");
-header("Expires: 0");
-
-// Conexión a la base de datos
+// Cargar dependencias
 require_once "rene/conexion3.php";
+require_once "middlewares/AuthMiddleware.php";
+require_once "services/UserService.php";
+require_once "services/FolderService.php";
 
-// Escapar HTML
-function h(mixed $str): string {
-    return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
-}
-
-// Redirección
-function redirect(string $url): void {
-    header("Location: $url");
-    exit();
-}
+// Inicializar sesión y headers
+AuthMiddleware::initSession();
 
 // Verificar autenticación
-if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-    redirect('login/login.php');
-}
+AuthMiddleware::checkAuth();
 
 // Manejar cierre de sesión
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cerrar_seccion'])) {
-    session_destroy();
-    redirect('login/login.php');
-}
+AuthMiddleware::handleLogout();
 
 // Generar token CSRF
-if (!isset($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
+AuthMiddleware::generateCsrf();
 
 // Validar usuario
-if (!isset($_SESSION['user_id'])) {
-    $_SESSION['mensaje'] = "No se ha definido el ID de usuario. Por favor, inicie sesión nuevamente.";
-    redirect('login.php');
-}
-$user_id = (int)$_SESSION['user_id'];
+$user_id = AuthMiddleware::validateUser();
 
-// Consulta para traer carpetas del usuario actual
-// TODOS los usuarios (incluidos admin) solo ven sus propias carpetas
-$sql = "
-SELECT 
-    c.id AS carpeta_id,
-    c.Caja,
-    c.Carpeta,
-    COALESCE(u.username, 'Usuario no registrado') AS username,
-    dep.nombre AS oficina,
-    c.dependencia_id
-FROM Carpetas c
-LEFT JOIN users u ON c.user_id = u.id
-LEFT JOIN dependencias dep ON dep.id = c.dependencia_id
-WHERE c.Estado = 'A'
-  AND c.user_id = ?
-ORDER BY c.Caja DESC, c.Carpeta DESC
-LIMIT 20
-";
+// Inicializar servicios
+$userService = new UserService($conec);
+$folderService = new FolderService($conec);
 
-$stmt = $conec->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$resultado = $stmt->get_result();
+// Obtener carpetas del usuario
+$resultado = $folderService->getUserFolders($user_id);
 
-// Traer datos de usuario actual
-$sql_dep = "
-SELECT 
-    u.username,
-    dep.nombre AS oficina
-FROM users u
-LEFT JOIN dependencias dep ON dep.id = u.dependencia_id
-WHERE u.id = ?
-LIMIT 1
-";
+// Obtener información del usuario
+$userInfo = $userService->getUserInfo($user_id);
+$usuario = $userInfo['username'];
+$oficina = $userInfo['oficina'];
 
-$stmt2 = $conec->prepare($sql_dep);
-$stmt2->bind_param("i", $user_id);
-$stmt2->execute();
-$res_dep = $stmt2->get_result();
-
-$usuario = 'Usuario';
-$oficina = '';
-
-if ($res_dep && mysqli_num_rows($res_dep) === 1) {
-    $dep = $res_dep->fetch_assoc();
-    $usuario = $dep['username'] ?? 'Usuario';
-    $oficina = $dep['oficina'] ?? '';
-}
-
-$stmt->close();
-$stmt2->close();
-
-// Obtener avatar del usuario actual
-$userAvatar = 'uploads/avatars/default.png'; // Default
-if (!empty($_SESSION['user_id'])) {
-    $stmt3 = $conec->prepare("SELECT avatar FROM users WHERE id = ?");
-    $stmt3->bind_param("i", $user_id);
-    $stmt3->execute();
-    $result3 = $stmt3->get_result();
-    if ($row3 = $result3->fetch_assoc()) {
-        if ($row3['avatar'] && file_exists('uploads/avatars/' . basename($row3['avatar']))) {
-            $userAvatar = 'uploads/avatars/' . basename($row3['avatar']);
-        }
-    }
-    $stmt3->close();
-}
+// Obtener avatar del usuario
+$userAvatar = $userService->getUserAvatar($user_id);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -135,15 +60,15 @@ if (!empty($_SESSION['user_id'])) {
 
         <!-- Usuario + Oficina -->
         <div class="ms-3 d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm">
-            <img src="<?= h($userAvatar) ?>" 
+            <img src="<?= ResponseHelper::h($userAvatar) ?>" 
                  class="rounded-circle me-2" 
                  width="32" 
                  height="32" 
                  style="object-fit: cover; border: 2px solid #0d6efd;"
-                 alt="Avatar de <?= h($usuario) ?>">
+                 alt="Avatar de <?= ResponseHelper::h($usuario) ?>">
             <div class="d-flex flex-column lh-sm">
-                <span class="fw-semibold"><?= h($usuario) ?></span>
-                <small class="text-muted"><?= h($oficina) ?></small>
+                <span class="fw-semibold"><?= ResponseHelper::h($usuario) ?></span>
+                <small class="text-muted"><?= ResponseHelper::h($oficina) ?></small>
             </div>
         </div>
 
@@ -196,27 +121,27 @@ if (!empty($_SESSION['user_id'])) {
         <!-- Mostrar carpetas -->
         <?php if ($resultado && mysqli_num_rows($resultado) > 0): ?>
             <?php while ($fila = mysqli_fetch_assoc($resultado)):
-                $nomenclatura  = "Carpeta " . h($fila["Carpeta"]);
-                $nomenclatura2 = "C" . h($fila["Caja"]) . "-" . h($fila["Carpeta"]);
+                $nomenclatura  = "Carpeta " . ResponseHelper::h($fila["Carpeta"]);
+                $nomenclatura2 = "C" . ResponseHelper::h($fila["Caja"]) . "-" . ResponseHelper::h($fila["Carpeta"]);
                 $color = $fila['Caja'] % 2 === 0 ? '#a3d2ca' : '#f7d9d9';
             ?>
             <div class="folder-card">
                 <form method="POST" action="carpeta/indice.php" class="h-100 position-relative">
-                    <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>">
-                    <input type="hidden" name="Caja" value="<?= h($fila['Caja']) ?>">
-                    <input type="hidden" name="carpeta" value="<?= h($fila['Carpeta']) ?>">
-                    <input type="hidden" name="oficina" value="<?= h($fila['oficina']) ?>">
-                    <input type="hidden" name="dependencia_id" value="<?= h($fila['dependencia_id']) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= ResponseHelper::h($_SESSION['csrf_token']) ?>">
+                    <input type="hidden" name="Caja" value="<?= ResponseHelper::h($fila['Caja']) ?>">
+                    <input type="hidden" name="carpeta" value="<?= ResponseHelper::h($fila['Carpeta']) ?>">
+                    <input type="hidden" name="oficina" value="<?= ResponseHelper::h($fila['oficina']) ?>">
+                    <input type="hidden" name="dependencia_id" value="<?= ResponseHelper::h($fila['dependencia_id']) ?>">
 
 
-                    <div class="folder-badge">Caja <?= h($fila["Caja"]) ?></div>
+                    <div class="folder-badge">Caja <?= ResponseHelper::h($fila["Caja"]) ?></div>
 
                     <div class="text-center p-3 h-100">
                         <div class="stretched-link-overlay"></div>
                         <img src="img/Carpeta.png" class="folder-icon" alt="Icono de carpeta">
                         <h5 class="mb-2 fw-semibold text-dark"><?= $nomenclatura ?></h5>
                         <div class="text-primary fs-6">                            
-                            <?= h($fila['oficina']) ?>
+                            <?= ResponseHelper::h($fila['oficina']) ?>
                         </div>
                     </div>
 

@@ -45,7 +45,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = (int)$_SESSION['user_id'];
 
-// Consulta para traer carpetas con la oficina
+// Consulta para traer carpetas del usuario actual
+// TODOS los usuarios (incluidos admin) solo ven sus propias carpetas
 $sql = "
 SELECT 
     c.id AS carpeta_id,
@@ -58,15 +59,10 @@ FROM Carpetas c
 LEFT JOIN users u ON c.user_id = u.id
 LEFT JOIN dependencias dep ON dep.id = c.dependencia_id
 WHERE c.Estado = 'A'
-  AND c.dependencia_id = (
-        SELECT dependencia_id
-        FROM users
-        WHERE id = ?
-  )
+  AND c.user_id = ?
 ORDER BY c.Caja DESC, c.Carpeta DESC
 LIMIT 20
 ";
-
 
 $stmt = $conec->prepare($sql);
 $stmt->bind_param("i", $user_id);

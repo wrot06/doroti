@@ -144,8 +144,8 @@ function deleteFolder($conn) {
     $conn->begin_transaction();
 
     try {
-        // Datos carpeta
-        $stmtGet = $conn->prepare("SELECT Caja, Carpeta, dependencia_id FROM Carpetas WHERE id = ?");
+        // Datos carpeta (incluyendo Estado)
+        $stmtGet = $conn->prepare("SELECT Caja, Carpeta, dependencia_id, Estado FROM Carpetas WHERE id = ?");
         $stmtGet->bind_param("i", $folderId);
         $stmtGet->execute();
         $resGet = $stmtGet->get_result();
@@ -156,27 +156,32 @@ function deleteFolder($conn) {
             throw new Exception("La carpeta no existe");
         }
 
-        // Eliminar IndiceDocumental
-        $stmt1 = $conn->prepare("DELETE FROM IndiceDocumental WHERE carpeta_id = ?");
-        $stmt1->bind_param("i", $folderId);
-        $stmt1->execute();
-        $stmt1->close();
+        // Eliminar registros según el estado de la carpeta
+        // Estado 'A' (Activo) = registros en IndiceTemp
+        // Estado 'C' (Cerrado) = registros en IndiceDocumental
+        if ($folderData['Estado'] === 'A') {
+            // Carpeta activa: eliminar de IndiceTemp
+            $stmt1 = $conn->prepare("DELETE FROM IndiceTemp WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
+            $stmt1->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
+            $stmt1->execute();
+            $stmt1->close();
+        } elseif ($folderData['Estado'] === 'C') {
+            // Carpeta cerrada: eliminar de IndiceDocumental
+            $stmt1 = $conn->prepare("DELETE FROM IndiceDocumental WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
+            $stmt1->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
+            $stmt1->execute();
+            $stmt1->close();
+        }
 
-        // Eliminar IndiceTemp
-        $stmt2 = $conn->prepare("DELETE FROM IndiceTemp WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
+        // Eliminar Carpeta usando Caja, Carpeta y dependencia_id para mayor seguridad
+        $stmt2 = $conn->prepare("DELETE FROM Carpetas WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
         $stmt2->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
         $stmt2->execute();
-        $stmt2->close();
-
-        // Eliminar Carpeta
-        $stmt3 = $conn->prepare("DELETE FROM Carpetas WHERE id = ?");
-        $stmt3->bind_param("i", $folderId);
-        $stmt3->execute();
         
-        if ($stmt3->affected_rows === 0) {
+        if ($stmt2->affected_rows === 0) {
             throw new Exception("Error al eliminar la carpeta");
         }
-        $stmt3->close();
+        $stmt2->close();
 
         $conn->commit();
         if (ob_get_length()) ob_clean();

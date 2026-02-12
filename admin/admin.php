@@ -115,6 +115,18 @@ if (!empty($_SESSION['user_id'])) {
             </div>
         </div>
 
+        <!-- Gestionar Tipos Documentales -->
+        <div class="col-md-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-file-earmark-text fs-1 text-primary mb-3"></i>
+                    <h5 class="card-title">Gestionar Tipos Documentales</h5>
+                    <p class="card-text">Administrar tipos documentales por dependencia.</p>
+                    <a href="gestionar_tipos_documentales.php" class="btn btn-primary">Ir a Tipos Documentales</a>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Restaurar Carpetas -->
         <div class="col-md-3">

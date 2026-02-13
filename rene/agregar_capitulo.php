@@ -58,7 +58,19 @@ try {
 
     $id2 = $last_id + 1;
 
-    $dependencia_id = $_SESSION['dependencia_id'] ?? 0;
+    // Priorizar POST sobre sesión para evitar problemas de sesión expirada
+    $dependencia_id = filter_input(INPUT_POST, 'dependencia_id', FILTER_VALIDATE_INT);
+    
+    // Fallback a sesión si no viene por POST
+    if (!$dependencia_id) {
+        $dependencia_id = $_SESSION['dependencia_id'] ?? 0;
+    }
+    
+    // Validación: no permitir dependencia_id = 0
+    if (!$dependencia_id || $dependencia_id <= 0) {
+        throw new Exception("dependencia_id es requerido y no puede ser 0. Verifique la sesión.");
+    }
+    
     $soporte = "F"; 
 
     $id_carpeta = $_SESSION['id_carpeta'] ?? null;

@@ -339,6 +339,7 @@ $proximaPagina = $ultimaPagina + 1;
 <script src="js/reemplazos.js"></script>
 <script src="js/tablaCapitulos.js"></script>
 <script src="js/textotareainsert.js"></script>
+<script src="js/interceptarPlusTecla.js"></script>
 <script src="js/voice.js"></script>
 <script src="js/navegacionInputs.js"></script>
 <script src="js/editcapitulo.js"></script>

@@ -169,6 +169,20 @@ if (!empty($_SESSION['user_id'])) {
                 </div>
             </div>
         </div>
+
+        <!-- Asignar Usuario a Carpeta -->
+        <div class="col-md-3">
+            <div class="card h-100" style="border-color: #6f42c1;">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-workspace fs-1 mb-3" style="color: #6f42c1;"></i>
+                    <h5 class="card-title text-dark">Asignar Usuario</h5>
+                    <p class="card-text text-muted small">
+                        Cambiar usuario de una carpeta.
+                    </p>
+                    <a href="asignar_usuario_carpeta.php" class="btn btn-sm fw-bold text-white" style="background-color: #6f42c1;">Ir a Asignar</a>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 

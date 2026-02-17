@@ -70,11 +70,14 @@ function restaurarCarpeta($conec) {
         // Vamos a asumir nombres estándar o los que vimos en SHOW COLUMNS.
         // IndiceTemp columns from check: id2, dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
         
+        // IMPORTANTE: Asignar id2 basado en el orden de NoFolioInicio
+        // El registro con el NoFolioInicio más bajo tendrá id2 = 1, el siguiente id2 = 2, etc.
         $sqlInsert = "
             INSERT INTO IndiceTemp (
-                dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
+                id2, dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
             )
             SELECT 
+                ROW_NUMBER() OVER (ORDER BY NoFolioInicio ASC, NoFolioFin ASC) as id2,
                 dependencia_id, Caja, Carpeta, carpeta_id, Serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
             FROM IndiceDocumental
             WHERE carpeta_id = ?

@@ -326,8 +326,8 @@ if (!empty($_SESSION['user_id'])) {
                 const selectUser = document.getElementById('assignNewUser');
                 selectUser.innerHTML = '<option value="">Cargando...</option>';
 
-                // Cargar todos los usuarios (o filtrar por dependencia si prefieres)
-                fetch(`api_asignar_usuario.php?action=list_users_by_office&dependencia_id=${depId}`)
+                // Cargar TODOS los usuarios del sistema (sin filtrar por dependencia)
+                fetch(`api_asignar_usuario.php?action=list_users_by_office`)
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
@@ -337,7 +337,11 @@ if (!empty($_SESSION['user_id'])) {
                             data.data.forEach(user => {
                                 const opt = document.createElement('option');
                                 opt.value = user.id;
-                                opt.textContent = `${user.username} (${user.email})`;
+                                // Mostrar username, email y dependencia para mejor identificación
+                                const userInfo = user.dependencia ?
+                                    `${user.username} - ${user.dependencia} (${user.email})` :
+                                    `${user.username} (${user.email})`;
+                                opt.textContent = userInfo;
                                 selectUser.appendChild(opt);
                             });
                         } else {

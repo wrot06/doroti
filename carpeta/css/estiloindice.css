@@ -94,3 +94,17 @@ button.btn-primary.ml-2:hover {
   text-decoration: underline; /* subrayado */       /* un poco más grande que el texto normal */
 }
 
+
+
+/* Ensure text wraps effectively */
+td.editable {
+    text-align: left;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word; 
+    overflow-wrap: break-word;
+    max-width: 0; /* Important for word-break to work in table cells sometimes */
+}
+
+/* Remove scrollbars from body if not needed, but generally table grows */
+

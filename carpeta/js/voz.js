@@ -43,9 +43,22 @@
   }
 
   // Función principal
-  window.iniciarVoz = function (textareaId, botonId) {
+  window.iniciarVoz = function (textareaId, botonId, contadorId = null) {
     const textarea = document.getElementById(textareaId);
     const boton = document.getElementById(botonId);
+    const contador = contadorId ? document.getElementById(contadorId) : null;
+
+    function actualizarContador() {
+      if (contador) {
+        contador.textContent = `${textarea.value.length} / ${LIMITE}`;
+        if (textarea.value.length >= LIMITE) contador.classList.add('text-danger');
+        else contador.classList.remove('text-danger');
+      }
+    }
+
+    // Inicializar
+    actualizarContador();
+    textarea.addEventListener('input', actualizarContador);
 
     if (!textarea || !boton) return console.warn("No se encontró textarea o botón.");
 
@@ -78,6 +91,7 @@
           let textoFinal = (textarea.value.trim() ? textarea.value.trim() + " " : "") + fragmentos.join(" ");
           if (textoFinal.length > LIMITE) textoFinal = textoFinal.substring(0, LIMITE);
           textarea.value = textoFinal;
+          actualizarContador();
           colocarCursorAlFinal(textarea);
         }
       };

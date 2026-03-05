@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 session_start();
 
@@ -39,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Funciones
 // ==============================
 
-function restaurarCarpeta($conec) {
+function restaurarCarpeta($conec)
+{
     if (!isset($_POST['id_carpeta'])) {
         echo json_encode(['success' => false, 'message' => 'Falta id_carpeta.']);
         return;
@@ -61,15 +63,19 @@ function restaurarCarpeta($conec) {
             throw new Exception("Carpeta no encontrada.");
         }
 
+        $caja = $data['Caja'];
+        $carpeta = $data['Carpeta'];
+        $dependenciaId = $data['dependencia_id'];
+
         // 2. Mover registros de IndiceDocumental -> IndiceTemp
         // Mapeo manual de campos para evitar errores si las tablas difieren ligeramente
         // IndiceTemp: id2, dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
         // IndiceDocumental: id, dependencia_id, Caja, Carpeta, carpeta_id, Serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
-        
+
         // NOTA: IndiceTemp tiene 'serie' (minuscula?) y IndiceDocumental 'Serie' (mayuscula?). 
         // Vamos a asumir nombres estándar o los que vimos en SHOW COLUMNS.
         // IndiceTemp columns from check: id2, dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
-        
+
         // IMPORTANTE: Asignar id2 basado en el orden de NoFolioInicio
         // El registro con el NoFolioInicio más bajo tendrá id2 = 1, el siguiente id2 = 2, etc.
         $sqlInsert = "
@@ -80,19 +86,19 @@ function restaurarCarpeta($conec) {
                 ROW_NUMBER() OVER (ORDER BY NoFolioInicio ASC, NoFolioFin ASC) as id2,
                 dependencia_id, Caja, Carpeta, carpeta_id, Serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
             FROM IndiceDocumental
-            WHERE carpeta_id = ?
+            WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?
         ";
-        
+
         $stmtIns = $conec->prepare($sqlInsert);
-        $stmtIns->bind_param("i", $id);
+        $stmtIns->bind_param("iii", $caja, $carpeta, $dependenciaId);
         if (!$stmtIns->execute()) {
-             throw new Exception("Error moviendo índices: " . $stmtIns->error);
+            throw new Exception("Error moviendo índices: " . $stmtIns->error);
         }
         $stmtIns->close();
 
         // 3. Eliminar de IndiceDocumental
-        $stmtDelDocs = $conec->prepare("DELETE FROM IndiceDocumental WHERE carpeta_id = ?");
-        $stmtDelDocs->bind_param("i", $id);
+        $stmtDelDocs = $conec->prepare("DELETE FROM IndiceDocumental WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
+        $stmtDelDocs->bind_param("iii", $caja, $carpeta, $dependenciaId);
         $stmtDelDocs->execute();
         $stmtDelDocs->close();
 
@@ -104,7 +110,6 @@ function restaurarCarpeta($conec) {
 
         $conec->commit();
         echo json_encode(['success' => true, 'message' => 'Carpeta restaurada correctamente.']);
-
     } catch (Exception $e) {
         $conec->rollback();
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -129,6 +134,7 @@ $resListar = $conec->query($sqlListar);
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="../img/hueso.png">
@@ -138,121 +144,123 @@ $resListar = $conec->query($sqlListar);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body class="bg-light">
 
-<nav class="navbar fixed-top" style="background-color: #e3f2fd;" data-bs-theme="light">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="../index.php">
-            <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
-            <span class="ms-2 fw-bold text-primary">ADMIN</span>
-        </a>
-        <div class="d-flex align-items-center gap-3 ms-auto">
-            <a href="admin.php" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-2"></i>Volver al Panel
+    <nav class="navbar fixed-top" style="background-color: #e3f2fd;" data-bs-theme="light">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="../index.php">
+                <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
+                <span class="ms-2 fw-bold text-primary">ADMIN</span>
             </a>
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <a href="admin.php" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Panel
+                </a>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<main class="container mt-5 pt-5">
-    <h1 class="mb-4">Restaurar Carpetas Cerradas</h1>
-    
-    <div class="alert alert-warning">
-        <i class="bi bi-info-circle me-2"></i>
-        Las carpetas listadas aquí están en estado <strong>Cerrado (C)</strong>. 
-        Al restaurarlas, pasarán a estado <strong>Activo (A)</strong> y sus índices se moverán 
-        a la tabla temporal para permitir edición.
-    </div>
+    <main class="container mt-5 pt-5">
+        <h1 class="mb-4">Restaurar Carpetas Cerradas</h1>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <?php if ($resListar && $resListar->num_rows > 0): ?>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Caja</th>
-                                <th>Carpeta</th>
-                                <th>Oficina</th>
-                                <th>Fecha</th>
-                                <th class="text-end">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($row = $resListar->fetch_assoc()): ?>
+        <div class="alert alert-warning">
+            <i class="bi bi-info-circle me-2"></i>
+            Las carpetas listadas aquí están en estado <strong>Cerrado (C)</strong>.
+            Al restaurarlas, pasarán a estado <strong>Activo (A)</strong> y sus índices se moverán
+            a la tabla temporal para permitir edición.
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <?php if ($resListar && $resListar->num_rows > 0): ?>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
-                                    <td class="fw-bold"><?= htmlspecialchars((string)$row['Caja']) ?></td>
-                                    <td class="fw-bold"><?= htmlspecialchars((string)$row['Carpeta']) ?></td>
-                                    <td><?= htmlspecialchars($row['oficina'] ?? 'Sin Oficina') ?></td>
-                                    <td><?= htmlspecialchars($row['FechaIngreso']) ?></td>
-                                    <td class="text-end">
-                                        <button class="btn btn-warning btn-sm btn-restaurar" 
+                                    <th>Caja</th>
+                                    <th>Carpeta</th>
+                                    <th>Oficina</th>
+                                    <th>Fecha</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php while ($row = $resListar->fetch_assoc()): ?>
+                                    <tr>
+                                        <td class="fw-bold"><?= htmlspecialchars((string)$row['Caja']) ?></td>
+                                        <td class="fw-bold"><?= htmlspecialchars((string)$row['Carpeta']) ?></td>
+                                        <td><?= htmlspecialchars($row['oficina'] ?? 'Sin Oficina') ?></td>
+                                        <td><?= htmlspecialchars($row['FechaIngreso']) ?></td>
+                                        <td class="text-end">
+                                            <button class="btn btn-warning btn-sm btn-restaurar"
                                                 data-id="<?= $row['id'] ?>"
                                                 data-desc="Caja <?= $row['Caja'] ?> / Carpeta <?= $row['Carpeta'] ?>">
-                                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <p class="text-center text-muted my-4">No hay carpetas cerradas para restaurar.</p>
-            <?php endif; ?>
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="text-center text-muted my-4">No hay carpetas cerradas para restaurar.</p>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.btn-restaurar').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = btn.getAttribute('data-id');
-            const desc = btn.getAttribute('data-desc');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.btn-restaurar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = btn.getAttribute('data-id');
+                    const desc = btn.getAttribute('data-desc');
 
-            Swal.fire({
-                title: '¿Restaurar Carpeta?',
-                text: `Se habilitará la edición para: ${desc}`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#ffc107', // warning color
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, restaurar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    restaurar(id);
-                }
+                    Swal.fire({
+                        title: '¿Restaurar Carpeta?',
+                        text: `Se habilitará la edición para: ${desc}`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ffc107', // warning color
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, restaurar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            restaurar(id);
+                        }
+                    });
+                });
             });
-        });
-    });
 
-    function restaurar(id) {
-        const formData = new FormData();
-        formData.append('accion', 'restaurar_carpeta');
-        formData.append('id_carpeta', id);
+            function restaurar(id) {
+                const formData = new FormData();
+                formData.append('accion', 'restaurar_carpeta');
+                formData.append('id_carpeta', id);
 
-        fetch('restaurar_carpeta.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                Swal.fire('Restaurada', data.message, 'success')
-                    .then(() => location.reload());
-            } else {
-                Swal.fire('Error', data.message, 'error');
+                fetch('restaurar_carpeta.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Restaurada', data.message, 'success')
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'Error de conexión', 'error');
+                    });
             }
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire('Error', 'Error de conexión', 'error');
         });
-    }
-});
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

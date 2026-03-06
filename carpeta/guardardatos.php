@@ -9,7 +9,7 @@ require "../rene/conexion3.php";
 // AUTENTICACIÓN
 // ==========================
 if (empty($_SESSION['authenticated']) || empty($_SESSION['user_id'])) {
-    header('Location: ../login.php');
+    header('Location: ../login/login.php');
     exit();
 }
 
@@ -17,8 +17,8 @@ if (empty($_SESSION['authenticated']) || empty($_SESSION['user_id'])) {
 // SOLO POST
 // ==========================
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    $_SESSION['mensaje'] = "Método no permitido.";
-    header("Location: ../agregarcarpeta.php");
+    // Si la visita es por GET (ej. navegación hacia atrás en el navegador), redirigir limpiamente
+    header("Location: agregarcarpeta.php");
     exit();
 }
 
@@ -129,6 +129,9 @@ try {
     $_SESSION['caja']    = $caja;
     $_SESSION['carpeta'] = $carpeta;
     $_SESSION['mensaje'] = "Carpeta creada correctamente.";
+
+    // Regenerar el token CSRF para evitar envíos dobles si el usuario navega hacia atrás y adelante
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
     header("Location: indice.php");
     exit();

@@ -56,34 +56,41 @@ if (!empty($_SESSION['user_id'])) {
 
 <body>
 
-    <nav class="navbar fixed-top" style="background-color: #e3f2fd;" data-bs-theme="light">
+    <nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="../index.php">
                 <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
                 <span class="ms-2 fw-bold text-primary">ADMIN</span>
             </a>
 
-            <div class="d-flex align-items-center gap-3 ms-auto">
-                <div class="d-flex align-items-center gap-2">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <div class="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill shadow-sm ms-lg-3 my-2 my-lg-0 me-auto" style="width: fit-content;">
                     <img src="<?= h($userAvatar) ?>"
                         class="rounded-circle"
                         width="35"
                         height="35"
                         style="object-fit: cover; border: 2px solid #0d6efd;"
                         alt="Avatar de <?= h($usuario) ?>">
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column lh-sm">
                         <span class="fw-bold text-dark" style="font-size: 0.9rem;"><?= h($usuario) ?></span>
                         <span class="text-muted" style="font-size: 0.75rem;"><?= h($_SESSION['dependencia'] ?? 'Admin') ?></span>
                     </div>
                 </div>
-                <a href="../index.php" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-house me-2"></i>Volver al Inicio
-                </a>
-                <form method="POST" action="../index.php" class="d-inline">
-                    <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i>Salir
-                    </button>
-                </form>
+
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 ms-auto w-100 justify-content-lg-end">
+                    <a href="../index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
+                        <i class="bi bi-house me-2"></i>Volver al Inicio
+                    </a>
+                    <form method="POST" action="../index.php" class="m-0">
+                        <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center">
+                            <i class="bi bi-box-arrow-right me-1"></i>Salir
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>

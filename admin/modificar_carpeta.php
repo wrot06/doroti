@@ -30,18 +30,24 @@ $usuario = $_SESSION['username'] ?? 'Admin';
 </head>
 <body class="bg-light">
 
-<nav class="navbar fixed-top" style="background-color: #e3f2fd;" data-bs-theme="light">
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="../index.php">
             <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
             <span class="ms-2 fw-bold text-primary">ADMIN</span>
         </a>
         
-        <div class="d-flex align-items-center gap-3 ms-auto">
-            <span class="text-muted">Hola, <?= htmlspecialchars($usuario) ?></span>
-            <a href="admin.php" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-2"></i>Volver al Panel
-            </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 ms-auto w-100 justify-content-lg-end mt-2 mt-lg-0">
+                <span class="text-muted d-block d-lg-inline text-start text-lg-center">Hola, <?= htmlspecialchars($usuario) ?></span>
+                <a href="admin.php" class="btn btn-outline-secondary btn-sm text-start text-lg-center w-100 w-lg-auto">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Panel
+                </a>
+            </div>
         </div>
     </div>
 </nav>

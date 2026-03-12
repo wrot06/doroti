@@ -30,10 +30,20 @@ try {
         throw new Exception("La página final no puede ser mayor a 200.");
     }
 
+    // Obtener el id_carpeta de POST o sesión
+    $id_carpeta = filter_input(INPUT_POST, 'id_carpeta', FILTER_VALIDATE_INT);
+    if (!$id_carpeta) {
+        $id_carpeta = $_SESSION['id_carpeta'] ?? null;
+    }
+
+    if (!$id_carpeta) {
+        throw new Exception("No se pudo determinar id_carpeta. Reinicie sesión o verifique la carpeta.");
+    }
+
     // Obtener la última página final
-    $sql_last_page = "SELECT MAX(NoFolioFin) as ultima_pagina FROM IndiceTemp WHERE Caja = ? AND Carpeta = ?";
+    $sql_last_page = "SELECT MAX(NoFolioFin) as ultima_pagina FROM IndiceTemp WHERE carpeta_id = ?";
     $stmt_last_page = $conec->prepare($sql_last_page);
-    $stmt_last_page->bind_param("ii", $caja, $carpeta);
+    $stmt_last_page->bind_param("i", $id_carpeta);
     $stmt_last_page->execute();
     $result_last_page = $stmt_last_page->get_result();
     $ultima_pagina = $result_last_page->fetch_assoc()['ultima_pagina'] ?? 0;
@@ -48,9 +58,9 @@ try {
     $paginas = $paginaFinal - $paginaInicio + 1;
 
     // Obtener el próximo id2
-    $sql_last_id = "SELECT MAX(id2) as last_id FROM IndiceTemp WHERE Caja = ? AND Carpeta = ?";
+    $sql_last_id = "SELECT MAX(id2) as last_id FROM IndiceTemp WHERE carpeta_id = ?";
     $stmt_last_id = $conec->prepare($sql_last_id);
-    $stmt_last_id->bind_param("ii", $caja, $carpeta);
+    $stmt_last_id->bind_param("i", $id_carpeta);
     $stmt_last_id->execute();
     $result_last_id = $stmt_last_id->get_result();
     $last_id = $result_last_id->fetch_assoc()['last_id'] ?? 0;
@@ -72,24 +82,6 @@ try {
     }
     
     $soporte = "F"; 
-
-    $id_carpeta = $_SESSION['id_carpeta'] ?? null;
-    
-    // Si no está en sesión, intentar recuperarlo de DB (fallback)
-    if (!$id_carpeta) {
-        $stmtId = $conec->prepare("SELECT id FROM Carpetas WHERE Caja = ? AND Carpeta = ? LIMIT 1");
-        $stmtId->bind_param("ii", $caja, $carpeta);
-        $stmtId->execute();
-        $resId = $stmtId->get_result();
-        if ($rowId = $resId->fetch_assoc()) {
-            $id_carpeta = $rowId['id'];
-        }
-        $stmtId->close();
-    }
-
-    if (!$id_carpeta) {
-        throw new Exception("No se pudo determinar id_carpeta. Reinicie sesión o verifique la carpeta.");
-    }
 
     // INSERT con id_carpeta agregado
     $sql = "INSERT INTO IndiceTemp 

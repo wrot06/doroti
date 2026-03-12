@@ -119,11 +119,12 @@ $_SESSION['id_carpeta'] = $id_carpeta;
 $sqlCap = "
     SELECT id2, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas
     FROM IndiceTemp
-    WHERE Caja = ? AND Carpeta = ?
+    WHERE carpeta_id = ?
     ORDER BY NoFolioInicio ASC, id2 ASC
 ";
+$bind_id_carpeta = $id_carpeta ? $id_carpeta : 0;
 $stmtCap = $conec->prepare($sqlCap);
-$stmtCap->bind_param('ii', $caja, $carpeta);
+$stmtCap->bind_param('i', $bind_id_carpeta);
 $stmtCap->execute();
 $resCap = $stmtCap->get_result();
 

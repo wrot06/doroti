@@ -108,8 +108,7 @@ $("#guardarCambios").on("click", function () {
         data: {
             id: id,
             titulo: tituloCompleto,
-            caja: window.caja,
-            carpeta: window.carpeta
+            id_carpeta: window.id_carpeta
         },
         dataType: 'json',
         success: function (response) {

@@ -9,11 +9,10 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     exit();
 }
 
-// Verifica si el ID del capítulo, caja y carpeta fueron enviados
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST['caja']) && isset($_POST['carpeta'])) {
+// Verifica si el ID del capítulo e id_carpeta fueron enviados
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST['id_carpeta'])) {
     $idCapitulo = intval($_POST['id']); // Sanitiza el ID recibido
-    $caja = intval($_POST['caja']); // Sanitiza la caja
-    $carpeta = intval($_POST['carpeta']); // Sanitiza la carpeta
+    $id_carpeta = intval($_POST['id_carpeta']); // Sanitiza la carpeta_id
 
     // Verifica la conexión
     if ($conec->connect_error) {
@@ -26,14 +25,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST
 
     try {
         // Paso 1: Eliminar el capítulo
-        $sql_delete = "DELETE FROM IndiceTemp WHERE id2 = ? AND Caja = ? AND Carpeta = ?";
+        $sql_delete = "DELETE FROM IndiceTemp WHERE id2 = ? AND carpeta_id = ?";
         $stmt_delete = $conec->prepare($sql_delete);
 
         if ($stmt_delete === false) {
             throw new Exception("Error en la preparación de la consulta: " . $conec->error);
         }
 
-        $stmt_delete->bind_param("iii", $idCapitulo, $caja, $carpeta);
+        $stmt_delete->bind_param("ii", $idCapitulo, $id_carpeta);
 
         if (!$stmt_delete->execute()) {
             throw new Exception("Error al eliminar el capítulo: " . $stmt_delete->error);
@@ -42,14 +41,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST
         $stmt_delete->close();
 
         // Paso 2: Obtener los capítulos restantes, ordenados por id2
-        $sql_select = "SELECT id2, paginas FROM IndiceTemp WHERE Caja = ? AND Carpeta = ? ORDER BY id2 ASC";
+        $sql_select = "SELECT id2, paginas FROM IndiceTemp WHERE carpeta_id = ? ORDER BY id2 ASC";
         $stmt_select = $conec->prepare($sql_select);
 
         if ($stmt_select === false) {
             throw new Exception("Error en la preparación de la consulta: " . $conec->error);
         }
 
-        $stmt_select->bind_param("ii", $caja, $carpeta);
+        $stmt_select->bind_param("i", $id_carpeta);
 
         if (!$stmt_select->execute()) {
             throw new Exception("Error al obtener los capítulos: " . $stmt_select->error);
@@ -62,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST
         // Paso 3: Recalcular páginas y actualizar cada capítulo
         $siguientePagina = 1;
 
-        $sql_update = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ?, id2 = ? WHERE Caja = ? AND Carpeta = ? AND id2 = ?";
+        $sql_update = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ?, id2 = ? WHERE carpeta_id = ? AND id2 = ?";
         $stmt_update = $conec->prepare($sql_update);
 
         if ($stmt_update === false) {
@@ -74,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST
             $paginaFinal = $paginaInicio + $capitulo['paginas'] - 1;
             $nuevoId2 = $index + 1;
 
-            $stmt_update->bind_param("iiiiii", $paginaInicio, $paginaFinal, $nuevoId2, $caja, $carpeta, $capitulo['id2']);
+            $stmt_update->bind_param("iiiii", $paginaInicio, $paginaFinal, $nuevoId2, $id_carpeta, $capitulo['id2']);
 
             if (!$stmt_update->execute()) {
                 throw new Exception("Error al actualizar el capítulo: " . $stmt_update->error);

@@ -7,17 +7,16 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 // Obtener y validar parámetros
-$caja = isset($_GET['caja']) ? intval($_GET['caja']) : null;
-$carpeta = isset($_GET['carpeta']) ? intval($_GET['carpeta']) : null;
+$id_carpeta = isset($_GET['id_carpeta']) ? intval($_GET['id_carpeta']) : null;
 
-if (is_null($caja) || is_null($carpeta)) {
+if (is_null($id_carpeta)) {
     echo json_encode(['status' => 'error', 'message' => 'Parámetros inválidos.']);
     exit();
 }
 
 $sql = "SELECT id2 AS id, DescripcionUnidadDocumental AS titulo, paginas, NoFolioInicio AS paginaInicio, NoFolioFin AS paginaFinal 
         FROM IndiceTemp 
-        WHERE Caja = ? AND Carpeta = ?";
+        WHERE carpeta_id = ?";
 $stmt = $conec->prepare($sql);
 
 if ($stmt === false) {
@@ -25,7 +24,7 @@ if ($stmt === false) {
     exit();
 }
 
-$stmt->bind_param("ii", $caja, $carpeta);
+$stmt->bind_param("i", $id_carpeta);
 $stmt->execute();
 $result = $stmt->get_result();
 

@@ -5,19 +5,18 @@ require "conexion3.php";
 // Recibir datos
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 $titulo = trim($_POST['titulo'] ?? '');
-$caja = filter_input(INPUT_POST, 'caja', FILTER_VALIDATE_INT);
-$carpeta = filter_input(INPUT_POST, 'carpeta', FILTER_VALIDATE_INT);
+$id_carpeta = filter_input(INPUT_POST, 'id_carpeta', FILTER_VALIDATE_INT);
 
 // Validar campos obligatorios
-if (!$id || !$titulo || !$caja || !$carpeta) {
+if (!$id || !$titulo || !$id_carpeta) {
     echo json_encode(['status' => 'error', 'message' => 'Datos incompletos']);
     exit;
 }
 
 // Actualizar solo el título
-$sql = "UPDATE IndiceTemp SET DescripcionUnidadDocumental = ? WHERE id2 = ? AND Caja = ? AND Carpeta = ?";
+$sql = "UPDATE IndiceTemp SET DescripcionUnidadDocumental = ? WHERE id2 = ? AND carpeta_id = ?";
 $stmt = $conec->prepare($sql);
-$stmt->bind_param("siii", $titulo, $id, $caja, $carpeta);
+$stmt->bind_param("sii", $titulo, $id, $id_carpeta);
 
 if ($stmt->execute()) {
     echo json_encode(['status' => 'success']);

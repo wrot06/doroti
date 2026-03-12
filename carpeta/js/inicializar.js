@@ -8,8 +8,7 @@ $(function () {
 
 function inicializarPaginas() {
     $.getJSON('../rene/obtener_capitulos.php', {
-        caja: window.caja,
-        carpeta: window.carpeta
+        id_carpeta: window.id_carpeta
     }, function (response) {
         let maxFinal = 0;
         response.forEach(cap => {

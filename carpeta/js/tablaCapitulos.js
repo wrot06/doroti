@@ -58,7 +58,7 @@ $(document).on("click", ".eliminar", function () {
     const id = $row.data("id");
 
     if (confirm("¿Eliminar este capítulo?")) {
-        $.post('../rene/eliminar_capitulo.php', { id, caja: window.caja, carpeta: window.carpeta }, function (data) {
+        $.post('../rene/eliminar_capitulo.php', { id, id_carpeta: window.id_carpeta }, function (data) {
             const res = JSON.parse(data);
             if (res.status === 'success') {
                 $row.remove();

@@ -277,7 +277,7 @@ $proximaPagina = $ultimaPagina + 1;
                         <button class="btn btn-primary " type="button" onclick="agregarAlTextarea()">+</button>
                     </div>
                 </div>
-                <textarea id="titulo" class="form-control form-control-sm" placeholder="Asunto" required style="font-size:1.1rem; height:150px;"></textarea>
+                <textarea id="titulo" class="form-control form-control-sm" placeholder="Asunto" required style="font-size:1.4rem; height:150px; font-family: 'Courier New', Courier, monospace;"></textarea>
                 <div class="text-right"><small id="charCounter" class="text-muted">0 / 170</small></div>
             </div>
 

@@ -277,7 +277,8 @@ $proximaPagina = $ultimaPagina + 1;
                         <button class="btn btn-primary " type="button" onclick="agregarAlTextarea()">+</button>
                     </div>
                 </div>
-                <textarea id="titulo" class="form-control form-control-sm" placeholder="Asunto" required style="font-size:1.4rem; height:150px; font-family: 'Courier New', Courier, monospace;"></textarea>
+                <textarea id="titulo" class="form-control form-control-sm" placeholder="Asunto" required
+                    style="font-size:1.4rem;height:145px;font-family:Arial,Helvetica,sans-serif;line-height:1.2;letter-spacing:-0.3px;color:black;"></textarea>
                 <div class="text-right"><small id="charCounter" class="text-muted">0 / 170</small></div>
             </div>
 
@@ -288,7 +289,7 @@ $proximaPagina = $ultimaPagina + 1;
                     <input type="number" id="paginaFinal" class="form-control" placeholder="Página de Finalización" value="<?= e((string)$proximaPagina) ?>" min="<?= e((string)$proximaPagina) ?>" required style="font-size:1.1rem;">
 
                 </div>
-                <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar (ENTER)</button>
+                <button type="submit" class="btn btn-primary btn-sm ml-2">Agregar 2 (ENTER)</button>
             </div>
         </form>
 
@@ -363,6 +364,7 @@ $proximaPagina = $ultimaPagina + 1;
         window.carpeta = <?= (int)$carpeta ?>;
         window.dependencia_id = <?= (int)$dependencia_id ?>;
         window.id_carpeta = <?= (int)$_SESSION['id_carpeta'] ?>; // <-- nueva variable
+        window.siguientePagina = <?= (int)$proximaPagina ?>;
     </script>
 
 </body>

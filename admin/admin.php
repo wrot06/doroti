@@ -138,6 +138,18 @@ if (!empty($_SESSION['user_id'])) {
                 </div>
             </div>
 
+            <!-- Gestionar Series -->
+            <div class="col-md-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-body text-center">
+                        <i class="bi bi-archive fs-1 text-warning mb-3"></i>
+                        <h5 class="card-title">Gestionar Series</h5>
+                        <p class="card-text">Administrar series documentales y asignarlas a oficinas.</p>
+                        <a href="gestionar_series.php" class="btn btn-warning text-dark">Ir a Series</a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Gestionar Subseries -->
             <div class="col-md-4">
                 <div class="card h-100 border-primary" style="border-color: #0dcaf0 !important;">

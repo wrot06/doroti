@@ -64,7 +64,7 @@ class UserService {
         $result = $stmt->get_result();
         
         if ($row = $result->fetch_assoc()) {
-            if ($row['avatar'] && file_exists('uploads/avatars/' . basename($row['avatar']))) {
+            if ($row['avatar'] && file_exists(__DIR__ . '/../uploads/avatars/' . basename($row['avatar']))) {
                 $stmt->close();
                 return 'uploads/avatars/' . basename($row['avatar']);
             }

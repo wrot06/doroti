@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="text-center mb-4">
                     <img src="../img/Doroti logo1.png" alt="Logo" class="img-fluid mb-3" style="max-width: 120px;">
                     <p class="text-muted small mb-0 px-2">
-                        <strong>Doroti</strong> es un software de <strong>Gestión Documental</strong> diseñado para organizar, preservar y buscar rápidamente los archivo de tu dependencia.
+                        <strong>Doroti - DEV</strong> es un software de <strong>Gestión Documental</strong> diseñado para organizar, preservar y buscar rápidamente los archivo de tu dependencia.
                     </p>
                 </div>
                 <?php if ($error): ?>

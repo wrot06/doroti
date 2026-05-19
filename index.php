@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 // Cargar dependencias
@@ -39,6 +40,7 @@ $userAvatar = $userService->getUserAvatar($user_id);
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="img/hueso.png">
@@ -48,134 +50,140 @@ $userAvatar = $userService->getUserAvatar($user_id);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 </head>
+
 <body>
 
 
-<nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
-    <div class="container-fluid">
-        <!-- Logo -->
-        <a class="navbar-brand d-flex align-items-center" href="#">
-            <img src="img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
-        </a>
+    <nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
+            </a>
 
-        <!-- Botón Hamburguesa -->
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <!-- Botón Hamburguesa -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Usuario + Oficina -->
-            <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
-                <img src="<?= ResponseHelper::h($userAvatar) ?>" 
-                     class="rounded-circle me-2" 
-                     width="32" 
-                     height="32" 
-                     style="object-fit: cover; border: 2px solid #0d6efd;"
-                     alt="Avatar de <?= ResponseHelper::h($usuario) ?>">
-                <div class="d-flex flex-column lh-sm">
-                    <span class="fw-semibold"><?= ResponseHelper::h($usuario) ?></span>
-                    <small class="text-muted"><?= ResponseHelper::h($oficina) ?></small>
-                </div>
-            </div>
-
-            <!-- Menú -->
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
-                <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
-                <a href="admin/admin.php" class="btn btn-warning btn-sm fw-bold">
-                    <i class="bi bi-shield-lock-fill me-2"></i>Admin
-                </a>
-                <?php endif; ?>
-
-                <a href="buscador/buscador.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                    <i class="bi bi-search me-2"></i>Buscador
-                </a>
-
-                <a href="rotulos/rotulo.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                    <i class="bi bi-check me-2"></i>Rotulos
-                </a>
-
-                <a href="pdf/inventario.php" class="btn btn-outline-primary btn-sm text-start text-lg-center" target="_blank">
-                    <i class="bi bi-file-earmark-text me-2"></i>Inventario
-                </a>
-
-                <a href="digital/documents.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                    <i class="bi bi-file-earmark-pdf-fill me-2"></i>Digital
-                </a>
-
-                <form method="POST" class="m-0">
-                    <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</nav>
-
-<main class="container-fluid mt-4">
-    <div class="folder-grid">
-        <!-- Crear nueva carpeta -->
-        <div class="folder-card" style="background:rgb(40, 167, 163); color:white;">
-            <form method="POST" action="carpeta/agregarcarpeta.php" class="h-100">
-                <div class="text-center p-3 h-100">
-                    <img src="img/Carpeta.png" class="folder-icon" alt="Icono de carpeta">
-                    <h5 class="mb-2 fw-semibold text-light">Crear nueva carpeta</h5>
-                </div>
-                <button type="submit" class="btn btn-link stretched-link p-0 m-0 border-0" aria-label="Crear nueva carpeta"></button>
-            </form>
-        </div>
-
-        <!-- Mostrar carpetas -->
-        <?php if ($resultado && mysqli_num_rows($resultado) > 0): ?>
-            <?php while ($fila = mysqli_fetch_assoc($resultado)):
-                $nomenclatura  = "Carpeta " . ResponseHelper::h($fila["Carpeta"]);
-                $nomenclatura2 = "C" . ResponseHelper::h($fila["Caja"]) . "-" . ResponseHelper::h($fila["Carpeta"]);
-                $color = $fila['Caja'] % 2 === 0 ? '#a3d2ca' : '#f7d9d9';
-            ?>
-            <div class="folder-card">
-                <form method="POST" action="carpeta/indice.php" class="h-100 position-relative">
-                    <input type="hidden" name="csrf_token" value="<?= ResponseHelper::h($_SESSION['csrf_token']) ?>">
-                    <input type="hidden" name="Caja" value="<?= ResponseHelper::h($fila['Caja']) ?>">
-                    <input type="hidden" name="carpeta" value="<?= ResponseHelper::h($fila['Carpeta']) ?>">
-                    <input type="hidden" name="oficina" value="<?= ResponseHelper::h($fila['oficina']) ?>">
-                    <input type="hidden" name="dependencia_id" value="<?= ResponseHelper::h($fila['dependencia_id']) ?>">
-
-
-                    <div class="folder-badge">Caja <?= ResponseHelper::h($fila["Caja"]) ?></div>
-
-                    <div class="text-center p-3 h-100">
-                        <div class="stretched-link-overlay"></div>
-                        <img src="img/Carpeta.png" class="folder-icon" alt="Icono de carpeta">
-                        <h5 class="mb-2 fw-semibold text-dark"><?= $nomenclatura ?></h5>
-                        <div class="text-primary fs-6">                            
-                            <?= ResponseHelper::h($fila['oficina']) ?>
-                        </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Usuario + Oficina -->
+                <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
+                    <img src="<?= ResponseHelper::h($userAvatar) ?>"
+                        class="rounded-circle me-2"
+                        width="32"
+                        height="32"
+                        style="object-fit: cover; border: 2px solid #0d6efd;"
+                        alt="Avatar de <?= ResponseHelper::h($usuario) ?>">
+                    <div class="d-flex flex-column lh-sm">
+                        <span class="fw-semibold"><?= ResponseHelper::h($usuario) ?></span>
+                        <small class="text-muted"><?= ResponseHelper::h($oficina) ?></small>
                     </div>
+                </div>
 
-                    <button type="submit" class="btn btn-link stretched-link p-0 m-0 border-0"></button>
+                <!-- Menú -->
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
+                    <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
+                        <a href="admin/admin.php" class="btn btn-warning btn-sm fw-bold">
+                            <i class="bi bi-shield-lock-fill me-2"></i>Admin
+                        </a>
+                    <?php endif; ?>
+
+                    <a href="buscador/buscador.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
+                        <i class="bi bi-search me-2"></i>Buscador
+                    </a>
+
+                    <a href="rotulos/rotulo.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
+                        <i class="bi bi-check me-2"></i>Rotulos
+                    </a>
+
+                    <a href="pdf/inventario.php" class="btn btn-outline-primary btn-sm text-start text-lg-center" target="_blank">
+                        <i class="bi bi-file-earmark-text me-2"></i>Inventario
+                    </a>
+
+                    <a href="digital/documents.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Digital
+                    </a>
+
+                    <a href="tablas/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
+                        <i class="bi bi-table me-2"></i>Tablas
+                    </a>
+
+                    <form method="POST" class="m-0">
+                        <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid mt-4">
+        <div class="folder-grid">
+            <!-- Crear nueva carpeta -->
+            <div class="folder-card" style="background:rgb(40, 167, 163); color:white;">
+                <form method="POST" action="carpeta/agregarcarpeta.php" class="h-100">
+                    <div class="text-center p-3 h-100">
+                        <img src="img/Carpeta.png" class="folder-icon" alt="Icono de carpeta">
+                        <h5 class="mb-2 fw-semibold text-light">Crear nueva carpeta</h5>
+                    </div>
+                    <button type="submit" class="btn btn-link stretched-link p-0 m-0 border-0" aria-label="Crear nueva carpeta"></button>
                 </form>
             </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <div class="col-12 text-center py-5">
-                <div class="alert alert-info shadow-sm"><i class="bi bi-folder-x me-2"></i>No se encontraron carpetas disponibles</div>
-            </div>
-        <?php endif; ?>
-    </div>
-</main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-function searchItems() {
-    const searchTerm = document.getElementById('search').value.toLowerCase();
-    const cards = document.querySelectorAll('.folder-card');
-    cards.forEach(card => {
-        const content = Array.from(card.querySelectorAll('h5, .text-primary'))
-                             .map(el => el.textContent.toLowerCase())
-                             .join(' ');
-        card.style.display = content.includes(searchTerm) ? 'block' : 'none';
-    });
-}
-</script>
+            <!-- Mostrar carpetas -->
+            <?php if ($resultado && mysqli_num_rows($resultado) > 0): ?>
+                <?php while ($fila = mysqli_fetch_assoc($resultado)):
+                    $nomenclatura  = "Carpeta " . ResponseHelper::h($fila["Carpeta"]);
+                    $nomenclatura2 = "C" . ResponseHelper::h($fila["Caja"]) . "-" . ResponseHelper::h($fila["Carpeta"]);
+                    $color = $fila['Caja'] % 2 === 0 ? '#a3d2ca' : '#f7d9d9';
+                ?>
+                    <div class="folder-card">
+                        <form method="POST" action="carpeta/indice.php" class="h-100 position-relative">
+                            <input type="hidden" name="csrf_token" value="<?= ResponseHelper::h($_SESSION['csrf_token']) ?>">
+                            <input type="hidden" name="Caja" value="<?= ResponseHelper::h($fila['Caja']) ?>">
+                            <input type="hidden" name="carpeta" value="<?= ResponseHelper::h($fila['Carpeta']) ?>">
+                            <input type="hidden" name="oficina" value="<?= ResponseHelper::h($fila['oficina']) ?>">
+                            <input type="hidden" name="dependencia_id" value="<?= ResponseHelper::h($fila['dependencia_id']) ?>">
+
+
+                            <div class="folder-badge">Caja <?= ResponseHelper::h($fila["Caja"]) ?></div>
+
+                            <div class="text-center p-3 h-100">
+                                <div class="stretched-link-overlay"></div>
+                                <img src="img/Carpeta.png" class="folder-icon" alt="Icono de carpeta">
+                                <h5 class="mb-2 fw-semibold text-dark"><?= $nomenclatura ?></h5>
+                                <div class="text-primary fs-6">
+                                    <?= ResponseHelper::h($fila['oficina']) ?>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-link stretched-link p-0 m-0 border-0"></button>
+                        </form>
+                    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-info shadow-sm"><i class="bi bi-folder-x me-2"></i>No se encontraron carpetas disponibles</div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function searchItems() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const cards = document.querySelectorAll('.folder-card');
+            cards.forEach(card => {
+                const content = Array.from(card.querySelectorAll('h5, .text-primary'))
+                    .map(el => el.textContent.toLowerCase())
+                    .join(' ');
+                card.style.display = content.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+    </script>
 
 </body>
+
 </html>
 <?php ob_end_flush(); ?>

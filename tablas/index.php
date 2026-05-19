@@ -709,14 +709,13 @@ $vista = $_GET['vista'] ?? 'global';
                 <?php $usuIdx = 0;
                 foreach ($byUsuario as $usuNombre => $usuData):
                     $usuId = 'usu' . $usuIdx++;
+                    $usuAvatar = $userService->getUserAvatar($usuData['user_id'] ?? 0);
                 ?>
                     <div class="accordion-item border-0 mb-2 rounded overflow-hidden shadow-sm usu-item"
                         data-usu="<?= strtolower(ResponseHelper::h($usuNombre)) ?>">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed"
-                                type="button" data-bs-toggle="collapse"
-                                data-bs-target="#<?= $usuId ?>">
-                                <i class="bi bi-person me-2 text-primary"></i>
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $usuId ?>">
+                                <img src="../<?= ResponseHelper::h($usuAvatar) ?>" class="rounded-circle me-2" width="24" height="24" style="object-fit:cover; border:1px solid var(--clr-primary);" alt="Avatar">
                                 <span style="flex-grow:1;"><?= ResponseHelper::h($usuNombre) ?></span>
                                 <span style="display:flex;gap:.4rem;margin-right:.5rem;">
                                     <span class="dep-badge"><?= number_format($usuData['subtotal']) ?> docs</span>

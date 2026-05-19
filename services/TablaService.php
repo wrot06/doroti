@@ -121,6 +121,7 @@ class TablaService
     {
         $sql = "
         SELECT
+            COALESCE(u.id, 0)                                  AS user_id,
             COALESCE(u.username, 'Sin usuario')                AS usuario,
             COALESCE(NULLIF(TRIM(i.serie), ''), 'Sin clasificar') AS serie,
             COUNT(*)                                           AS total,
@@ -139,7 +140,12 @@ class TablaService
         while ($row = $result->fetch_assoc()) {
             $usu = $row['usuario'];
             if (!isset($grouped[$usu])) {
-                $grouped[$usu] = ['series' => [], 'subtotal' => 0, 'carpetas' => 0];
+                $grouped[$usu] = [
+                    'user_id' => (int)$row['user_id'],
+                    'series' => [],
+                    'subtotal' => 0,
+                    'carpetas' => 0
+                ];
             }
             $grouped[$usu]['series'][]  = $row;
             $grouped[$usu]['subtotal'] += (int)$row['total'];

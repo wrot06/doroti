@@ -8,11 +8,11 @@ require_once __DIR__ . "/../services/UserService.php";
 require_once __DIR__ . "/../services/TablaService.php";
 
 AuthMiddleware::initSession();
-AuthMiddleware::checkAuth();
-AuthMiddleware::handleLogout();
+AuthMiddleware::checkAuth('../login/login.php');
+AuthMiddleware::handleLogout('../login/login.php');
 AuthMiddleware::generateCsrf();
 
-$user_id    = AuthMiddleware::validateUser();
+$user_id    = AuthMiddleware::validateUser('../login/login.php');
 $userService  = new UserService($conec);
 $tablaService = new TablaService($conec);
 

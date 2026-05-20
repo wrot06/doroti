@@ -108,6 +108,10 @@ $userAvatar = $userService->getUserAvatar($user_id);
                     <a href="tablas/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
                         <i class="bi bi-table me-2"></i>Tablas
                     </a>
+                    
+                    <a href="update/index.php" class="btn btn-outline-success btn-sm text-start text-lg-center">
+                        <i class="bi bi-controller me-2"></i>Juego
+                    </a>
 
                     <form method="POST" class="m-0">
                         <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>

@@ -25,19 +25,19 @@ class AuthMiddleware {
      * Verificar si el usuario está autenticado
      * Redirige a login si no está autenticado
      */
-    public static function checkAuth(): void {
+    public static function checkAuth(string $redirectUrl = 'login/login.php'): void {
         if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-            ResponseHelper::redirect('login/login.php');
+            ResponseHelper::redirect($redirectUrl);
         }
     }
     
     /**
      * Manejar cierre de sesión
      */
-    public static function handleLogout(): void {
+    public static function handleLogout(string $redirectUrl = 'login/login.php'): void {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cerrar_seccion'])) {
             session_destroy();
-            ResponseHelper::redirect('login/login.php');
+            ResponseHelper::redirect($redirectUrl);
         }
     }
     
@@ -54,10 +54,10 @@ class AuthMiddleware {
      * Validar que el usuario tenga ID de sesión
      * Retorna el user_id validado
      */
-    public static function validateUser(): int {
+    public static function validateUser(string $redirectUrl = 'login/login.php'): int {
         if (!isset($_SESSION['user_id'])) {
             $_SESSION['mensaje'] = "No se ha definido el ID de usuario. Por favor, inicie sesión nuevamente.";
-            ResponseHelper::redirect('login.php');
+            ResponseHelper::redirect($redirectUrl);
         }
         return (int)$_SESSION['user_id'];
     }

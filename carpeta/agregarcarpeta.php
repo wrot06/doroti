@@ -71,9 +71,9 @@ unset($_SESSION['mensaje']);
         <form action="guardardatos.php" method="post" id="cajaCarpetaForm" class="formulario">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <div class="form-inline">
-                <label for="caja">N° de Caja</label>
+                <label for="caja">Caja</label>
                 <input type="number" id="caja" name="caja" required min="1">
-                <label for="carpeta">N° de Carpeta</label>
+                <label for="carpeta">Carpeta</label>
                 <input type="number" id="carpeta" name="carpeta" required min="1">
             </div>
             <div class="form-actions">

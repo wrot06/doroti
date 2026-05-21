@@ -11,7 +11,7 @@ $(document).ready(function () {
 
         const etiquetaSeleccionada = $("input[name='etiqueta']:checked").val();
         if (!etiquetaSeleccionada) {
-            alert("Por favor, selecciona una etiqueta antes de agregar un capítulo.");
+            alert("Por favor, selecciona un tipo documental para ingresar un documento.");
             return;
         }
 
@@ -34,29 +34,29 @@ $(document).ready(function () {
 
         const tituloCompleto = `${etiquetaSeleccionada}: ${titulo}`;
 
-$.ajax({
-    url: '../rene/agregar_capitulo.php',
-    type: 'POST',
-    data: {
-        caja: window.caja,
-        carpeta: window.carpeta,
-        titulo: tituloCompleto,
-        paginaFinal: paginaFinal,
-        serie: etiquetaSeleccionada,
-        dependencia_id: window.dependencia_id, 
-        soporte: "f",
-        id_carpeta: window.id_carpeta // <-- aquí
-    },
-    dataType: 'json',
+        $.ajax({
+            url: '../rene/agregar_capitulo.php',
+            type: 'POST',
+            data: {
+                caja: window.caja,
+                carpeta: window.carpeta,
+                titulo: tituloCompleto,
+                paginaFinal: paginaFinal,
+                serie: etiquetaSeleccionada,
+                dependencia_id: window.dependencia_id,
+                soporte: "f",
+                id_carpeta: window.id_carpeta // <-- aquí
+            },
+            dataType: 'json',
 
-    success: function (response) {
-        if (response.status === 'success') {
-            const nuevoCapitulo = response.capitulo;
+            success: function (response) {
+                if (response.status === 'success') {
+                    const nuevoCapitulo = response.capitulo;
 
-            const filaMensaje = $capitulosTableBody.find("tr td[colspan='5']").closest("tr");
-            if (filaMensaje.length) filaMensaje.remove();
+                    const filaMensaje = $capitulosTableBody.find("tr td[colspan='5']").closest("tr");
+                    if (filaMensaje.length) filaMensaje.remove();
 
-            const nuevaFila = $(`
+                    const nuevaFila = $(`
                 <tr data-id="${nuevoCapitulo.id}" data-num-paginas="${nuevoCapitulo.num_paginas}">
                     <td class="drag-column"><span class="drag-icon">&#x21D5;</span></td>
                     <td contenteditable="true" class="editable">${nuevoCapitulo.titulo}</td>
@@ -65,37 +65,37 @@ $.ajax({
                     <td><button class="btn btn-dark btn-sm editar">Editar</button></td>
                 </tr>
             `);
-            $capitulosTableBody.append(nuevaFila);
+                    $capitulosTableBody.append(nuevaFila);
 
-            window.siguientePagina = parseInt(nuevoCapitulo.pagina_final) + 1;
-            $ultimaPagina.text(`Último folio: ${window.siguientePagina}`);
+                    window.siguientePagina = parseInt(nuevoCapitulo.pagina_final) + 1;
+                    $ultimaPagina.text(`Último folio: ${window.siguientePagina}`);
 
-            $paginaFinalInput.val(window.siguientePagina);
-            $paginaFinalInput.attr("min", window.siguientePagina);
-            $tituloInput.val('').focus();
-            window.textoFinal = ''; 
+                    $paginaFinalInput.val(window.siguientePagina);
+                    $paginaFinalInput.attr("min", window.siguientePagina);
+                    $tituloInput.val('').focus();
+                    window.textoFinal = '';
 
-            const check = document.getElementById("checkInsertar");
-            if (check && check.checked) {
-                const input = document.getElementById("textoInput");
-                if (input) {
-                    $tituloInput.val(function (i, old) {
-                        return (old.trim() === "" ? "" : old + " ") + input.value;
-                    });
+                    const check = document.getElementById("checkInsertar");
+                    if (check && check.checked) {
+                        const input = document.getElementById("textoInput");
+                        if (input) {
+                            $tituloInput.val(function (i, old) {
+                                return (old.trim() === "" ? "" : old + " ") + input.value;
+                            });
+                        }
+                    }
+
+                    document.dispatchEvent(new Event("capitulo-agregado"));
+                } else {
+                    alert(response.message || "Error al agregar el capítulo.");
                 }
+            },
+
+            error: function (xhr) {
+                console.error("Error:", xhr.responseText);
+                alert("Fallo la solicitud.");
             }
-
-            document.dispatchEvent(new Event("capitulo-agregado"));
-        } else {
-            alert(response.message || "Error al agregar el capítulo.");
-        }
-    },
-
-    error: function (xhr) {
-        console.error("Error:", xhr.responseText);
-        alert("Fallo la solicitud.");
-    }
-});
+        });
 
     });
 });

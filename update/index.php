@@ -175,6 +175,10 @@ while ($row = $resTipos->fetch_assoc()) {
 
 <body>
 
+    <a href="../index.php" class="btn btn-secondary" style="position: absolute; top: 20px; left: 20px;">
+        🏠 Inicio
+    </a>
+
     <div class="game-card">
 
         <div class="stats">

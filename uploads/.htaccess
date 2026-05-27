@@ -1,0 +1,6 @@
+<FilesMatch "\.(php|php5|php4|php3|phtml|phpt)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+# Desactivar el motor PHP
+php_flag engine off

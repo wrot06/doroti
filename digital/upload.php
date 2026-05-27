@@ -49,8 +49,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     $nombreOriginal = basename($archivo["name"]);
-    $nombreSanitizado = preg_replace('/[^a-zA-Z0-9_\.\-]/', '_', $nombreOriginal);
-    $nombreFinal = uniqid("doc_", true) . "_" . $nombreSanitizado;
+    $nombreBase = pathinfo($nombreOriginal, PATHINFO_FILENAME);
+    $nombreSanitizado = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $nombreBase);
+    $nombreFinal = uniqid("doc_", true) . "_" . $nombreSanitizado . ".pdf";
     $rutaRelativa = "tmp/" . $nombreFinal;
     $rutaCompleta = $directorio . "/" . $nombreFinal;
 

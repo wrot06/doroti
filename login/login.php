@@ -25,6 +25,11 @@ if (!empty($_SESSION['authenticated'])) {
     redirect('../index.php');
 }
 
+// Generar CSRF token si no existe
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $error = null;
 
 // Autocompletar desde cookies
@@ -32,11 +37,14 @@ $rememberedUsername = $_COOKIE['remember_username'] ?? '';
 $rememberedPassword = $_COOKIE['remember_password'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
-    $rememberMe = isset($_POST['rememberMe']);
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $error = "Token CSRF inválido. Por favor, recarga la página.";
+    } else {
+        $username = trim($_POST['username'] ?? '');
+        $password = trim($_POST['password'] ?? '');
+        $rememberMe = isset($_POST['rememberMe']);
 
-    if ($username !== '' && $password !== '') {
+        if ($username !== '' && $password !== '') {
         $stmt = $conec->prepare("
                 SELECT u.id, u.password, u.dependencia_id, d.nombre AS oficina, u.rol
                 FROM users u
@@ -54,8 +62,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_result($user_id, $db_password, $dep_id, $dep_nombre, $rol);
             $stmt->fetch();
 
-            // Aquí puedes usar password_verify si la contraseña está hasheada
-            if ($password === $db_password) {
+            $password_valid = false;
+            
+            // Si es un hash válido
+            if (password_verify($password, $db_password)) {
+                $password_valid = true;
+                if (password_needs_rehash($db_password, PASSWORD_DEFAULT)) {
+                    $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                    $upd = $conec->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    if ($upd) {
+                        $upd->bind_param("si", $new_hash, $user_id);
+                        $upd->execute();
+                        $upd->close();
+                    }
+                }
+            } 
+            // Soporte temporal para texto plano (Migración automática)
+            elseif ($password === $db_password) {
+                $password_valid = true;
+                $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                $upd = $conec->prepare("UPDATE users SET password = ? WHERE id = ?");
+                if ($upd) {
+                    $upd->bind_param("si", $new_hash, $user_id);
+                    $upd->execute();
+                    $upd->close();
+                }
+            }
+
+            if ($password_valid) {
                 $_SESSION['authenticated'] = true;
                 $_SESSION['user_id'] = $user_id;
                 $_SESSION['username'] = $username;
@@ -83,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $error = "Por favor, completa todos los campos.";
     }
+} // fin else CSRF
 }
 ?>
 <!DOCTYPE html>
@@ -110,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
                 <form method="POST" action="login.php">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
                     <div class="mb-3">
                         <label for="username" class="form-label">Usuario</label>
                         <input type="text" class="form-control" id="username" name="username"

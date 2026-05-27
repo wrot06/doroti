@@ -41,11 +41,14 @@ $sqlTipos = "
 SELECT nombre
 FROM tipo_documental
 WHERE estado=1
-AND dependencia_id=$depId
+AND dependencia_id= ?
 ORDER BY nombre ASC
 ";
 
-$resTipos = $conec->query($sqlTipos);
+$stmtTipos = $conec->prepare($sqlTipos);
+$stmtTipos->bind_param("i", $depId);
+$stmtTipos->execute();
+$resTipos = $stmtTipos->get_result();
 
 $tipos = [];
 
@@ -192,8 +195,8 @@ while ($row = $resTipos->fetch_assoc()) {
 
         <div>
             <span class="badge-custom"><?= htmlspecialchars($registro['dependencia_nombre']) ?></span>
-            <span class="badge-custom">Caja <?= $registro['Caja'] ?></span>
-            <span class="badge-custom">Carpeta <?= $registro['Carpeta'] ?></span>
+            <span class="badge-custom">N° de Caja <?= $registro['Caja'] ?></span>
+            <span class="badge-custom">N° de Carpeta <?= $registro['Carpeta'] ?></span>
         </div>
 
         <div class="descripcion">

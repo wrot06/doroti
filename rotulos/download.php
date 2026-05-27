@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 session_start();
-require "../rene/conexion3.php";
+require_once __DIR__ . '/../rene/conexion3.php';
 
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
  http_response_code(403);

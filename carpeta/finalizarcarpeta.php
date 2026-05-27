@@ -1,6 +1,6 @@
 <?php
 session_start();
-require "../rene/conexion3.php";
+require_once __DIR__ . '/../rene/conexion3.php';
 
 /* =========================
    CAPTURA Y VALIDACIÓN

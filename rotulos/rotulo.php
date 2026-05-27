@@ -1,5 +1,5 @@
 <?php
-require "../rene/conexion3.php";
+require_once __DIR__ . '/../rene/conexion3.php';
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start();

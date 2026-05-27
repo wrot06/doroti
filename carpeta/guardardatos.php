@@ -3,7 +3,7 @@ declare(strict_types=1);
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 
-require "../rene/conexion3.php";
+require_once __DIR__ . '/../rene/conexion3.php';
 
 // ==========================
 // AUTENTICACIÓN

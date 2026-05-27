@@ -1,6 +1,6 @@
 <?php
 session_start();
-require "../rene/conexion3.php";
+require_once __DIR__ . '/../rene/conexion3.php';
 
 ini_set('display_errors','1');
 ini_set('display_startup_errors','1');

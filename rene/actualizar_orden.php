@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require "conexion3.php"; // Conexión a la BD
+require_once __DIR__ . '/conexion3.php'; // Conexión a la BD
 
 // Leer el JSON del cuerpo de la solicitud POST
 $inputJSON = file_get_contents('php://input');

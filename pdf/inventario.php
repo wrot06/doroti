@@ -1,8 +1,8 @@
 <?php
 ob_start();
 session_start();
-require('fpdf.php');
-require('../rene/conexion3.php');
+require_once __DIR__ . '/fpdf.php';
+require_once __DIR__ . '/../rene/conexion3.php';
 
 $dependencia_id = (int)($_SESSION['dependencia_id'] ?? 0);
 if ($dependencia_id <= 0) {

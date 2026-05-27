@@ -83,7 +83,7 @@ unset($_SESSION['mensaje']);
 
         <!-- Listado de últimas carpetas -->
         <?php
-        require "../rene/conexion3.php";
+        require_once __DIR__ . '/../rene/conexion3.php';
 
         // Función helper definida fuera del flujo lógico condicional
         function getPastelColor(int $caja): string

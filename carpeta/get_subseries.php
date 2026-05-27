@@ -1,5 +1,5 @@
 <?php
-require "../rene/conexion3.php";
+require_once __DIR__ . '/../rene/conexion3.php';
 
 $serieId       = intval($_POST['serie_id'] ?? 0);
 $dependenciaId = intval($_POST['dependencia_id'] ?? 0);

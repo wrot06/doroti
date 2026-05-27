@@ -1,5 +1,5 @@
 <?php
-require "conexion3.php"; // Asegúrate de incluir tu archivo de conexión
+require_once __DIR__ . '/conexion3.php'; // Asegúrate de incluir tu archivo de conexión
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cambios = $_POST['cambios'];

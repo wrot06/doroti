@@ -1,6 +1,6 @@
 <?php 
 header('Content-Type: application/json');
-require "conexion3.php";
+require_once __DIR__ . '/conexion3.php';
 
 // Recibir datos
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);

@@ -86,7 +86,7 @@ unset($_SESSION['mensaje']);
 /* ===============================
    DB
 ================================ */
-require "../rene/conexion3.php";
+require_once __DIR__ . '/../rene/conexion3.php';
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $conec->set_charset('utf8mb4');
 

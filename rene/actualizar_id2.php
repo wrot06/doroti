@@ -1,5 +1,5 @@
 <?php
-require "conexion3.php";
+require_once __DIR__ . '/conexion3.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cambiosId2 = $_POST['cambios'];

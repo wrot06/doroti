@@ -1,5 +1,5 @@
 <?php
-require "conexion3.php"; // Archivo de conexión a la base de datos
+require_once __DIR__ . '/conexion3.php'; // Archivo de conexión a la base de datos
 
 session_start();
 

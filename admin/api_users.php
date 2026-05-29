@@ -399,15 +399,35 @@ function uploadAvatar($conn) {
             default => 'jpg'
         };
         
-        $filename = "user_{$user_id}.{$extension}";
+        // 1. Saneamiento estricto del ID de usuario
+        $safeUserId = (int)$user_id;
+        
+        // 2. Generar nombre de archivo único e impredecible (evita manipulación de rutas o colisiones)
+        // Usamos sha256 sobre el ID de usuario más sal criptográfica y microtime para que sea 100% inmune a Path Traversal
+        $randomSalt = bin2hex(random_bytes(16));
+        $uniqueHash = hash('sha256', "user_{$safeUserId}_{$randomSalt}_" . microtime(true));
+        $filename = "avatar_{$uniqueHash}.{$extension}";
+        
         $uploadDir = __DIR__ . '/../uploads/avatars/';
-        $targetPath = $uploadDir . $filename;
+        
+        // Validar que el directorio de subida existe y es seguro
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        $targetPath = $uploadDir . basename($filename);
         
         // Eliminar avatar anterior si existe y no es el mismo archivo
         if ($currentAvatar && $currentAvatar !== $filename) {
-            $oldPath = $uploadDir . basename($currentAvatar);
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
+            $oldFilename = basename($currentAvatar);
+            
+            // Validar que el nombre del archivo anterior sea seguro (solo caracteres alfanuméricos, guiones y puntos)
+            // Esto bloquea cualquier intento de Directory Traversal ("../../etc") en el borrado
+            if (preg_match('/^[a-zA-Z0-9_\-\.]+$/', $oldFilename)) {
+                $oldPath = $uploadDir . $oldFilename;
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
             }
         }
         
@@ -483,12 +503,17 @@ function deleteAvatar($conn) {
         
         $avatar = $result->fetch_assoc()['avatar'];
         
-        // Eliminar archivo si existe
+        // Eliminar archivo si existe de forma segura
         if ($avatar) {
             $uploadDir = __DIR__ . '/../uploads/avatars/';
-            $filePath = $uploadDir . basename($avatar);
-            if (file_exists($filePath)) {
-                unlink($filePath);
+            $oldFilename = basename($avatar);
+            
+            // Validar que el nombre de archivo sea seguro para evitar Directory Traversal
+            if (preg_match('/^[a-zA-Z0-9_\-\.]+$/', $oldFilename)) {
+                $filePath = $uploadDir . $oldFilename;
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
         }
         

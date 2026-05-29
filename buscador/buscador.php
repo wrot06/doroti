@@ -82,66 +82,35 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
-<div class="container-fluid">
-        <!-- Logo -->
-        <a class="navbar-brand d-flex align-items-center" href="../index.php">
-            <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
-        </a>
+<?php
+if (!defined('SECURE_ACCESS')) {
+    define('SECURE_ACCESS', true);
+}
+$basePath = '../';
+$activePage = 'buscador';
+require_once "../components/navbar.php";
+?>
 
-        <!-- Botón Hamburguesa -->
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Usuario + Oficina -->
-            <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
-                <img src="<?= h($userAvatar) ?>" 
-                     class="rounded-circle me-2" 
-                     width="32" 
-                     height="32" 
-                     style="object-fit: cover; border: 2px solid #0d6efd;"
-                     alt="Avatar de <?= h($usuario) ?>">
-                <div class="d-flex flex-column lh-sm">
-                    <span class="fw-semibold text-dark" style="font-size: 0.85rem;"><?= h($usuario) ?></span>
-                    <small class="text-muted" style="font-size: 0.75rem;"><?= h($oficina) ?></small>
-                </div>
-            </div>
-
-            <!-- Menú -->
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
-                <!-- BUSCADOR -->
-                <form method="GET" action="buscador.php" class="d-flex align-items-center m-0" id="form-busqueda">
-                    <div class="input-group input-group-sm">
-                        <input class="form-control" type="text" name="search" placeholder="Buscar..." value="<?= htmlspecialchars($search) ?>" aria-label="Search" style="max-width: 180px;">
-                        <button class="btn btn-primary d-flex align-items-center" type="submit" aria-label="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-outline-secondary d-flex align-items-center" type="button" id="btn-limpiar" aria-label="Limpiar">
-                            <i class="bi bi-eraser"></i>
-                        </button>
-                    </div>
-                </form>
-
-                <a href="../index.php" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center">
-                    <i class="bi bi-house me-1"></i>Inicio
-                </a>
-
-                <!-- SALIR -->
-                <form method="POST" class="m-0">
-                    <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm d-flex align-items-center justify-content-center">
-                        <i class="bi bi-box-arrow-right me-1"></i>Salir
+<div class="container my-4" id="contenedor-padre">
+    <!-- Formulario de búsqueda principal en el cuerpo -->
+    <div class="card shadow-sm border border-light mb-4">
+        <div class="card-body p-4 bg-white rounded">
+            <h4 class="mb-3 fw-bold text-dark"><i class="bi bi-search text-primary me-2"></i>Buscador de Índices Documentales</h4>
+            <form method="GET" action="buscador.php" class="m-0" id="form-busqueda">
+                <div class="input-group">
+                    <input class="form-control form-control-lg" type="text" name="search" placeholder="Escribe términos de búsqueda (ej. factura, acta, etc.)..." value="<?= htmlspecialchars($search) ?>" aria-label="Search" required>
+                    <button class="btn btn-primary btn-lg d-flex align-items-center px-4" type="submit">
+                        <i class="bi bi-search me-2"></i>Buscar
                     </button>
-                </form>
-            </div>
+                    <button class="btn btn-outline-secondary btn-lg d-flex align-items-center" type="button" id="btn-limpiar">
+                        <i class="bi bi-eraser me-2"></i>Limpiar
+                    </button>
+                </div>
+            </form>
         </div>
-</div>
-</nav>
-
-
-
-<div class="container my-4" id="contenedor">
+    </div>
+    
+    <div id="contenedor">
 
 <?php if(empty($resultados)&&$search===''): ?>
 <div class="alert alert-info" id="mensaje-inicio">

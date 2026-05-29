@@ -59,40 +59,14 @@ body{padding-top:80px}
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm">
-<div class="container-fluid">
-
-<a class="navbar-brand d-flex align-items-center" href="../index.php">
-<img src="../img/Doroti Logo Horizontal.png" height="30">
-</a>
-
-<button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDigital" aria-controls="navbarNavDigital" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-</button>
-
-<div class="collapse navbar-collapse" id="navbarNavDigital">
-    <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm ms-lg-3 my-2 my-lg-0 order-lg-1 me-auto" style="width: fit-content;">
-        <i class="bi bi-person-circle me-2 fs-4 text-secondary"></i>
-        <div class="lh-sm">
-            <div class="fw-semibold"><?=h($usuario)?></div>
-            <small class="text-muted"><?=h($oficina)?></small>
-        </div>
-    </div>
-
-    <div class="ms-auto d-flex flex-column flex-lg-row align-items-lg-center gap-2 order-lg-2 w-100 justify-content-lg-end">
-        <a href="documents.php" class="btn btn-success btn-sm text-start text-lg-center">
-            <i class="bi bi-upload me-1"></i>Atras
-        </a>
-        <form method="POST" class="m-0">
-            <button name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center">
-                <i class="bi bi-box-arrow-right me-1"></i>Salir
-            </button>
-        </form>
-    </div>
-</div>
-
-</div>
-</nav>
+<?php
+if (!defined('SECURE_ACCESS')) {
+    define('SECURE_ACCESS', true);
+}
+$basePath = '../';
+$activePage = 'digital';
+require_once "../components/navbar.php";
+?>
 
 <main class="container py-4">
 

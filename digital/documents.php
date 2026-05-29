@@ -84,49 +84,25 @@ body{padding-top:80px}
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
-<div class="container-fluid">
-        <!-- Logo -->
-        <a class="navbar-brand d-flex align-items-center" href="../index.php">
-            <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
-        </a>
-
-        <!-- Botón Hamburguesa -->
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <!-- Usuario + Oficina -->
-            <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
-                <img src="<?= h($userAvatar) ?>" 
-                     class="rounded-circle me-2" 
-                     width="32" 
-                     height="32" 
-                     style="object-fit: cover; border: 2px solid #0d6efd;"
-                     alt="Avatar de <?= h($usuario) ?>">
-                <div class="d-flex flex-column lh-sm">
-                    <span class="fw-semibold"><?= h($usuario) ?></span>
-                    <small class="text-muted"><?= h($oficina) ?></small>
-                </div>
-            </div>
-
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
-                <input type="search" id="buscarInput" class="form-control form-control-sm w-100" placeholder="Buscar por serie o título" onkeyup="filtrarDocumentos()" style="max-width:200px">
-                <a href="digital.php" class="btn btn-success btn-sm w-100 text-start text-lg-center"><i class="bi bi-upload me-1"></i>Subir</a>
-
-                <form method="POST" class="m-0 w-100">
-                    <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center"><i class="bi bi-box-arrow-right me-2"></i>Salir</button>
-                </form>
-            </div>
-        </div>
-</div>
-</nav>
-
-
+<?php
+if (!defined('SECURE_ACCESS')) {
+    define('SECURE_ACCESS', true);
+}
+$basePath = '../';
+$activePage = 'digital';
+require_once "../components/navbar.php";
+?>
 
 <!-- CONTENIDO -->
 <main class="container py-4">
+    <!-- Barra de acciones local (Buscador y Subir) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 bg-white p-3 rounded shadow-sm border border-light">
+        <div class="d-flex align-items-center gap-2 w-100 w-md-auto" style="max-width:300px;">
+            <i class="bi bi-search text-muted"></i>
+            <input type="search" id="buscarInput" class="form-control form-control-sm" placeholder="Buscar por serie o título..." onkeyup="filtrarDocumentos()">
+        </div>
+        <a href="digital.php" class="btn btn-success btn-sm"><i class="bi bi-upload me-2"></i>Subir Documento</a>
+    </div>
 
 <?php if (!empty($_SESSION['error'])): ?>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">

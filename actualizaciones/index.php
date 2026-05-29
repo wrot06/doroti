@@ -108,34 +108,14 @@ $resultado = $conec->query($sql);
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
-        <div class="container-fluid">
-            <!-- Logo -->
-            <a class="navbar-brand d-flex align-items-center" href="../index.php">
-                <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
-            </a>
-
-            <!-- Botón Hamburguesa -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
-                    <img src="<?= htmlspecialchars($userAvatar) ?>" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover; border: 2px solid #0d6efd;" alt="Avatar">
-                    <div class="d-flex flex-column lh-sm">
-                        <span class="fw-semibold"><?= htmlspecialchars($usuario) ?></span>
-                        <small class="text-muted"><?= htmlspecialchars($oficina) ?></small>
-                    </div>
-                </div>
-
-                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
-                    <span class="badge bg-primary rounded-pill me-2">Versión <?= APP_VERSION ?></span>
-                    <a href="../index.php" class="btn btn-outline-primary btn-sm"><i class="bi bi-house me-2"></i>Inicio</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php
+    if (!defined('SECURE_ACCESS')) {
+        define('SECURE_ACCESS', true);
+    }
+    $basePath = '../';
+    $activePage = 'novedades';
+    require_once "../components/navbar.php";
+    ?>
 
     <main class="container py-4">
         <div class="row justify-content-center">

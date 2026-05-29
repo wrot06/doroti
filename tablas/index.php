@@ -74,12 +74,6 @@ $vista = $_GET['vista'] ?? 'global';
             padding-top: 72px;
         }
 
-        /* ── Navbar ────────────────────────────────────────────────── */
-        .navbar {
-            background: #fff !important;
-            border-bottom: 1px solid var(--clr-border);
-        }
-
         /* ── Page header ───────────────────────────────────────────── */
         .page-hero {
             background: linear-gradient(135deg, var(--clr-primary) 0%, var(--clr-accent) 100%);
@@ -405,64 +399,15 @@ $vista = $_GET['vista'] ?? 'global';
 <body>
 
     <!-- ══════════════════════════════════════════════════════ NAVBAR -->
-    <nav class="navbar navbar-expand-lg fixed-top shadow-sm" data-bs-theme="light">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="../index.php">
-                <img src="../img/Doroti Logo Horizontal.png" alt="Doroti" height="30">
-            </a>
+    <?php
+    if (!defined('SECURE_ACCESS')) {
+        define('SECURE_ACCESS', true);
+    }
+    $basePath = '../';
+    $activePage = 'tablas';
+    require_once "../components/navbar.php";
+    ?>
 
-            <button class="navbar-toggler border-0" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <!-- Usuario -->
-                <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0"
-                    style="width:fit-content;">
-                    <img src="../<?= ResponseHelper::h($userAvatar) ?>"
-                        class="rounded-circle me-2" width="32" height="32"
-                        style="object-fit:cover;border:2px solid var(--clr-primary);"
-                        alt="Avatar">
-                    <div class="d-flex flex-column lh-sm">
-                        <span class="fw-semibold"><?= ResponseHelper::h($usuario) ?></span>
-                        <small class="text-muted"><?= ResponseHelper::h($oficina) ?></small>
-                    </div>
-                </div>
-
-                <!-- Menú -->
-                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
-                    <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
-                        <a href="../admin/admin.php" class="btn btn-warning btn-sm fw-bold">
-                            <i class="bi bi-shield-lock-fill me-1"></i>Admin
-                        </a>
-                    <?php endif; ?>
-
-                    <a href="../buscador/buscador.php" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-search me-1"></i>Buscador
-                    </a>
-                    <a href="../rotulos/rotulo.php" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-check me-1"></i>Rótulos
-                    </a>
-                    <a href="../pdf/inventario.php" class="btn btn-outline-primary btn-sm" target="_blank">
-                        <i class="bi bi-file-earmark-text me-1"></i>Inventario
-                    </a>
-                    <a href="../digital/documents.php" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-file-earmark-pdf-fill me-1"></i>Digital
-                    </a>
-                    <a href="index.php" class="btn btn-primary btn-sm fw-bold">
-                        <i class="bi bi-table me-1"></i>Tablas
-                    </a>
-                    <form method="POST" class="m-0">
-                        <button type="submit" name="cerrar_seccion"
-                            class="btn btn-danger btn-sm text-start text-lg-center">
-                            <i class="bi bi-box-arrow-right me-1"></i>Salir
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
 
     <!-- ══════════════════════════════════════════════════════ HERO -->
     <div class="page-hero">

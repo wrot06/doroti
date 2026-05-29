@@ -90,13 +90,13 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
         </a>
 
         <!-- Botón Hamburguesa -->
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="collapse navbar-collapse" id="navbarNav">
             <!-- Usuario + Oficina -->
-            <div class="ms-lg-3 d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm my-2 my-lg-0 me-auto" style="width: fit-content;">
+            <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
                 <img src="<?= h($userAvatar) ?>" 
                      class="rounded-circle me-2" 
                      width="32" 
@@ -109,17 +109,22 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
                 </div>
             </div>
 
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto w-100 justify-content-lg-end">
+            <!-- Menú -->
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
                 <!-- BUSCADOR -->
                 <form method="GET" action="buscador.php" class="d-flex flex-column flex-lg-row gap-2 m-0" id="form-busqueda">
-                    <input class="form-control form-control-sm" type="text" name="search" placeholder="Buscar..."value="<?= htmlspecialchars($search) ?>">
+                    <input class="form-control form-control-sm" type="text" name="search" placeholder="Buscar..." value="<?= htmlspecialchars($search) ?>">
                     <button class="btn btn-outline-primary btn-sm" type="submit">
                         <i class="bi bi-search me-2"></i>Buscar
                     </button>
                     <button class="btn btn-outline-primary btn-sm" type="button" id="btn-limpiar">
-                        <i class="bi bi-eraser me-2"></i>limpiar
+                        <i class="bi bi-eraser me-2"></i>Limpiar
                     </button>
                 </form>
+
+                <a href="../index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
+                    <i class="bi bi-house me-2"></i>Inicio
+                </a>
 
                 <!-- SALIR -->
                 <form method="POST" class="m-0">

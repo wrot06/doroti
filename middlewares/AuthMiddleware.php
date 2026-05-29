@@ -36,6 +36,10 @@ class AuthMiddleware {
      */
     public static function handleLogout(string $redirectUrl = 'login/login.php'): void {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cerrar_seccion'])) {
+            // Limpiar cookie de recordarme si existe
+            if (isset($_COOKIE['remember_me'])) {
+                setcookie('remember_me', '', time() - 3600, "/");
+            }
             session_destroy();
             ResponseHelper::redirect($redirectUrl);
         }

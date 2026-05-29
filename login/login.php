@@ -4,6 +4,102 @@ declare(strict_types=1);
 session_start();
 require_once '../rene/conexion3.php';
 
+// Definir constante de acceso seguro para archivos incluidos
+if (!defined('SECURE_ACCESS')) {
+    define('SECURE_ACCESS', true);
+}
+
+// ----------------- SISTEMA DE AUTO-LOGIN SEGURO (REMEMBER ME SPLIT-TOKEN) -----------------
+function rotateRememberMeToken(mysqli $conec, int $tokenId, int $userId): void {
+    // Eliminar token usado
+    $stmt = $conec->prepare("DELETE FROM user_tokens WHERE id = ?");
+    if ($stmt) {
+        $stmt->bind_param("i", $tokenId);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
+    // Generar uno nuevo (Selector/Validator Split-Token)
+    $newSelector = bin2hex(random_bytes(8));
+    $newValidator = bin2hex(random_bytes(32));
+    $newHashedValidator = hash('sha256', $newValidator);
+    $newExpires = date('Y-m-d H:i:s', time() + 30 * 24 * 60 * 60);
+    
+    $stmtInsert = $conec->prepare("
+        INSERT INTO user_tokens (user_id, selector, hashed_validator, expires_at)
+        VALUES (?, ?, ?, ?)
+    ");
+    if ($stmtInsert) {
+        $stmtInsert->bind_param("isss", $userId, $newSelector, $newHashedValidator, $newExpires);
+        $stmtInsert->execute();
+        $stmtInsert->close();
+        
+        $cookieValue = $newSelector . ':' . $newValidator;
+        $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+        setcookie('remember_me', $cookieValue, time() + 30 * 24 * 60 * 60, "/", "", $isSecure, true);
+    }
+}
+
+function clearRememberMeCookie(): void {
+    if (isset($_COOKIE['remember_me'])) {
+        setcookie('remember_me', '', time() - 3600, "/");
+    }
+}
+
+function attemptCookieAutoLogin(mysqli $conec): bool {
+    $cookie = $_COOKIE['remember_me'] ?? '';
+    if (empty($cookie) || strpos($cookie, ':') === false) {
+        return false;
+    }
+    
+    list($selector, $validator) = explode(':', $cookie, 2);
+    
+    $stmt = $conec->prepare("
+        SELECT ut.id, ut.user_id, ut.hashed_validator, ut.expires_at, 
+               u.username, u.dependencia_id, d.nombre AS oficina, u.rol
+        FROM user_tokens ut
+        INNER JOIN users u ON ut.user_id = u.id
+        LEFT JOIN dependencias d ON d.id = u.dependencia_id
+        WHERE ut.selector = ? AND ut.expires_at > NOW()
+        LIMIT 1
+    ");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param("s", $selector);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res->fetch_assoc();
+    $stmt->close();
+    
+    if ($row) {
+        // Validación en tiempo constante para evitar ataques de temporización
+        if (hash_equals($row['hashed_validator'], hash('sha256', $validator))) {
+            $_SESSION['authenticated'] = true;
+            $_SESSION['user_id'] = $row['user_id'];
+            $_SESSION['username'] = $row['username'];
+            $_SESSION['dependencia_id'] = $row['dependencia_id'];
+            $_SESSION['oficina'] = $row['oficina'];
+            $_SESSION['rol'] = $row['rol'];
+            $_SESSION['LAST_ACTIVITY'] = time();
+            
+            rotateRememberMeToken($conec, (int)$row['id'], (int)$row['user_id']);
+            return true;
+        }
+    }
+    
+    clearRememberMeCookie();
+    return false;
+}
+
+// Intentar auto-login si no está autenticado y tiene la cookie remember_me
+if (empty($_SESSION['authenticated']) && isset($_COOKIE['remember_me'])) {
+    if (attemptCookieAutoLogin($conec)) {
+        header("Location: ../index.php");
+        exit();
+    }
+}
+// -----------------------------------------------------------------------------------------
+
 define('SESSION_EXPIRATION_TIME', 14400); // 4 horas
 
 function redirect(string $url): void
@@ -32,9 +128,9 @@ if (empty($_SESSION['csrf_token'])) {
 
 $error = null;
 
-// Autocompletar desde cookies
-$rememberedUsername = $_COOKIE['remember_username'] ?? '';
-$rememberedPassword = $_COOKIE['remember_password'] ?? '';
+// Mantener compatibilidad con el formulario sin exponer contraseñas en texto plano
+$rememberedUsername = '';
+$rememberedPassword = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
@@ -99,11 +195,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['LAST_ACTIVITY'] = time();
 
                 if ($rememberMe) {
-                    setcookie('remember_username', $username, time() + 30 * 24 * 60 * 60, "/");
-                    setcookie('remember_password', $password, time() + 30 * 24 * 60 * 60, "/");
+                    // Generar selector/validator Split-Token seguro
+                    $selector = bin2hex(random_bytes(8));
+                    $validator = bin2hex(random_bytes(32));
+                    $hashedValidator = hash('sha256', $validator);
+                    $expires = date('Y-m-d H:i:s', time() + 30 * 24 * 60 * 60);
+                    
+                    // Almacenar el token en la base de datos
+                    $stmtToken = $conec->prepare("
+                        INSERT INTO user_tokens (user_id, selector, hashed_validator, expires_at)
+                        VALUES (?, ?, ?, ?)
+                    ");
+                    if ($stmtToken) {
+                        $stmtToken->bind_param("isss", $user_id, $selector, $hashedValidator, $expires);
+                        $stmtToken->execute();
+                        $stmtToken->close();
+                    }
+                    
+                    // Guardar cookie unificada de manera segura y HttpOnly
+                    $cookieValue = $selector . ':' . $validator;
+                    $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+                    setcookie('remember_me', $cookieValue, time() + 30 * 24 * 60 * 60, "/", "", $isSecure, true);
                 } else {
-                    setcookie('remember_username', '', time() - 3600, "/");
-                    setcookie('remember_password', '', time() - 3600, "/");
+                    // Limpiar cookies de sesión si desmarca la opción
+                    clearRememberMeCookie();
                 }
 
                 redirect('../index.php');

@@ -78,22 +78,11 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
     <style>
     body{padding-top:70px}
     .hidden{display:none!important}
-    .navbar {
-        min-height: 56px;
-    }
-    #navbarNav .form-control,
-    #navbarNav .btn {
-        height: 28px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        font-size: 0.8rem;
-        line-height: 1.2;
-    }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg fixed-top shadow-sm py-1" style="background-color: #e3f2fd;" data-bs-theme="light">
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
 <div class="container-fluid">
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center" href="../index.php">
@@ -115,31 +104,33 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
                      style="object-fit: cover; border: 2px solid #0d6efd;"
                      alt="Avatar de <?= h($usuario) ?>">
                 <div class="d-flex flex-column lh-sm">
-                    <span class="fw-semibold"><?= h($usuario) ?></span>
-                    <small class="text-muted"><?= h($oficina) ?></small>
+                    <span class="fw-semibold text-dark" style="font-size: 0.85rem;"><?= h($usuario) ?></span>
+                    <small class="text-muted" style="font-size: 0.75rem;"><?= h($oficina) ?></small>
                 </div>
             </div>
 
             <!-- Menú -->
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
                 <!-- BUSCADOR -->
-                <form method="GET" action="buscador.php" class="d-flex flex-column flex-lg-row gap-2 m-0" id="form-busqueda">
-                    <input class="form-control form-control-sm" type="text" name="search" placeholder="Buscar..." value="<?= htmlspecialchars($search) ?>">
-                    <button class="btn btn-outline-primary btn-sm" type="submit">
-                        <i class="bi bi-search me-2"></i>Buscar
-                    </button>
-                    <button class="btn btn-outline-primary btn-sm" type="button" id="btn-limpiar">
-                        <i class="bi bi-eraser me-2"></i>Limpiar
-                    </button>
+                <form method="GET" action="buscador.php" class="d-flex align-items-center m-0" id="form-busqueda">
+                    <div class="input-group input-group-sm">
+                        <input class="form-control" type="text" name="search" placeholder="Buscar..." value="<?= htmlspecialchars($search) ?>" aria-label="Search" style="max-width: 180px;">
+                        <button class="btn btn-primary d-flex align-items-center" type="submit" aria-label="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary d-flex align-items-center" type="button" id="btn-limpiar" aria-label="Limpiar">
+                            <i class="bi bi-eraser"></i>
+                        </button>
+                    </div>
                 </form>
 
-                <a href="../index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                    <i class="bi bi-house me-2"></i>Inicio
+                <a href="../index.php" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center">
+                    <i class="bi bi-house me-1"></i>Inicio
                 </a>
 
                 <!-- SALIR -->
                 <form method="POST" class="m-0">
-                    <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center">
+                    <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm d-flex align-items-center justify-content-center">
                         <i class="bi bi-box-arrow-right me-1"></i>Salir
                     </button>
                 </form>

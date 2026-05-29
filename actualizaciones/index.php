@@ -16,6 +16,40 @@ $usuario = $userInfo['username'];
 $oficina = $userInfo['oficina'];
 $userAvatar = '../' . $userService->getUserAvatar($user_id);
 
+// Auto-registro de la nueva versión en la tabla de actualizaciones (self-healing)
+try {
+    $current_version = APP_VERSION;
+    $check_sql = "SELECT id FROM actualizaciones WHERE version = ?";
+    $stmt_check = $conec->prepare($check_sql);
+    if ($stmt_check) {
+        $stmt_check->bind_param("s", $current_version);
+        $stmt_check->execute();
+        $stmt_check->store_result();
+        $exists = $stmt_check->num_rows > 0;
+        $stmt_check->close();
+        
+        if (!$exists && $current_version === '1.4.3') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Resolución de errores de sesión y despliegue";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se corrigió el error HTTP 500 al iniciar sesión tras subir el proyecto a servidores de hosting compartido como InfinityFree.</li>
+                    <li>Se implementó tolerancia a fallos en el sistema de tokens ('Recordarme') y rehasheo de contraseñas.</li>
+                    <li>Se mejoró la captura y visualización de errores de base de datos en el formulario de login.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
+    }
+} catch (Throwable $e) {
+    error_log("Error al auto-registrar la actualización: " . $e->getMessage());
+}
+
 // Obtener actualizaciones
 $sql = "SELECT * FROM actualizaciones WHERE estado = 1 ORDER BY fecha_lanzamiento DESC, id DESC";
 $resultado = $conec->query($sql);

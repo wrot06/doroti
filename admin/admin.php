@@ -58,30 +58,33 @@ if (!empty($_SESSION['user_id'])) {
 
     <nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
         <div class="container-fluid">
+            <!-- Logo -->
             <a class="navbar-brand d-flex align-items-center" href="../index.php">
                 <img src="../img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
-                <span class="ms-2 fw-bold text-primary">ADMIN</span>
             </a>
 
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <!-- Botón Hamburguesa -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <div class="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill shadow-sm ms-lg-3 my-2 my-lg-0 me-auto" style="width: fit-content;">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Usuario + Oficina -->
+                <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
                     <img src="<?= h($userAvatar) ?>"
-                        class="rounded-circle"
-                        width="35"
-                        height="35"
+                        class="rounded-circle me-2"
+                        width="32"
+                        height="32"
                         style="object-fit: cover; border: 2px solid #0d6efd;"
                         alt="Avatar de <?= h($usuario) ?>">
                     <div class="d-flex flex-column lh-sm">
-                        <span class="fw-bold text-dark" style="font-size: 0.9rem;"><?= h($usuario) ?></span>
-                        <span class="text-muted" style="font-size: 0.75rem;"><?= h($_SESSION['dependencia'] ?? 'Admin') ?></span>
+                        <span class="fw-semibold"><?= h($usuario) ?></span>
+                        <small class="text-muted"><?= h($_SESSION['dependencia'] ?? 'Admin') ?></small>
                     </div>
                 </div>
 
-                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 ms-auto w-100 justify-content-lg-end">
+                <!-- Menú -->
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
                     <a href="../index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
                         <i class="bi bi-house me-2"></i>Volver al Inicio
                     </a>

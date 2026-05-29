@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+// Acceso seguro para componentes
+if (!defined('SECURE_ACCESS')) {
+    define('SECURE_ACCESS', true);
+}
+
 // Cargar dependencias
 require_once "rene/conexion3.php";
 require_once "middlewares/AuthMiddleware.php";
@@ -54,76 +59,11 @@ $userAvatar = $userService->getUserAvatar($user_id);
 <body>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
-        <div class="container-fluid">
-            <!-- Logo -->
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="img/Doroti Logo Horizontal.png" alt="Logo Doroti" height="30">
-            </a>
-
-            <!-- Botón Hamburguesa -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- Usuario + Oficina -->
-                <div class="d-flex align-items-center bg-light px-3 py-1 rounded-pill shadow-sm me-auto mt-2 mt-lg-0 mb-2 mb-lg-0" style="width: fit-content;">
-                    <img src="<?= ResponseHelper::h($userAvatar) ?>"
-                        class="rounded-circle me-2"
-                        width="32"
-                        height="32"
-                        style="object-fit: cover; border: 2px solid #0d6efd;"
-                        alt="Avatar de <?= ResponseHelper::h($usuario) ?>">
-                    <div class="d-flex flex-column lh-sm">
-                        <span class="fw-semibold"><?= ResponseHelper::h($usuario) ?></span>
-                        <small class="text-muted"><?= ResponseHelper::h($oficina) ?></small>
-                    </div>
-                </div>
-
-                <!-- Menú -->
-                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-auto">
-                    <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
-                        <a href="admin/admin.php" class="btn btn-warning btn-sm fw-bold">
-                            <i class="bi bi-shield-lock-fill me-2"></i>Admin
-                        </a>
-                    <?php endif; ?>
-
-                    <a href="buscador/buscador.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                        <i class="bi bi-search me-2"></i>Buscador
-                    </a>
-
-                    <a href="rotulos/rotulo.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                        <i class="bi bi-check me-2"></i>Rotulos
-                    </a>
-
-                    <a href="pdf/inventario.php" class="btn btn-outline-primary btn-sm text-start text-lg-center" target="_blank">
-                        <i class="bi bi-file-earmark-text me-2"></i>Inventario
-                    </a>
-
-                    <a href="digital/documents.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Digital
-                    </a>
-
-                    <a href="tablas/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                        <i class="bi bi-table me-2"></i>Tablas
-                    </a>
-
-                    <a href="update/index.php" class="btn btn-outline-success btn-sm text-start text-lg-center">
-                        <i class="bi bi-controller me-2"></i>Juego
-                    </a>
-
-                    <a href="actualizaciones/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center">
-                        <i class="bi bi-stars me-2"></i>Novedades
-                    </a>
-
-                    <form method="POST" class="m-0">
-                        <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php
+    $basePath = './';
+    $activePage = 'index';
+    require_once "components/navbar.php";
+    ?>
 
     <main class="container-fluid mt-4">
         <div class="folder-grid">

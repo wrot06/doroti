@@ -138,14 +138,14 @@ $f=$_SESSION['flash']; unset($_SESSION['flash']); ?>
 <h4>Subir PDF ID <?=htmlspecialchars($id)?></h4>
 
 <table class="table table-bordered">
-<tr><th>ID</th><td><?=$registro['id']?></td></tr>
+<tr><th>ID</th><td><?=htmlspecialchars((string)$registro['id'], ENT_QUOTES, 'UTF-8')?></td></tr>
 <tr><th>Descripción</th><td><?=htmlspecialchars($registro['DescripcionUnidadDocumental'])?></td></tr>
 <tr><th>Soporte</th><td><?=htmlspecialchars($registro['Soporte'])?></td></tr>
 </table>
 
 <form method="post" enctype="multipart/form-data">
-<input type="hidden" name="id" value="<?=$id?>">
-<input type="hidden" name="csrf_token" value="<?=$_SESSION['csrf_token']?>">
+<input type="hidden" name="id" value="<?=htmlspecialchars((string)$id, ENT_QUOTES, 'UTF-8')?>">
+<input type="hidden" name="csrf_token" value="<?=htmlspecialchars((string)$_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8')?>">
 
 <div class="mb-3">
 <label>Serie</label>

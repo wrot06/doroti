@@ -81,6 +81,14 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
     .navbar {
         min-height: 56px;
     }
+    #navbarNav .form-control,
+    #navbarNav .btn {
+        height: 28px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        font-size: 0.8rem;
+        line-height: 1.2;
+    }
     </style>
 </head>
 <body>

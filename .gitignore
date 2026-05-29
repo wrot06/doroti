@@ -1,0 +1,5 @@
+# Credenciales de base de datos locales (excluidos por seguridad)
+config/db_config.php
+
+# Respaldos o archivos comprimidos pesados
+doroti.zip

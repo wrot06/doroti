@@ -11,32 +11,36 @@ if (!defined('SECURE_ACCESS')) {
 
 // ----------------- SISTEMA DE AUTO-LOGIN SEGURO (REMEMBER ME SPLIT-TOKEN) -----------------
 function rotateRememberMeToken(mysqli $conec, int $tokenId, int $userId): void {
-    // Eliminar token usado
-    $stmt = $conec->prepare("DELETE FROM user_tokens WHERE id = ?");
-    if ($stmt) {
-        $stmt->bind_param("i", $tokenId);
-        $stmt->execute();
-        $stmt->close();
-    }
-    
-    // Generar uno nuevo (Selector/Validator Split-Token)
-    $newSelector = bin2hex(random_bytes(8));
-    $newValidator = bin2hex(random_bytes(32));
-    $newHashedValidator = hash('sha256', $newValidator);
-    $newExpires = date('Y-m-d H:i:s', time() + 30 * 24 * 60 * 60);
-    
-    $stmtInsert = $conec->prepare("
-        INSERT INTO user_tokens (user_id, selector, hashed_validator, expires_at)
-        VALUES (?, ?, ?, ?)
-    ");
-    if ($stmtInsert) {
-        $stmtInsert->bind_param("isss", $userId, $newSelector, $newHashedValidator, $newExpires);
-        $stmtInsert->execute();
-        $stmtInsert->close();
+    try {
+        // Eliminar token usado
+        $stmt = $conec->prepare("DELETE FROM user_tokens WHERE id = ?");
+        if ($stmt) {
+            $stmt->bind_param("i", $tokenId);
+            $stmt->execute();
+            $stmt->close();
+        }
         
-        $cookieValue = $newSelector . ':' . $newValidator;
-        $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
-        setcookie('remember_me', $cookieValue, time() + 30 * 24 * 60 * 60, "/", "", $isSecure, true);
+        // Generar uno nuevo (Selector/Validator Split-Token)
+        $newSelector = bin2hex(random_bytes(8));
+        $newValidator = bin2hex(random_bytes(32));
+        $newHashedValidator = hash('sha256', $newValidator);
+        $newExpires = date('Y-m-d H:i:s', time() + 30 * 24 * 60 * 60);
+        
+        $stmtInsert = $conec->prepare("
+            INSERT INTO user_tokens (user_id, selector, hashed_validator, expires_at)
+            VALUES (?, ?, ?, ?)
+        ");
+        if ($stmtInsert) {
+            $stmtInsert->bind_param("isss", $userId, $newSelector, $newHashedValidator, $newExpires);
+            $stmtInsert->execute();
+            $stmtInsert->close();
+            
+            $cookieValue = $newSelector . ':' . $newValidator;
+            $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+            setcookie('remember_me', $cookieValue, time() + 30 * 24 * 60 * 60, "/", "", $isSecure, true);
+        }
+    } catch (Throwable $e) {
+        error_log("Error al rotar token de recordar sesión: " . $e->getMessage());
     }
 }
 
@@ -54,37 +58,41 @@ function attemptCookieAutoLogin(mysqli $conec): bool {
     
     list($selector, $validator) = explode(':', $cookie, 2);
     
-    $stmt = $conec->prepare("
-        SELECT ut.id, ut.user_id, ut.hashed_validator, ut.expires_at, 
-               u.username, u.dependencia_id, d.nombre AS oficina, u.rol
-        FROM user_tokens ut
-        INNER JOIN users u ON ut.user_id = u.id
-        LEFT JOIN dependencias d ON d.id = u.dependencia_id
-        WHERE ut.selector = ? AND ut.expires_at > NOW()
-        LIMIT 1
-    ");
-    if (!$stmt) return false;
-    
-    $stmt->bind_param("s", $selector);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    $row = $res->fetch_assoc();
-    $stmt->close();
-    
-    if ($row) {
-        // Validación en tiempo constante para evitar ataques de temporización
-        if (hash_equals($row['hashed_validator'], hash('sha256', $validator))) {
-            $_SESSION['authenticated'] = true;
-            $_SESSION['user_id'] = $row['user_id'];
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['dependencia_id'] = $row['dependencia_id'];
-            $_SESSION['oficina'] = $row['oficina'];
-            $_SESSION['rol'] = $row['rol'];
-            $_SESSION['LAST_ACTIVITY'] = time();
-            
-            rotateRememberMeToken($conec, (int)$row['id'], (int)$row['user_id']);
-            return true;
+    try {
+        $stmt = $conec->prepare("
+            SELECT ut.id, ut.user_id, ut.hashed_validator, ut.expires_at, 
+                   u.username, u.dependencia_id, d.nombre AS oficina, u.rol
+            FROM user_tokens ut
+            INNER JOIN users u ON ut.user_id = u.id
+            LEFT JOIN dependencias d ON d.id = u.dependencia_id
+            WHERE ut.selector = ? AND ut.expires_at > NOW()
+            LIMIT 1
+        ");
+        if (!$stmt) return false;
+        
+        $stmt->bind_param("s", $selector);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res->fetch_assoc();
+        $stmt->close();
+        
+        if ($row) {
+            // Validación en tiempo constante para evitar ataques de temporización
+            if (hash_equals($row['hashed_validator'], hash('sha256', $validator))) {
+                $_SESSION['authenticated'] = true;
+                $_SESSION['user_id'] = $row['user_id'];
+                $_SESSION['username'] = $row['username'];
+                $_SESSION['dependencia_id'] = $row['dependencia_id'];
+                $_SESSION['oficina'] = $row['oficina'];
+                $_SESSION['rol'] = $row['rol'];
+                $_SESSION['LAST_ACTIVITY'] = time();
+                
+                rotateRememberMeToken($conec, (int)$row['id'], (int)$row['user_id']);
+                return true;
+            }
         }
+    } catch (Throwable $e) {
+        error_log("Error en auto-login por cookie: " . $e->getMessage());
     }
     
     clearRememberMeCookie();
@@ -141,98 +149,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rememberMe = isset($_POST['rememberMe']);
 
         if ($username !== '' && $password !== '') {
-        $stmt = $conec->prepare("
-                SELECT u.id, u.password, u.dependencia_id, d.nombre AS oficina, u.rol
-                FROM users u
-                LEFT JOIN dependencias d ON d.id = u.dependencia_id
-                WHERE u.username = ?
-                LIMIT 1
-            ");
-        if (!$stmt) die("Error en la consulta: " . $conec->error);
-
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $stmt->store_result();
-
-        if ($stmt->num_rows === 1) {
-            $stmt->bind_result($user_id, $db_password, $dep_id, $dep_nombre, $rol);
-            $stmt->fetch();
-
-            $password_valid = false;
-            
-            // Si es un hash válido
-            if (password_verify($password, $db_password)) {
-                $password_valid = true;
-                if (password_needs_rehash($db_password, PASSWORD_DEFAULT)) {
-                    $new_hash = password_hash($password, PASSWORD_DEFAULT);
-                    $upd = $conec->prepare("UPDATE users SET password = ? WHERE id = ?");
-                    if ($upd) {
-                        $upd->bind_param("si", $new_hash, $user_id);
-                        $upd->execute();
-                        $upd->close();
-                    }
+            try {
+                $stmt = $conec->prepare("
+                    SELECT u.id, u.password, u.dependencia_id, d.nombre AS oficina, u.rol
+                    FROM users u
+                    LEFT JOIN dependencias d ON d.id = u.dependencia_id
+                    WHERE u.username = ?
+                    LIMIT 1
+                ");
+                if (!$stmt) {
+                    throw new Exception("Error al preparar la consulta de usuario: " . $conec->error);
                 }
-            } 
-            // Soporte temporal para texto plano (Migración automática)
-            elseif ($password === $db_password) {
-                $password_valid = true;
-                $new_hash = password_hash($password, PASSWORD_DEFAULT);
-                $upd = $conec->prepare("UPDATE users SET password = ? WHERE id = ?");
-                if ($upd) {
-                    $upd->bind_param("si", $new_hash, $user_id);
-                    $upd->execute();
-                    $upd->close();
-                }
-            }
 
-            if ($password_valid) {
-                $_SESSION['authenticated'] = true;
-                $_SESSION['user_id'] = $user_id;
-                $_SESSION['username'] = $username;
-                $_SESSION['dependencia_id'] = $dep_id;
-                $_SESSION['oficina'] = $dep_nombre;
-                $_SESSION['rol'] = $rol;
-                $_SESSION['LAST_ACTIVITY'] = time();
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $stmt->store_result();
 
-                if ($rememberMe) {
-                    // Generar selector/validator Split-Token seguro
-                    $selector = bin2hex(random_bytes(8));
-                    $validator = bin2hex(random_bytes(32));
-                    $hashedValidator = hash('sha256', $validator);
-                    $expires = date('Y-m-d H:i:s', time() + 30 * 24 * 60 * 60);
+                if ($stmt->num_rows === 1) {
+                    $stmt->bind_result($user_id, $db_password, $dep_id, $dep_nombre, $rol);
+                    $stmt->fetch();
+
+                    $password_valid = false;
                     
-                    // Almacenar el token en la base de datos
-                    $stmtToken = $conec->prepare("
-                        INSERT INTO user_tokens (user_id, selector, hashed_validator, expires_at)
-                        VALUES (?, ?, ?, ?)
-                    ");
-                    if ($stmtToken) {
-                        $stmtToken->bind_param("isss", $user_id, $selector, $hashedValidator, $expires);
-                        $stmtToken->execute();
-                        $stmtToken->close();
+                    // Si es un hash válido
+                    if (password_verify($password, $db_password)) {
+                        $password_valid = true;
+                        try {
+                            if (password_needs_rehash($db_password, PASSWORD_DEFAULT)) {
+                                $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                                $upd = $conec->prepare("UPDATE users SET password = ? WHERE id = ?");
+                                if ($upd) {
+                                    $upd->bind_param("si", $new_hash, $user_id);
+                                    $upd->execute();
+                                    $upd->close();
+                                }
+                            }
+                        } catch (Throwable $rehashError) {
+                            error_log("Error al rehashear contraseña: " . $rehashError->getMessage());
+                        }
+                    } 
+                    // Soporte temporal para texto plano (Migración automática)
+                    elseif ($password === $db_password) {
+                        $password_valid = true;
+                        try {
+                            $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                            $upd = $conec->prepare("UPDATE users SET password = ? WHERE id = ?");
+                            if ($upd) {
+                                $upd->bind_param("si", $new_hash, $user_id);
+                                $upd->execute();
+                                $upd->close();
+                            }
+                        } catch (Throwable $migrationError) {
+                            error_log("Error al migrar contraseña de texto plano: " . $migrationError->getMessage());
+                        }
                     }
-                    
-                    // Guardar cookie unificada de manera segura y HttpOnly
-                    $cookieValue = $selector . ':' . $validator;
-                    $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
-                    setcookie('remember_me', $cookieValue, time() + 30 * 24 * 60 * 60, "/", "", $isSecure, true);
+
+                    if ($password_valid) {
+                        $_SESSION['authenticated'] = true;
+                        $_SESSION['user_id'] = $user_id;
+                        $_SESSION['username'] = $username;
+                        $_SESSION['dependencia_id'] = $dep_id;
+                        $_SESSION['oficina'] = $dep_nombre;
+                        $_SESSION['rol'] = $rol;
+                        $_SESSION['LAST_ACTIVITY'] = time();
+
+                        if ($rememberMe) {
+                            try {
+                                // Generar selector/validator Split-Token seguro
+                                $selector = bin2hex(random_bytes(8));
+                                $validator = bin2hex(random_bytes(32));
+                                $hashedValidator = hash('sha256', $validator);
+                                $expires = date('Y-m-d H:i:s', time() + 30 * 24 * 60 * 60);
+                                
+                                // Almacenar el token en la base de datos
+                                $stmtToken = $conec->prepare("
+                                    INSERT INTO user_tokens (user_id, selector, hashed_validator, expires_at)
+                                    VALUES (?, ?, ?, ?)
+                                ");
+                                if ($stmtToken) {
+                                    $stmtToken->bind_param("isss", $user_id, $selector, $hashedValidator, $expires);
+                                    $stmtToken->execute();
+                                    $stmtToken->close();
+                                    
+                                    // Guardar cookie unificada de manera segura y HttpOnly
+                                    $cookieValue = $selector . ':' . $validator;
+                                    $isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+                                    setcookie('remember_me', $cookieValue, time() + 30 * 24 * 60 * 60, "/", "", $isSecure, true);
+                                }
+                            } catch (Throwable $tokenError) {
+                                // Si falla la tabla 'user_tokens' por no existir u otro motivo, no impedimos el login normal
+                                error_log("Error en sistema de recordar sesión (posiblemente falta la tabla user_tokens): " . $tokenError->getMessage());
+                            }
+                        } else {
+                            // Limpiar cookies de sesión si desmarca la opción
+                            clearRememberMeCookie();
+                        }
+
+                        redirect('../index.php');
+                    } else {
+                        $error = "Contraseña incorrecta.";
+                    }
                 } else {
-                    // Limpiar cookies de sesión si desmarca la opción
-                    clearRememberMeCookie();
+                    $error = "Usuario no encontrado.";
                 }
-
-                redirect('../index.php');
-            } else {
-                $error = "Contraseña incorrecta.";
+                $stmt->close();
+            } catch (Throwable $dbError) {
+                $error = "Error al intentar iniciar sesión. Por favor, intente de nuevo. (Detalle: " . $dbError->getMessage() . ")";
+                error_log("Error general de login en DB: " . $dbError->getMessage());
             }
         } else {
-            $error = "Usuario no encontrado.";
+            $error = "Por favor, completa todos los campos.";
         }
-        $stmt->close();
-    } else {
-        $error = "Por favor, completa todos los campos.";
-    }
-} // fin else CSRF
+    } // fin else CSRF
 }
 ?>
 <!DOCTYPE html>

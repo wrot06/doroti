@@ -76,13 +76,16 @@ function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="buscador.css">
     <style>
-    body{padding-top:62px}
+    body{padding-top:70px}
     .hidden{display:none!important}
+    .navbar {
+        min-height: 56px;
+    }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background-color: #e3f2fd;" data-bs-theme="light">
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm py-1" style="background-color: #e3f2fd;" data-bs-theme="light">
 <div class="container-fluid">
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center" href="../index.php">

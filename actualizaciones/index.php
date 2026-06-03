@@ -61,6 +61,25 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.4.5') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Migración a InnoDB, almacenamiento en disco y auditoría";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se migró la base de datos a motores InnoDB y nombres de tablas normalizados en minúsculas.</li>
+                    <li>Se eliminó el almacenamiento de PDFs binarios de la BD, extrayéndolos físicamente y registrando rutas relativas.</li>
+                    <li>Se implementó seguridad de archivos .htaccess en la carpeta de documentos, previniendo descargas directas.</li>
+                    <li>Se creó un sistema de trazabilidad de auditoría (tabla historial_acciones) integrado en subidas y descargas.</li>
+                    <li>Se refactorizaron las consultas SQL de carpetas, índices y reportes mediante INNER JOINs para soportar el nuevo esquema.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

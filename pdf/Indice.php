@@ -58,7 +58,7 @@ class PDF extends FPDF
    CONSULTA OFICINA Y CENTRO
    ===================================================== */
 $sqlInfo = "SELECT d1.nombre AS oficina,d2.nombre AS centro
-FROM Carpetas c
+FROM carpetas c
 LEFT JOIN dependencias d1 ON d1.id=c.dependencia_id
 LEFT JOIN dependencias d2 ON d2.id=d1.parent_id
 WHERE c.Caja='$Caja' AND c.Carpeta='$Carpeta'
@@ -76,9 +76,10 @@ if ($resInfo && $resInfo->num_rows > 0) {
 /* =====================================================
    CONSULTA INDICE
    ===================================================== */
-$sql = "SELECT * FROM IndiceDocumental
-WHERE Caja='$Caja' AND Carpeta='$Carpeta'
-AND dependencia_id=$dependencia_id";
+$sql = "SELECT i.* FROM indice_documental i
+INNER JOIN carpetas c ON c.id = i.carpeta_id
+WHERE c.Caja='$Caja' AND c.Carpeta='$Carpeta'
+AND c.dependencia_id=$dependencia_id";
 
 $result = $conec->query($sql);
 if (!$result || $result->num_rows === 0) exit('No hay datos para este índice.');

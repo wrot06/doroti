@@ -26,7 +26,7 @@ $oficina  = $_SESSION['oficina']  ?? null;
 $dependencia_id  = $_SESSION['dependencia_id']  ?? null;
 
 /* ================== CONSULTA CARPETAS ================== */
-$sql = "SELECT * FROM Carpetas WHERE Estado='C' AND dependencia_id = ? ORDER BY Caja DESC, Carpeta ASC";
+$sql = "SELECT * FROM carpetas WHERE Estado='C' AND dependencia_id = ? ORDER BY Caja DESC, Carpeta ASC";
 $stmt = $conec->prepare($sql);
 $stmt->bind_param("i", $dependencia_id);
 $stmt->execute();
@@ -34,7 +34,12 @@ $resultado = $stmt->get_result();
 
 /* ================== ÍNDICES DOCUMENTALES ================== */
 $indices = [];
-$stmt2 = $conec->prepare("SELECT * FROM IndiceDocumental WHERE dependencia_id = ?");
+$stmt2 = $conec->prepare("
+    SELECT i.*, c.Caja, c.Carpeta
+    FROM indice_documental i
+    INNER JOIN carpetas c ON c.id = i.carpeta_id
+    WHERE c.dependencia_id = ?
+");
 $stmt2->bind_param("i", $dependencia_id);
 $stmt2->execute();
 $res = $stmt2->get_result();

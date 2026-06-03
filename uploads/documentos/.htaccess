@@ -1,0 +1,3 @@
+# Impedir el listado de directorio y el acceso a los archivos físicos de forma directa
+Order Deny,Allow
+Deny from all

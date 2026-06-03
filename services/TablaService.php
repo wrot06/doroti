@@ -30,7 +30,7 @@ class TablaService
             COALESCE(NULLIF(TRIM(serie), ''), 'Sin clasificar') AS serie,
             COUNT(*)                                            AS total,
             COALESCE(SUM(paginas), 0)                          AS total_paginas
-        FROM IndiceDocumental
+        FROM indice_documental
         GROUP BY serie
         ORDER BY total DESC
         ";
@@ -70,9 +70,10 @@ class TablaService
             COALESCE(NULLIF(TRIM(i.serie), ''), 'Sin clasificar') AS serie,
             COUNT(*)                                           AS total,
             COALESCE(SUM(i.paginas), 0)                        AS total_paginas
-        FROM IndiceDocumental i
-        LEFT JOIN dependencias dep ON dep.id = i.dependencia_id
-        GROUP BY i.dependencia_id, i.serie
+        FROM indice_documental i
+        INNER JOIN carpetas c ON c.id = i.carpeta_id
+        LEFT JOIN dependencias dep ON dep.id = c.dependencia_id
+        GROUP BY c.dependencia_id, i.serie
         ORDER BY dependencia, total DESC
         ";
 
@@ -94,7 +95,7 @@ class TablaService
         SELECT
             COALESCE(dep.nombre, 'Sin dependencia') AS dependencia,
             COUNT(*) AS total_carpetas
-        FROM Carpetas c
+        FROM carpetas c
         LEFT JOIN dependencias dep ON dep.id = c.dependencia_id
         WHERE c.Estado = 'C'
         GROUP BY c.dependencia_id
@@ -126,8 +127,8 @@ class TablaService
             COALESCE(NULLIF(TRIM(i.serie), ''), 'Sin clasificar') AS serie,
             COUNT(*)                                           AS total,
             COALESCE(SUM(i.paginas), 0)                        AS total_paginas
-        FROM IndiceDocumental i
-        LEFT JOIN Carpetas c ON c.id = i.carpeta_id
+        FROM indice_documental i
+        LEFT JOIN carpetas c ON c.id = i.carpeta_id
         LEFT JOIN users u ON u.id = c.user_id
         GROUP BY u.id, i.serie
         ORDER BY usuario, total DESC
@@ -156,7 +157,7 @@ class TablaService
         SELECT
             COALESCE(u.username, 'Sin usuario') AS usuario,
             COUNT(*) AS total_carpetas
-        FROM Carpetas c
+        FROM carpetas c
         LEFT JOIN users u ON u.id = c.user_id
         WHERE c.Estado = 'C'
         GROUP BY c.user_id
@@ -181,11 +182,11 @@ class TablaService
      */
     public function getGlobalTotals(): array
     {
-        $sql = "SELECT COUNT(*) AS total_docs, COALESCE(SUM(paginas),0) AS total_paginas FROM IndiceDocumental";
+        $sql = "SELECT COUNT(*) AS total_docs, COALESCE(SUM(paginas),0) AS total_paginas FROM indice_documental";
         $result = $this->conec->query($sql);
         $data = $result ? $result->fetch_assoc() : ['total_docs' => 0, 'total_paginas' => 0];
 
-        $sqlCarpetas = "SELECT COUNT(*) AS total_carpetas FROM Carpetas WHERE Estado = 'C' ";
+        $sqlCarpetas = "SELECT COUNT(*) AS total_carpetas FROM carpetas WHERE Estado = 'C' ";
         $resCarpetas = $this->conec->query($sqlCarpetas);
         $data['total_carpetas'] = $resCarpetas ? (int) $resCarpetas->fetch_assoc()['total_carpetas'] : 0;
 
@@ -197,7 +198,7 @@ class TablaService
      */
     public function countSeriesUnicas(): int
     {
-        $sql = "SELECT COUNT(DISTINCT NULLIF(TRIM(serie),'')) AS n FROM IndiceDocumental WHERE serie IS NOT NULL AND TRIM(serie) != ''";
+        $sql = "SELECT COUNT(DISTINCT NULLIF(TRIM(serie),'')) AS n FROM indice_documental WHERE serie IS NOT NULL AND TRIM(serie) != ''";
         $result = $this->conec->query($sql);
         if (!$result) return 0;
         $row = $result->fetch_assoc();

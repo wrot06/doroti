@@ -3,3 +3,6 @@ config/db_config.php
 
 # Respaldos o archivos comprimidos pesados
 doroti.zip
+
+# Archivos PDF cargados por usuarios en almacenamiento físico
+uploads/documentos/*.pdf

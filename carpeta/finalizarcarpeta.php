@@ -56,7 +56,7 @@ if ($fechaInicial > $fechaFinal) {
 /* =========================
    OBTENER NOMBRE DE SERIE
 ========================= */
-$stmt = $conec->prepare("SELECT nombre FROM Serie WHERE id = ?");
+$stmt = $conec->prepare("SELECT nombre FROM serie WHERE id = ?");
 $stmt->bind_param("i", $serie_id);
 $stmt->execute();
 $res = $stmt->get_result();
@@ -75,7 +75,7 @@ $Serie = strtoupper($row['nombre']);
 $Subs = null;
 
 if ($subserie_id > 0) {
-    $stmt = $conec->prepare("SELECT Subs FROM Subs WHERE id = ?");
+    $stmt = $conec->prepare("SELECT Subs FROM subs WHERE id = ?");
     $stmt->bind_param("i", $subserie_id);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -87,15 +87,27 @@ if ($subserie_id > 0) {
     }
 }
 
-/* =========================
-   VALIDAR CAPÍTULOS
-========================= */
+/* =====================================================
+   OBTENER ID DE CARPETA Y VALIDAR CAPÍTULOS
+   ===================================================== */
+$stmt_cid = $conec->prepare("SELECT id FROM carpetas WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ? LIMIT 1");
+$stmt_cid->bind_param("iii", $caja, $carpeta, $dependencia_id);
+$stmt_cid->execute();
+$res_cid = $stmt_cid->get_result();
+$row_cid = $res_cid->fetch_assoc();
+$stmt_cid->close();
+
+if (!$row_cid) {
+    die("Error: La carpeta especificada no existe.");
+}
+$carpeta_id = (int)$row_cid['id'];
+
 $stmt = $conec->prepare(
     "SELECT COUNT(*) AS total
-     FROM IndiceTemp
-     WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?"
+     FROM indice_temp
+     WHERE carpeta_id = ?"
 );
-$stmt->bind_param("iii", $caja, $carpeta, $dependencia_id);
+$stmt->bind_param("i", $carpeta_id);
 $stmt->execute();
 $res = $stmt->get_result();
 $totalCapitulos = (int)($res->fetch_assoc()['total'] ?? 0);
@@ -112,9 +124,9 @@ $conec->begin_transaction();
 
 try {
 
-    /* ---------- UPDATE Carpetas ---------- */
+    /* ---------- UPDATE carpetas ---------- */
     $stmt = $conec->prepare(
-        "UPDATE Carpetas
+        "UPDATE carpetas
          SET Serie = ?, Subs = ?, Titulo = ?, FInicial = ?, FFinal = ?, Folios = ?, Estado = ?
          WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?"
     );
@@ -142,15 +154,12 @@ try {
     }
     $stmt->close();
 
-    /* ---------- INSERT IndiceDocumental ---------- */
+    /* ---------- INSERT indice_documental ---------- */
     $sqlInsert = "
-        INSERT INTO IndiceDocumental ( dependencia_id, Caja, Carpeta, carpeta_id, Serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
-        )
-        SELECT dependencia_id, Caja, Carpeta, carpeta_id, Serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
-        FROM IndiceTemp
-        WHERE Caja = ?
-          AND Carpeta = ?
-          AND dependencia_id = ?
+        INSERT INTO indice_documental (carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso)
+        SELECT carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
+        FROM indice_temp
+        WHERE carpeta_id = ?
     ";
 
     $stmt = $conec->prepare($sqlInsert);
@@ -158,24 +167,24 @@ try {
         throw new Exception($conec->error);
     }
 
-    $stmt->bind_param("iii", $caja, $carpeta, $dependencia_id);
+    $stmt->bind_param("i", $carpeta_id);
 
     if (!$stmt->execute()) {
         throw new Exception($stmt->error);
     }
     $stmt->close();
 
-    /* ---------- DELETE IndiceTemp ---------- */
+    /* ---------- DELETE indice_temp ---------- */
     $stmt = $conec->prepare(
-        "DELETE FROM IndiceTemp
-         WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?"
+        "DELETE FROM indice_temp
+         WHERE carpeta_id = ?"
     );
 
     if (!$stmt) {
         throw new Exception($conec->error);
     }
 
-    $stmt->bind_param("iii", $caja, $carpeta, $dependencia_id);
+    $stmt->bind_param("i", $carpeta_id);
 
     if (!$stmt->execute()) {
         throw new Exception($stmt->error);

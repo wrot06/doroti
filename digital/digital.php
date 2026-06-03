@@ -97,7 +97,7 @@ require_once "../components/navbar.php";
 
 <div class="mb-3">
 <label class="form-label">Tipo Documental</label>
-<select name="serie" class="form-select" required>
+<select name="tipo_documental_id" class="form-select" required>
     <option value="">Seleccione un Tipo Documental</option>
 <?php
 $td_stmt = $conec->prepare("SELECT id, nombre FROM tipo_documental WHERE dependencia_id = ".$dependencia_id." AND estado = 1 ORDER BY nombre ASC");
@@ -105,7 +105,7 @@ $td_stmt->execute();
 $tipos = $td_stmt->get_result();
 while($t = $tipos->fetch_assoc()):
 ?>
-<option value="<?= $t['nombre'] ?>"><?= h($t['nombre']) ?></option>
+<option value="<?= $t['id'] ?>"><?= h($t['nombre']) ?></option>
 <?php endwhile; ?>
 </select>
 </div>

@@ -35,8 +35,25 @@ if ($mime_type !== 'application/pdf') {
     redirectWithError('El archivo subido no es un PDF válido o está corrupto.');
 }
 
-$pdf_bin = file_get_contents($_FILES['pdf']['tmp_name']);
-$hash = hash('sha256', $pdf_bin);
+$tipo_documental_id = (int)($_POST['tipo_documental_id'] ?? 0);
+if ($tipo_documental_id <= 0) {
+    redirectWithError('Tipo documental inválido.');
+}
+
+$tamano = (int)$_FILES['pdf']['size'];
+$hash = hash_file('sha256', $_FILES['pdf']['tmp_name']);
+$nombre_original = basename($_FILES['pdf']['name']);
+
+$target_dir = "/var/www/doroti/uploads/documentos";
+if (!file_exists($target_dir)) {
+    mkdir($target_dir, 0755, true);
+}
+$target_file = $target_dir . '/' . $hash . '.pdf';
+$relative_path = 'uploads/documentos/' . $hash . '.pdf';
+
+if (!move_uploaded_file($_FILES['pdf']['tmp_name'], $target_file)) {
+    redirectWithError('No se pudo guardar el archivo físico en el servidor.');
+}
 
 try {
     $conec->begin_transaction();
@@ -46,8 +63,8 @@ try {
         INSERT INTO documentos (tipo, titulo_documento, fecha_creacion, user_id, dependencia_id)
         VALUES (?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sssii",
-        $_POST['serie'],
+    $stmt->bind_param("issii",
+        $tipo_documental_id,
         $_POST['titulo_documento'],
         $_POST['fecha_creacion'],
         $user_id,
@@ -62,33 +79,51 @@ try {
         INSERT INTO documento_versiones (documento_id, version, archivo_nombre, archivo_pdf, hash_sha256, tamano_bytes, activa)
         VALUES (?, 1, ?, ?, ?, ?, 1)
     ");
-    $nombre = "doc_{$documento_id}.pdf";
-    $tamano = strlen($pdf_bin);
-    $pdf_blob = null; 
-    
-    $stmt->bind_param("isbsi",
+    $stmt->bind_param("isssi",
         $documento_id,
-        $nombre,
-        $pdf_blob,
+        $nombre_original,
+        $relative_path,
         $hash,
         $tamano
     );
-    $stmt->send_long_data(2, $pdf_bin);
     
-    // Execute and check for errors
     if (!$stmt->execute()) {
         throw new Exception('Error al guardar la versión del documento en la base de datos.');
     }
     $stmt->close();
 
+    // Registrar acción en la tabla de auditoría (historial_acciones)
+    $accion = "Subir documento";
+    $tabla = "documentos";
+    $detalles = "Se creó el documento '" . $_POST['titulo_documento'] . "' versión 1 con hash: " . $hash;
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+    
+    $audit_stmt = $conec->prepare("
+        INSERT INTO historial_acciones (user_id, accion, tabla, registro_id, detalles, ip)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+    $audit_stmt->bind_param("ississ",
+        $user_id,
+        $accion,
+        $tabla,
+        $documento_id,
+        $detalles,
+        $ip
+    );
+    $audit_stmt->execute();
+    $audit_stmt->close();
+
     $conec->commit();
-    $_SESSION['success'] = '¡Documento subido y guardado exitosamente!';
+    $_SESSION['success'] = '¡Documento subido, guardado y registrado exitosamente!';
     header("Location: digital.php");
     exit;
 
 } catch (Exception $e) {
     $conec->rollback();
-    // Log the actual error for debugging, but show a user-friendly message
+    // Limpiar archivo físico si el registro en base de datos falló
+    if (file_exists($target_file)) {
+        unlink($target_file);
+    }
     error_log("Error subiendo documento: " . $e->getMessage());
     redirectWithError('Ocurrió un error interno al guardar el documento. Por favor, inténtelo de nuevo.');
 }

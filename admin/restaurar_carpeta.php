@@ -52,7 +52,7 @@ function restaurarCarpeta($conec)
 
     try {
         // 1. Obtener datos de la carpeta
-        $stmt = $conec->prepare("SELECT Caja, Carpeta, dependencia_id FROM Carpetas WHERE id = ?");
+        $stmt = $conec->prepare("SELECT Caja, Carpeta, dependencia_id FROM carpetas WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $res = $stmt->get_result();
@@ -63,47 +63,34 @@ function restaurarCarpeta($conec)
             throw new Exception("Carpeta no encontrada.");
         }
 
-        $caja = $data['Caja'];
-        $carpeta = $data['Carpeta'];
-        $dependenciaId = $data['dependencia_id'];
-
-        // 2. Mover registros de IndiceDocumental -> IndiceTemp
-        // Mapeo manual de campos para evitar errores si las tablas difieren ligeramente
-        // IndiceTemp: id2, dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
-        // IndiceDocumental: id, dependencia_id, Caja, Carpeta, carpeta_id, Serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
-
-        // NOTA: IndiceTemp tiene 'serie' (minuscula?) y IndiceDocumental 'Serie' (mayuscula?). 
-        // Vamos a asumir nombres estándar o los que vimos en SHOW COLUMNS.
-        // IndiceTemp columns from check: id2, dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
-
+        // 2. Mover registros de indice_documental -> indice_temp
         // IMPORTANTE: Asignar id2 basado en el orden de NoFolioInicio
-        // El registro con el NoFolioInicio más bajo tendrá id2 = 1, el siguiente id2 = 2, etc.
         $sqlInsert = "
-            INSERT INTO IndiceTemp (
-                id2, dependencia_id, Caja, Carpeta, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
+            INSERT INTO indice_temp (
+                id2, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
             )
             SELECT 
                 ROW_NUMBER() OVER (ORDER BY NoFolioInicio ASC, NoFolioFin ASC) as id2,
-                dependencia_id, Caja, Carpeta, carpeta_id, Serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
-            FROM IndiceDocumental
-            WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?
+                carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
+            FROM indice_documental
+            WHERE carpeta_id = ?
         ";
 
         $stmtIns = $conec->prepare($sqlInsert);
-        $stmtIns->bind_param("iii", $caja, $carpeta, $dependenciaId);
+        $stmtIns->bind_param("i", $id);
         if (!$stmtIns->execute()) {
             throw new Exception("Error moviendo índices: " . $stmtIns->error);
         }
         $stmtIns->close();
 
-        // 3. Eliminar de IndiceDocumental
-        $stmtDelDocs = $conec->prepare("DELETE FROM IndiceDocumental WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
-        $stmtDelDocs->bind_param("iii", $caja, $carpeta, $dependenciaId);
+        // 3. Eliminar de indice_documental
+        $stmtDelDocs = $conec->prepare("DELETE FROM indice_documental WHERE carpeta_id = ?");
+        $stmtDelDocs->bind_param("i", $id);
         $stmtDelDocs->execute();
         $stmtDelDocs->close();
 
         // 4. Actualizar estado de Carpeta a 'A' (Activo)
-        $stmtUpd = $conec->prepare("UPDATE Carpetas SET Estado = 'A' WHERE id = ?");
+        $stmtUpd = $conec->prepare("UPDATE carpetas SET Estado = 'A' WHERE id = ?");
         $stmtUpd->bind_param("i", $id);
         $stmtUpd->execute();
         $stmtUpd->close();
@@ -124,7 +111,7 @@ function restaurarCarpeta($conec)
 // Agrupadas por dependencia si es posible, o simple lista
 $sqlListar = "
     SELECT c.id, c.Caja, c.Carpeta, c.FechaIngreso, d.nombre as oficina
-    FROM Carpetas c
+    FROM carpetas c
     LEFT JOIN dependencias d ON c.dependencia_id = d.id
     WHERE c.Estado = 'C'
     ORDER BY c.FechaIngreso DESC

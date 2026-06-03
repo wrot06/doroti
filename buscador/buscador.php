@@ -29,10 +29,11 @@ if(isset($_GET['search'])&&trim($_GET['search'])!==''){
     $search=trim($_GET['search']);
     $likeSearch="%$search%";
     $stmt=$conec->prepare("
-        SELECT Caja,Carpeta,DescripcionUnidadDocumental,NoFolioInicio,NoFolioFin
-        FROM IndiceDocumental
-        WHERE DescripcionUnidadDocumental LIKE ?
-        ORDER BY Caja DESC,Carpeta ASC
+        SELECT c.Caja, c.Carpeta, i.DescripcionUnidadDocumental, i.NoFolioInicio, i.NoFolioFin
+        FROM indice_documental i
+        INNER JOIN carpetas c ON c.id = i.carpeta_id
+        WHERE i.DescripcionUnidadDocumental LIKE ?
+        ORDER BY c.Caja DESC, c.Carpeta ASC
     ");
     $stmt->bind_param("s",$likeSearch);
     $stmt->execute();

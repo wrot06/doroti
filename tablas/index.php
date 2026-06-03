@@ -19,7 +19,7 @@ $tablaService = new TablaService($conec);
 $userInfo  = $userService->getUserInfo($user_id);
 $usuario   = $userInfo['username'];
 $oficina   = $userInfo['oficina'];
-$userAvatar = $userService->getUserAvatar($user_id);
+$userAvatar = '../' . $userService->getUserAvatar($user_id);
 
 // ── Datos ─────────────────────────────────────────────────────────────────
 $globalTotals  = $tablaService->getGlobalTotals();

@@ -225,4 +225,4 @@ $pdf->MultiCell(
    OUTPUT
    ===================================================== */
 ob_clean();
-$pdf->Output('', "Carpeta {$Carpeta} Caja {$Caja}.pdf");
+$pdf->Output('', "INDICE Carpeta {$Carpeta} Caja {$Caja}.pdf");

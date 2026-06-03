@@ -77,7 +77,7 @@ try {
     // ==========================
     $stmt = $conec->prepare("
         SELECT 1
-        FROM Carpetas
+        FROM carpetas
         WHERE Caja = ?
           AND Carpeta = ?
           AND dependencia_id = ?
@@ -100,7 +100,7 @@ try {
     // INSERT
     // ==========================
     $stmt = $conec->prepare("
-        INSERT INTO Carpetas (
+        INSERT INTO carpetas (
             Caja,
             Carpeta,
             user_id,

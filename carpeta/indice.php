@@ -99,7 +99,7 @@ $id_carpeta = null;
 if ($caja && $carpeta && $dependencia_id) {
     $stmtCarp = $conec->prepare("
         SELECT id 
-        FROM Carpetas 
+        FROM carpetas 
         WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ? 
         LIMIT 1
     ");

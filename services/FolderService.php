@@ -27,7 +27,7 @@ class FolderService {
             COALESCE(u.username, 'Usuario no registrado') AS username,
             dep.nombre AS oficina,
             c.dependencia_id
-        FROM Carpetas c
+        FROM carpetas c
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN dependencias dep ON dep.id = c.dependencia_id
         WHERE c.Estado = 'A'

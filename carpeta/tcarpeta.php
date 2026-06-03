@@ -25,7 +25,7 @@ if (empty($_SESSION['authenticated'])) {
 ========================= */
 $stmt = $conec->prepare("
     SELECT id
-    FROM Carpetas
+    FROM carpetas
     WHERE id = ? AND Caja = ? AND Carpeta = ? AND dependencia_id = ?
     LIMIT 1
 ");
@@ -42,10 +42,10 @@ $stmt->close();
 $ultimaPagina = 0;
 $stmt = $conec->prepare("
     SELECT MAX(NoFolioFin) AS ultima_pagina
-    FROM IndiceTemp
-    WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?
+    FROM indice_temp
+    WHERE carpeta_id = ?
 ");
-$stmt->bind_param("iii", $caja, $carpeta, $dependencia_id);
+$stmt->bind_param("i", $id_carpeta);
 $stmt->execute();
 $res = $stmt->get_result();
 if ($row = $res->fetch_assoc()) {
@@ -77,8 +77,8 @@ $stmt->close();
 $series = [];
 $stmt = $conec->prepare("
     SELECT s.id, s.nombre
-    FROM Serie s
-    INNER JOIN OficinaSerie os ON os.serie_id = s.id
+    FROM serie s
+    INNER JOIN oficina_serie os ON os.serie_id = s.id
     WHERE os.dependencia_id = ?
     ORDER BY s.nombre ASC
 ");

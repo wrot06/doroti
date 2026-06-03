@@ -97,7 +97,7 @@ unset($_SESSION['mensaje']);
             c.Carpeta, 
             COALESCE(u.username, 'Usuario no registrado') AS username,
             COALESCE(d.nombre, 'Oficina no asignada') AS oficina
-        FROM Carpetas c
+        FROM carpetas c
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN dependencias d ON c.dependencia_id = d.id
         ORDER BY c.FechaIngreso DESC

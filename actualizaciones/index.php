@@ -200,6 +200,25 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.3') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Filtro de Búsqueda por Tipo Documental en el Buscador Global";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se agregó un filtro opcional por Tipo Documental en la barra de búsqueda de 'buscador/buscador.php'.</li>
+                    <li>Se optimizó la consulta UNION para incluir la serie y filtrar de forma condicional, con un límite de seguridad de 250 resultados para prevenir sobrecargas.</li>
+                    <li>Se rediseñó el formulario utilizando Bootstrap 5 para una disposición visual más limpia en cuadrícula.</li>
+                    <li>Se añadió la columna 'Tipo Documental' en la tabla de resultados con un badge descriptivo.</li>
+                    <li>Se implementó validación en JavaScript para limpiar correctamente el dropdown y evitar búsquedas completamente vacías.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

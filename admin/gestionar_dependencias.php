@@ -97,18 +97,25 @@ require_once "../components/navbar.php";
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="parent_id" class="form-label">Dependencia Padre (opcional)</label>
                     <select class="form-select" id="parent_id" name="parent_id">
                         <option value="">Sin padre (raíz)</option>
                         <!-- Se llenará dinámicamente -->
                     </select>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-2 mb-3">
                     <label class="form-label d-block">Estado</label>
                     <div class="form-check form-switch mt-2">
                         <input class="form-check-input" type="checkbox" id="estado" name="estado" checked>
                         <label class="form-check-label" for="estado">Activo</label>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label d-block">Tabla de Índices</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="crear_tabla" name="crear_tabla" value="1" checked>
+                        <label class="form-check-label" for="crear_tabla">Crear tabla dedicada</label>
                     </div>
                 </div>
                 <div class="col-md-3 mb-3 d-flex align-items-end">

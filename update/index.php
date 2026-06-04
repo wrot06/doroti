@@ -9,6 +9,7 @@ AuthMiddleware::checkAuth('../login/login.php');
 $userDepId = isset($_SESSION['dependencia_id']) ? (int)$_SESSION['dependencia_id'] : 0;
 
 if ($userDepId > 0) {
+    $tableName = getIndiceTableName($conec, $userDepId);
     $sql = "
         SELECT 
             it.id,
@@ -18,7 +19,7 @@ if ($userDepId > 0) {
             it.DescripcionUnidadDocumental,
             it.paginas,
             d.nombre AS dependencia_nombre
-        FROM indice_documental it
+        FROM `$tableName` it
         INNER JOIN carpetas c ON it.carpeta_id = c.id
         LEFT JOIN dependencias d ON c.dependencia_id = d.id
         WHERE (it.serie IS NULL OR TRIM(it.serie) = '')
@@ -34,6 +35,7 @@ if ($userDepId > 0) {
     $registro = $res->fetch_assoc();
     $stmt->close();
 } else {
+    $unionQuery = getIndiceUnionQuery($conec, ["id", "carpeta_id", "serie", "DescripcionUnidadDocumental", "paginas"]);
     $sql = "
         SELECT 
             it.id,
@@ -43,7 +45,7 @@ if ($userDepId > 0) {
             it.DescripcionUnidadDocumental,
             it.paginas,
             d.nombre AS dependencia_nombre
-        FROM indice_documental it
+        FROM $unionQuery it
         INNER JOIN carpetas c ON it.carpeta_id = c.id
         LEFT JOIN dependencias d ON c.dependencia_id = d.id
         WHERE it.serie IS NULL OR TRIM(it.serie) = ''

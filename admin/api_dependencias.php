@@ -102,6 +102,7 @@ function addDependencia($conn) {
     $parent_id = !empty($_POST['parent_id']) ? filter_var($_POST['parent_id'], FILTER_VALIDATE_INT) : null;
     $acronimo = trim($_POST['acronimo'] ?? '');
     $estado = isset($_POST['estado']) ? 1 : 0;
+    $crearTabla = isset($_POST['crear_tabla']) && $_POST['crear_tabla'] === '1';
 
     // Validaciones
     if (empty($nombre)) {
@@ -142,6 +143,31 @@ function addDependencia($conn) {
 
     $newId = $conn->insert_id;
     $stmt->close();
+
+    if ($crearTabla) {
+        $tableName = "indice_documental_dep_{$newId}";
+        $sqlCreate = "
+            CREATE TABLE IF NOT EXISTS `$tableName` (
+              `id` int NOT NULL AUTO_INCREMENT,
+              `carpeta_id` int NOT NULL COMMENT 'ID desde Carpetas',
+              `serie` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+              `DescripcionUnidadDocumental` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+              `NoFolioInicio` int DEFAULT NULL,
+              `NoFolioFin` int DEFAULT NULL,
+              `Soporte` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+              `FechaIngreso` datetime DEFAULT CURRENT_TIMESTAMP,
+              `paginas` int DEFAULT NULL,
+              `ruta_pdf` varchar(255) DEFAULT NULL,
+              `cargaFecha` datetime DEFAULT NULL,
+              PRIMARY KEY (`id`),
+              KEY `fk_indicedocumental_carpeta_{$newId}` (`carpeta_id`),
+              CONSTRAINT `fk_indicedocumental_carpeta_{$newId}` FOREIGN KEY (`carpeta_id`) REFERENCES `carpetas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+        ";
+        if (!$conn->query($sqlCreate)) {
+            throw new Exception("Dependencia creada pero falló al crear la tabla: " . $conn->error);
+        }
+    }
 
     if (ob_get_length()) ob_clean();
     echo json_encode([
@@ -217,6 +243,10 @@ function deleteDependencia($conn) {
     }
 
     $stmtDelete->close();
+
+    // Eliminar la tabla de índices dedicada si existe
+    $tableName = "indice_documental_dep_{$id}";
+    $conn->query("DROP TABLE IF EXISTS `$tableName`");
 
     if (ob_get_length()) ob_clean();
     echo json_encode([

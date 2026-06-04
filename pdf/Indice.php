@@ -76,7 +76,8 @@ if ($resInfo && $resInfo->num_rows > 0) {
 /* =====================================================
    CONSULTA INDICE
    ===================================================== */
-$sql = "SELECT i.* FROM indice_documental i
+$tableName = getIndiceTableName($conec, (int)$dependencia_id);
+$sql = "SELECT i.* FROM `$tableName` i
 INNER JOIN carpetas c ON c.id = i.carpeta_id
 WHERE c.Caja='$Caja' AND c.Carpeta='$Carpeta'
 AND c.dependencia_id=$dependencia_id";

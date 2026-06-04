@@ -166,9 +166,10 @@ function deleteFolder($conn) {
             $stmt1->execute();
             $stmt1->close();
         } elseif ($folderData['Estado'] === 'C') {
-            // Carpeta cerrada: eliminar de indice_documental
-            $stmt1 = $conn->prepare("DELETE FROM indice_documental WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
-            $stmt1->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
+            // Carpeta cerrada: eliminar de la tabla de la dependencia por carpeta_id
+            $tableName = getIndiceTableName($conn, (int)$folderData['dependencia_id']);
+            $stmt1 = $conn->prepare("DELETE FROM `$tableName` WHERE carpeta_id = ?");
+            $stmt1->bind_param("i", $folderData['id']);
             $stmt1->execute();
             $stmt1->close();
         }
@@ -261,11 +262,8 @@ function updateFolder($conn) {
         $stmtUpd->bind_param("iii", $caja, $carpeta, $id);
         $stmtUpd->execute();
 
-        // 4. Actualizar índices (solo si existen columnas)
-        // IndiceDocumental
-        $stmtUpdDocs = $conn->prepare("UPDATE indice_documental SET Caja = ?, Carpeta = ? WHERE carpeta_id = ?");
-        $stmtUpdDocs->bind_param("iii", $caja, $carpeta, $id);
-        $stmtUpdDocs->execute();
+        // 4. Actualizar índices (Caja y Carpeta no existen en las tablas de índices, por lo que no es necesario realizar UPDATE allí)
+        // IndiceDocumental (No requiere actualización)
 
         // IndiceTemp (intentar update por dependencia)
         $stmtUpdTemp = $conn->prepare("UPDATE indice_temp SET Caja = ?, Carpeta = ? WHERE dependencia_id = ? AND carpeta_id = ?"); 

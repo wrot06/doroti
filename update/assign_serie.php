@@ -30,9 +30,10 @@ echo json_encode([
 exit();
 }
 
+$tableName = getIndiceTableNameByDocumentId($conec, $id);
 $stmtBuscar=$conec->prepare("
 SELECT DescripcionUnidadDocumental
-FROM indice_documental
+FROM `$tableName`
 WHERE id=?
 ");
 
@@ -65,7 +66,7 @@ $descripcionActual
 $nuevaDescripcion=$serie.': '.$descripcionLimpia;
 
 $stmt=$conec->prepare("
-UPDATE indice_documental
+UPDATE `$tableName`
 SET serie=?,
 DescripcionUnidadDocumental=?
 WHERE id=?

@@ -25,12 +25,13 @@ class TablaService
      */
     public function getSerieCount(): array
     {
+        $union = getIndiceUnionQuery($this->conec, ['serie', 'paginas']);
         $sql = "
         SELECT
             COALESCE(NULLIF(TRIM(serie), ''), 'Sin clasificar') AS serie,
             COUNT(*)                                            AS total,
             COALESCE(SUM(paginas), 0)                          AS total_paginas
-        FROM indice_documental
+        FROM $union u
         GROUP BY serie
         ORDER BY total DESC
         ";
@@ -64,13 +65,14 @@ class TablaService
      */
     public function getSerieByDependencia(): array
     {
+        $union = getIndiceUnionQuery($this->conec, ['carpeta_id', 'serie', 'paginas']);
         $sql = "
         SELECT
             COALESCE(dep.nombre, 'Sin dependencia')            AS dependencia,
             COALESCE(NULLIF(TRIM(i.serie), ''), 'Sin clasificar') AS serie,
             COUNT(*)                                           AS total,
             COALESCE(SUM(i.paginas), 0)                        AS total_paginas
-        FROM indice_documental i
+        FROM $union i
         INNER JOIN carpetas c ON c.id = i.carpeta_id
         LEFT JOIN dependencias dep ON dep.id = c.dependencia_id
         GROUP BY c.dependencia_id, i.serie
@@ -120,6 +122,7 @@ class TablaService
      */
     public function getSerieByUsuario(): array
     {
+        $union = getIndiceUnionQuery($this->conec, ['carpeta_id', 'serie', 'paginas']);
         $sql = "
         SELECT
             COALESCE(u.id, 0)                                  AS user_id,
@@ -127,7 +130,7 @@ class TablaService
             COALESCE(NULLIF(TRIM(i.serie), ''), 'Sin clasificar') AS serie,
             COUNT(*)                                           AS total,
             COALESCE(SUM(i.paginas), 0)                        AS total_paginas
-        FROM indice_documental i
+        FROM $union i
         LEFT JOIN carpetas c ON c.id = i.carpeta_id
         LEFT JOIN users u ON u.id = c.user_id
         GROUP BY u.id, i.serie
@@ -182,7 +185,8 @@ class TablaService
      */
     public function getGlobalTotals(): array
     {
-        $sql = "SELECT COUNT(*) AS total_docs, COALESCE(SUM(paginas),0) AS total_paginas FROM indice_documental";
+        $union = getIndiceUnionQuery($this->conec, ['paginas']);
+        $sql = "SELECT COUNT(*) AS total_docs, COALESCE(SUM(paginas),0) AS total_paginas FROM $union u";
         $result = $this->conec->query($sql);
         $data = $result ? $result->fetch_assoc() : ['total_docs' => 0, 'total_paginas' => 0];
 
@@ -198,7 +202,8 @@ class TablaService
      */
     public function countSeriesUnicas(): int
     {
-        $sql = "SELECT COUNT(DISTINCT NULLIF(TRIM(serie),'')) AS n FROM indice_documental WHERE serie IS NOT NULL AND TRIM(serie) != ''";
+        $union = getIndiceUnionQuery($this->conec, ['serie']);
+        $sql = "SELECT COUNT(DISTINCT NULLIF(TRIM(serie),'')) AS n FROM $union u WHERE serie IS NOT NULL AND TRIM(serie) != ''";
         $result = $this->conec->query($sql);
         if (!$result) return 0;
         $row = $result->fetch_assoc();

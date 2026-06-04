@@ -42,3 +42,117 @@ if ($conec->connect_error) {
 }
 $conec->set_charset('utf8mb4');
 
+
+/**
+ * Obtener todos los nombres de tablas de índices existentes (indice_documental y dedicadas).
+ */
+if (!function_exists('getAllIndiceTables')) {
+    function getAllIndiceTables(mysqli $conn): array {
+        static $tables = null;
+        if ($tables === null) {
+            $tables = ['indice_documental'];
+            $res = $conn->query("SHOW TABLES LIKE 'indice_documental_dep_%'");
+            if ($res) {
+                while ($row = $res->fetch_row()) {
+                    $tables[] = $row[0];
+                }
+            }
+        }
+        return $tables;
+    }
+}
+
+/**
+ * Obtener el nombre de la tabla de índice documental para una dependencia.
+ */
+if (!function_exists('getIndiceTableName')) {
+    function getIndiceTableName(mysqli $conn, int $depId): string {
+        if ($depId <= 0) {
+            return 'indice_documental';
+        }
+        static $existingTables = null;
+        if ($existingTables === null) {
+            $existingTables = [];
+            $res = $conn->query("SHOW TABLES LIKE 'indice_documental_dep_%'");
+            if ($res) {
+                while ($row = $res->fetch_row()) {
+                    $tableName = $row[0];
+                    if (preg_match('/^indice_documental_dep_(\d+)$/', $tableName, $matches)) {
+                        $existingTables[(int)$matches[1]] = $tableName;
+                    }
+                }
+            }
+        }
+        return isset($existingTables[$depId]) ? $existingTables[$depId] : 'indice_documental';
+    }
+}
+
+/**
+ * Obtener el nombre de la tabla de índice documental para una carpeta.
+ */
+if (!function_exists('getIndiceTableNameByCarpeta')) {
+    function getIndiceTableNameByCarpeta(mysqli $conn, int $carpetaId): string {
+        static $carpetaToDep = [];
+        if (!isset($carpetaToDep[$carpetaId])) {
+            $stmt = $conn->prepare("SELECT dependencia_id FROM carpetas WHERE id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $carpetaId);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($res && $row = $res->fetch_assoc()) {
+                    $carpetaToDep[$carpetaId] = (int)$row['dependencia_id'];
+                } else {
+                    $carpetaToDep[$carpetaId] = 0;
+                }
+                $stmt->close();
+            } else {
+                $carpetaToDep[$carpetaId] = 0;
+            }
+        }
+        return getIndiceTableName($conn, $carpetaToDep[$carpetaId]);
+    }
+}
+
+/**
+ * Obtener el nombre de la tabla de índice documental que contiene un registro por su ID global.
+ */
+if (!function_exists('getIndiceTableNameByDocumentId')) {
+    function getIndiceTableNameByDocumentId(mysqli $conn, int $docId): string {
+        static $docToTable = [];
+        if (isset($docToTable[$docId])) {
+            return $docToTable[$docId];
+        }
+        
+        $tables = getAllIndiceTables($conn);
+        foreach ($tables as $table) {
+            $stmt = $conn->prepare("SELECT 1 FROM `$table` WHERE id = ? LIMIT 1");
+            if ($stmt) {
+                $stmt->bind_param("i", $docId);
+                $stmt->execute();
+                $resCheck = $stmt->get_result();
+                $hasDoc = ($resCheck && $resCheck->num_rows > 0);
+                $stmt->close();
+                if ($hasDoc) {
+                    $docToTable[$docId] = $table;
+                    return $table;
+                }
+            }
+        }
+        return 'indice_documental';
+    }
+}
+
+/**
+ * Generar la subconsulta UNION ALL de todas las tablas de índices existentes.
+ */
+if (!function_exists('getIndiceUnionQuery')) {
+    function getIndiceUnionQuery(mysqli $conn, array $columns = []): string {
+        $tables = getAllIndiceTables($conn);
+        $colList = empty($columns) ? "*" : implode(", ", array_map(fn($c) => "`$c`", $columns));
+        $subqueries = [];
+        foreach ($tables as $t) {
+            $subqueries[] = "SELECT $colList FROM `$t`";
+        }
+        return "(" . implode(" UNION ALL ", $subqueries) . ")";
+    }
+}

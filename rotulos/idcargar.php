@@ -33,7 +33,8 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
   redirect("idcargar.php?id={$id}");
  }
 
- $stmt=$conec->prepare("SELECT Soporte FROM indice_documental WHERE id=?");
+ $tableName = getIndiceTableNameByDocumentId($conec, $id);
+ $stmt=$conec->prepare("SELECT Soporte FROM `$tableName` WHERE id=?");
  $stmt->bind_param("i",$id);
  $stmt->execute();
  $stmt->bind_result($soporteActual);
@@ -83,8 +84,9 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
  $fecha=date('Y-m-d H:i:s');
  $conec->begin_transaction();
 
+ $tableName = getIndiceTableNameByDocumentId($conec, $id);
  $upd=$conec->prepare("
-  UPDATE indice_documental
+  UPDATE `$tableName`
   SET ruta_pdf=?, serie=?, cargaFecha=?, Soporte=?
   WHERE id=?
  ");
@@ -102,7 +104,8 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
  redirect("subido.php?id={$id}");
 }
 
-$stmt=$conec->prepare("SELECT * FROM indice_documental WHERE id=?");
+$tableName = getIndiceTableNameByDocumentId($conec, $id);
+$stmt=$conec->prepare("SELECT * FROM `$tableName` WHERE id=?");
 $stmt->bind_param("i",$id);
 $stmt->execute();
 $registro=$stmt->get_result()->fetch_assoc();

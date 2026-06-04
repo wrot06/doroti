@@ -210,10 +210,12 @@ function assignUserToFolder($conn)
             $stmtCount->close();
         } elseif ($estado === 'C') {
             // Carpeta Cerrada: verificar datos en IndiceDocumental
+            $tableName = getIndiceTableName($conn, (int)$dependencia_id);
             $stmtCount = $conn->prepare("
                 SELECT COUNT(*) as total 
-                FROM indice_documental 
-                WHERE carpeta_id = ? AND Caja = ? AND Carpeta = ? AND dependencia_id = ?
+                FROM `$tableName` it
+                INNER JOIN carpetas c ON it.carpeta_id = c.id
+                WHERE it.carpeta_id = ? AND c.Caja = ? AND c.Carpeta = ? AND c.dependencia_id = ?
             ");
             $stmtCount->bind_param("iiii", $folderId, $caja, $carpeta, $dependencia_id);
             $stmtCount->execute();

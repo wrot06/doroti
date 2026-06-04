@@ -155,8 +155,9 @@ try {
     $stmt->close();
 
     /* ---------- INSERT indice_documental ---------- */
+    $tableName = getIndiceTableName($conec, $dependencia_id);
     $sqlInsert = "
-        INSERT INTO indice_documental (carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso)
+        INSERT INTO `$tableName` (carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso)
         SELECT carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
         FROM indice_temp
         WHERE carpeta_id = ?

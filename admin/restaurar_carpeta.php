@@ -63,8 +63,9 @@ function restaurarCarpeta($conec)
             throw new Exception("Carpeta no encontrada.");
         }
 
-        // 2. Mover registros de indice_documental -> indice_temp
+        // 2. Mover registros de la tabla de índices dedicada -> indice_temp
         // IMPORTANTE: Asignar id2 basado en el orden de NoFolioInicio
+        $tableName = getIndiceTableName($conec, (int)$data['dependencia_id']);
         $sqlInsert = "
             INSERT INTO indice_temp (
                 id2, carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, FechaIngreso
@@ -72,7 +73,7 @@ function restaurarCarpeta($conec)
             SELECT 
                 ROW_NUMBER() OVER (ORDER BY NoFolioInicio ASC, NoFolioFin ASC) as id2,
                 carpeta_id, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, NOW()
-            FROM indice_documental
+            FROM `$tableName`
             WHERE carpeta_id = ?
         ";
 
@@ -83,8 +84,8 @@ function restaurarCarpeta($conec)
         }
         $stmtIns->close();
 
-        // 3. Eliminar de indice_documental
-        $stmtDelDocs = $conec->prepare("DELETE FROM indice_documental WHERE carpeta_id = ?");
+        // 3. Eliminar de la tabla de índices dedicada
+        $stmtDelDocs = $conec->prepare("DELETE FROM `$tableName` WHERE carpeta_id = ?");
         $stmtDelDocs->bind_param("i", $id);
         $stmtDelDocs->execute();
         $stmtDelDocs->close();

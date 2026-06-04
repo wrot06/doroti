@@ -166,6 +166,24 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.1') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Segmentación de Índices por Dependencia y Tablas Dinámicas";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se dividió la tabla global 'indice_documental' en tablas dedicadas por dependencia (ej. 'indice_documental_dep_6', 'indice_documental_dep_9') para mejorar la velocidad de exportación y la escalabilidad del sistema.</li>
+                    <li>Se implementaron funciones de enrutamiento dinámico en 'conexion3.php' para resolver automáticamente la tabla a consultar basándose en la dependencia, el ID de carpeta o el ID de documento.</li>
+                    <li>Se refactorizaron 12 archivos de la aplicación (administración, rótulos, PDF, buscador, clasificador, estadísticas) para operar dinámicamente con las nuevas tablas.</li>
+                    <li>Se integró la opción en la creación de dependencias para decidir si se crea y asocia una tabla de índices dedicada a la nueva oficina.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

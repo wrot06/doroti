@@ -34,9 +34,10 @@ $resultado = $stmt->get_result();
 
 /* ================== ÍNDICES DOCUMENTALES ================== */
 $indices = [];
+$tableName = getIndiceTableName($conec, (int)$dependencia_id);
 $stmt2 = $conec->prepare("
     SELECT i.*, c.Caja, c.Carpeta
-    FROM indice_documental i
+    FROM `$tableName` i
     INNER JOIN carpetas c ON c.id = i.carpeta_id
     WHERE c.dependencia_id = ?
 ");

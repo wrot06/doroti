@@ -14,11 +14,12 @@ if(!$id){
  exit("ID inválido");
 }
 
+$tableName = getIndiceTableNameByDocumentId($conec, $id);
 $stmt=$conec->prepare("
- SELECT ruta_pdf, DescripcionUnidadDocumental
- FROM indice_documental
- WHERE id=?
-");
+  SELECT ruta_pdf, DescripcionUnidadDocumental
+  FROM `$tableName`
+  WHERE id=?
+ ");
 $stmt->bind_param("i",$id);
 $stmt->execute();
 $doc=$stmt->get_result()->fetch_assoc();

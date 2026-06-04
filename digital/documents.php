@@ -14,6 +14,14 @@ header("Referrer-Policy: strict-origin-when-cross-origin");
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     http_response_code(401);exit('No autorizado');
 }
+
+// Verificar rol de admin
+if (($_SESSION['rol'] ?? '') !== 'admin') {
+    http_response_code(403);
+    echo "<h1>Acceso Denegado</h1><p>No tienes permiso para ver esta página.</p><a href='../index.php'>Volver al inicio</a>";
+    exit();
+}
+
 $user_id=(int)($_SESSION['user_id']??0);
 if($user_id<=0){http_response_code(401);exit('Sesión inválida');}
 

@@ -219,6 +219,22 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.4') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Restricción de Acceso Administrador al Módulo Digital";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se restringió el acceso a la vista 'digital/documents.php' de forma exclusiva para usuarios con rol 'admin'.</li>
+                    <li>Se ocultó el enlace a 'Digital' en el menú de navegación (navbar.php) para aquellos usuarios que no posean rol administrativo.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

@@ -77,9 +77,11 @@ if (!function_exists('nh')) {
                     <i class="bi bi-file-earmark-text me-2"></i>Inventario
                 </a>
 
-                <a href="<?= nh($basePath) ?>digital/documents.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'digital' ? 'active' : '' ?>">
-                    <i class="bi bi-file-earmark-pdf-fill me-2"></i>Digital
-                </a>
+                <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
+                    <a href="<?= nh($basePath) ?>digital/documents.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'digital' ? 'active' : '' ?>">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Digital
+                    </a>
+                <?php endif; ?>
 
                 <a href="<?= nh($basePath) ?>tablas/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'tablas' ? 'active' : '' ?>">
                     <i class="bi bi-table me-2"></i>Tablas

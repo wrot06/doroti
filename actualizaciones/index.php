@@ -150,6 +150,22 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.0') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Unificación Global de Carga de Avatares y Datos de Sesión";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se eliminaron las consultas y lógica manual de carga de fotos de perfil en los módulos de buscador, rótulos, subida de documentos y listado de documentos digitales.</li>
+                    <li>Se centralizó de forma definitiva la carga de avatares y oficinas a través del método optimizado UserService en todo el proyecto.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

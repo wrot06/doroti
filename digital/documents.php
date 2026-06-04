@@ -48,23 +48,12 @@ $stmt->execute();
 $result=$stmt->get_result();
 
 /* ================== SESIÓN ================== */
-$usuario=$_SESSION['username']??'Usuario';
-$oficina=$_SESSION['oficina']??'';
-
-/* ================== AVATAR ================== */
-$userAvatar='../uploads/avatars/default.png';
-if($user_id>0){
-    $stmt_av=$conec->prepare("SELECT avatar FROM users WHERE id=?");
-    $stmt_av->bind_param("i",$user_id);
-    $stmt_av->execute();
-    $res_av=$stmt_av->get_result();
-    if($row_av=$res_av->fetch_assoc()){
-        if($row_av['avatar'] && file_exists('../uploads/avatars/'.basename($row_av['avatar']))){
-            $userAvatar='../uploads/avatars/'.basename($row_av['avatar']);
-        }
-    }
-    $stmt_av->close();
-}
+require_once "../services/UserService.php";
+$userService = new UserService($conec);
+$userInfo = $userService->getUserInfo($user_id);
+$usuario = $userInfo['username'];
+$oficina = $userInfo['oficina'];
+$userAvatar = '../' . $userService->getUserAvatar($user_id);
 
 function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 ?>

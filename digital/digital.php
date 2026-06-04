@@ -37,8 +37,12 @@ $stmt->execute();
 $docs = $stmt->get_result();
 
 /* ================== SESIÓN ================== */
-$usuario=$_SESSION['username']??'Usuario';
-$oficina=$_SESSION['oficina']??'';
+require_once "../services/UserService.php";
+$userService = new UserService($conec);
+$userInfo = $userService->getUserInfo($user_id);
+$usuario = $userInfo['username'];
+$oficina = $userInfo['oficina'];
+$userAvatar = '../' . $userService->getUserAvatar($user_id);
 $dependencia_id = (int)($_SESSION['dependencia_id'] ?? 0);
 ?>
 <!DOCTYPE html>

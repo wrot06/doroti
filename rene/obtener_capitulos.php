@@ -15,7 +15,7 @@ if (is_null($id_carpeta)) {
 }
 
 $sql = "SELECT id2 AS id, DescripcionUnidadDocumental AS titulo, paginas, NoFolioInicio AS paginaInicio, NoFolioFin AS paginaFinal 
-        FROM IndiceTemp 
+        FROM indice_temp 
         WHERE carpeta_id = ?";
 $stmt = $conec->prepare($sql);
 

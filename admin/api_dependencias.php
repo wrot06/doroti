@@ -179,7 +179,7 @@ function deleteDependencia($conn) {
     $stmtCheck->close();
 
     // Verificar que no tenga carpetas asociadas
-    $stmtCarpetas = $conn->prepare("SELECT COUNT(*) as total FROM Carpetas WHERE dependencia_id = ?");
+    $stmtCarpetas = $conn->prepare("SELECT COUNT(*) as total FROM carpetas WHERE dependencia_id = ?");
     $stmtCarpetas->bind_param("i", $id);
     $stmtCarpetas->execute();
     $carpetasResult = $stmtCarpetas->get_result();

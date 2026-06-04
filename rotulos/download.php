@@ -16,7 +16,7 @@ if(!$id){
 
 $stmt=$conec->prepare("
  SELECT ruta_pdf, DescripcionUnidadDocumental
- FROM IndiceDocumental
+ FROM indice_documental
  WHERE id=?
 ");
 $stmt->bind_param("i",$id);

@@ -33,7 +33,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
   redirect("idcargar.php?id={$id}");
  }
 
- $stmt=$conec->prepare("SELECT Soporte FROM IndiceDocumental WHERE id=?");
+ $stmt=$conec->prepare("SELECT Soporte FROM indice_documental WHERE id=?");
  $stmt->bind_param("i",$id);
  $stmt->execute();
  $stmt->bind_result($soporteActual);
@@ -84,7 +84,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
  $conec->begin_transaction();
 
  $upd=$conec->prepare("
-  UPDATE IndiceDocumental
+  UPDATE indice_documental
   SET ruta_pdf=?, serie=?, cargaFecha=?, Soporte=?
   WHERE id=?
  ");
@@ -102,7 +102,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
  redirect("subido.php?id={$id}");
 }
 
-$stmt=$conec->prepare("SELECT * FROM IndiceDocumental WHERE id=?");
+$stmt=$conec->prepare("SELECT * FROM indice_documental WHERE id=?");
 $stmt->bind_param("i",$id);
 $stmt->execute();
 $registro=$stmt->get_result()->fetch_assoc();
@@ -113,7 +113,7 @@ if(!$registro){
 }
 
 $series=[];
-$res=$conec->query("SELECT nombre FROM Serie ORDER BY nombre ASC");
+$res=$conec->query("SELECT nombre FROM serie ORDER BY nombre ASC");
 while($r=$res->fetch_assoc()) $series[]=$r['nombre'];
 $res->free();
 ?>

@@ -81,7 +81,7 @@ function listSubseries($conn)
 {
     $sql = "SELECT s.id, s.serie_nombre, s.serie_id, s.dependencia_id, s.Subs as nombre, 
                    d.nombre as dependencia_nombre
-            FROM Subs s
+            FROM subs s
             LEFT JOIN dependencias d ON s.dependencia_id = d.id
             ORDER BY d.nombre ASC, s.serie_nombre ASC, s.Subs ASC";
     $res = $conn->query($sql);
@@ -108,8 +108,8 @@ function listSeriesByDependencia($conn)
     }
 
     $sql = "SELECT s.id, s.nombre 
-            FROM Serie s 
-            INNER JOIN OficinaSerie os ON os.serie_id = s.id 
+            FROM serie s 
+            INNER JOIN oficina_serie os ON os.serie_id = s.id 
             WHERE os.dependencia_id = ? 
             ORDER BY s.nombre ASC";
     $stmt = $conn->prepare($sql);
@@ -149,7 +149,7 @@ function addSubserie($conn)
     if (empty($nombre)) throw new Exception("El nombre de la subserie es requerido");
 
     // Verificar vinculación Dependencia-Serie
-    $stmtCh = $conn->prepare("SELECT id FROM OficinaSerie WHERE dependencia_id = ? AND serie_id = ?");
+    $stmtCh = $conn->prepare("SELECT id FROM oficina_serie WHERE dependencia_id = ? AND serie_id = ?");
     $stmtCh->bind_param("ii", $dependencia_id, $serie_id);
     $stmtCh->execute();
     if ($stmtCh->get_result()->num_rows === 0) {
@@ -158,7 +158,7 @@ function addSubserie($conn)
     $stmtCh->close();
 
     // Obtener serie_nombre (requerido por constraint)
-    $stmtS = $conn->prepare("SELECT nombre FROM Serie WHERE id = ?");
+    $stmtS = $conn->prepare("SELECT nombre FROM serie WHERE id = ?");
     $stmtS->bind_param("i", $serie_id);
     $stmtS->execute();
     $resS = $stmtS->get_result();
@@ -167,7 +167,7 @@ function addSubserie($conn)
     $stmtS->close();
 
     // Verificar que el nombre de la subserie no exista en esa serie o dependencia
-    $stmtDupl = $conn->prepare("SELECT id FROM Subs WHERE dependencia_id = ? AND serie_id = ? AND Subs = ?");
+    $stmtDupl = $conn->prepare("SELECT id FROM subs WHERE dependencia_id = ? AND serie_id = ? AND Subs = ?");
     $stmtDupl->bind_param("iis", $dependencia_id, $serie_id, $nombre);
     $stmtDupl->execute();
     if ($stmtDupl->get_result()->num_rows > 0) {
@@ -176,7 +176,7 @@ function addSubserie($conn)
     $stmtDupl->close();
 
     // Insertar
-    $stmt = $conn->prepare("INSERT INTO Subs (serie_nombre, serie_id, dependencia_id, Subs) VALUES (?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO subs (serie_nombre, serie_id, dependencia_id, Subs) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("siis", $serie_nombre, $serie_id, $dependencia_id, $nombre);
 
     if (!$stmt->execute()) {
@@ -213,7 +213,7 @@ function updateSubserie($conn)
     if (!$serie_id) throw new Exception("La serie es requerida");
     if (empty($nombre)) throw new Exception("El nombre de la subserie es requerido");
 
-    $stmtCheck = $conn->prepare("SELECT id FROM Subs WHERE id = ?");
+    $stmtCheck = $conn->prepare("SELECT id FROM subs WHERE id = ?");
     $stmtCheck->bind_param("i", $id);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows === 0) {
@@ -222,7 +222,7 @@ function updateSubserie($conn)
     $stmtCheck->close();
 
     // Verificar vinculación Dependencia-Serie
-    $stmtCh = $conn->prepare("SELECT id FROM OficinaSerie WHERE dependencia_id = ? AND serie_id = ?");
+    $stmtCh = $conn->prepare("SELECT id FROM oficina_serie WHERE dependencia_id = ? AND serie_id = ?");
     $stmtCh->bind_param("ii", $dependencia_id, $serie_id);
     $stmtCh->execute();
     if ($stmtCh->get_result()->num_rows === 0) {
@@ -231,7 +231,7 @@ function updateSubserie($conn)
     $stmtCh->close();
 
     // Obtener serie_nombre
-    $stmtS = $conn->prepare("SELECT nombre FROM Serie WHERE id = ?");
+    $stmtS = $conn->prepare("SELECT nombre FROM serie WHERE id = ?");
     $stmtS->bind_param("i", $serie_id);
     $stmtS->execute();
     $resS = $stmtS->get_result();
@@ -240,7 +240,7 @@ function updateSubserie($conn)
     $stmtS->close();
 
     // Verificar duplicado excluyendo a sí mismo
-    $stmtDupl = $conn->prepare("SELECT id FROM Subs WHERE dependencia_id = ? AND serie_id = ? AND Subs = ? AND id != ?");
+    $stmtDupl = $conn->prepare("SELECT id FROM subs WHERE dependencia_id = ? AND serie_id = ? AND Subs = ? AND id != ?");
     $stmtDupl->bind_param("iisi", $dependencia_id, $serie_id, $nombre, $id);
     $stmtDupl->execute();
     if ($stmtDupl->get_result()->num_rows > 0) {
@@ -248,7 +248,7 @@ function updateSubserie($conn)
     }
     $stmtDupl->close();
 
-    $stmt = $conn->prepare("UPDATE Subs SET serie_nombre = ?, serie_id = ?, dependencia_id = ?, Subs = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE subs SET serie_nombre = ?, serie_id = ?, dependencia_id = ?, Subs = ? WHERE id = ?");
     $stmt->bind_param("siisi", $serie_nombre, $serie_id, $dependencia_id, $nombre, $id);
 
     if (!$stmt->execute()) {
@@ -283,7 +283,7 @@ function deleteSubserie($conn)
     }
 
     // Verificar que existe
-    $stmtCheck = $conn->prepare("SELECT Subs FROM Subs WHERE id = ?");
+    $stmtCheck = $conn->prepare("SELECT Subs FROM subs WHERE id = ?");
     $stmtCheck->bind_param("i", $id);
     $stmtCheck->execute();
     $result = $stmtCheck->get_result();
@@ -296,7 +296,7 @@ function deleteSubserie($conn)
     $stmtCheck->close();
 
     // Eliminar
-    $stmtDelete = $conn->prepare("DELETE FROM Subs WHERE id = ?");
+    $stmtDelete = $conn->prepare("DELETE FROM subs WHERE id = ?");
     $stmtDelete->bind_param("i", $id);
 
     if (!$stmtDelete->execute()) {

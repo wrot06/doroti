@@ -27,7 +27,7 @@ if ($conec->connect_error) {
 }
 
 // Preparar consulta
-$sql = "UPDATE IndiceTemp 
+$sql = "UPDATE indice_temp 
         SET NoFolioInicio = ?, NoFolioFin = ?, DescripcionUnidadDocumental = ?, paginas = ?
         WHERE id2 = ? AND Caja = ? AND Carpeta = ?";
 $stmt = $conec->prepare($sql);

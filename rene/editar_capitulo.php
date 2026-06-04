@@ -14,7 +14,7 @@ if (!$id || !$titulo || !$id_carpeta) {
 }
 
 // Actualizar solo el título
-$sql = "UPDATE IndiceTemp SET DescripcionUnidadDocumental = ? WHERE id2 = ? AND carpeta_id = ?";
+$sql = "UPDATE indice_temp SET DescripcionUnidadDocumental = ? WHERE id2 = ? AND carpeta_id = ?";
 $stmt = $conec->prepare($sql);
 $stmt->bind_param("sii", $titulo, $id, $id_carpeta);
 

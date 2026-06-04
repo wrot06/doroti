@@ -110,7 +110,7 @@ function listFolders($conn) {
 
     $stmt = $conn->prepare("
         SELECT id, Caja, Carpeta, Estado, FechaIngreso 
-        FROM Carpetas 
+        FROM carpetas 
         WHERE dependencia_id = ? 
         ORDER BY Caja ASC, Carpeta ASC
     ");
@@ -145,7 +145,7 @@ function deleteFolder($conn) {
 
     try {
         // Datos carpeta (incluyendo Estado)
-        $stmtGet = $conn->prepare("SELECT Caja, Carpeta, dependencia_id, Estado FROM Carpetas WHERE id = ?");
+        $stmtGet = $conn->prepare("SELECT Caja, Carpeta, dependencia_id, Estado FROM carpetas WHERE id = ?");
         $stmtGet->bind_param("i", $folderId);
         $stmtGet->execute();
         $resGet = $stmtGet->get_result();
@@ -160,21 +160,21 @@ function deleteFolder($conn) {
         // Estado 'A' (Activo) = registros en IndiceTemp
         // Estado 'C' (Cerrado) = registros en IndiceDocumental
         if ($folderData['Estado'] === 'A') {
-            // Carpeta activa: eliminar de IndiceTemp
-            $stmt1 = $conn->prepare("DELETE FROM IndiceTemp WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
+            // Carpeta activa: eliminar de indice_temp
+            $stmt1 = $conn->prepare("DELETE FROM indice_temp WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
             $stmt1->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
             $stmt1->execute();
             $stmt1->close();
         } elseif ($folderData['Estado'] === 'C') {
-            // Carpeta cerrada: eliminar de IndiceDocumental
-            $stmt1 = $conn->prepare("DELETE FROM IndiceDocumental WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
+            // Carpeta cerrada: eliminar de indice_documental
+            $stmt1 = $conn->prepare("DELETE FROM indice_documental WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
             $stmt1->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
             $stmt1->execute();
             $stmt1->close();
         }
 
         // Eliminar Carpeta usando Caja, Carpeta y dependencia_id para mayor seguridad
-        $stmt2 = $conn->prepare("DELETE FROM Carpetas WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
+        $stmt2 = $conn->prepare("DELETE FROM carpetas WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
         $stmt2->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
         $stmt2->execute();
         
@@ -202,7 +202,7 @@ function getFolder($conn) {
         throw new Exception("ID inválido");
     }
 
-    $stmt = $conn->prepare("SELECT id, Caja, Carpeta, dependencia_id FROM Carpetas WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id, Caja, Carpeta, dependencia_id FROM carpetas WHERE id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -236,7 +236,7 @@ function updateFolder($conn) {
 
     try {
         // 1. Obtener datos actuales
-        $stmtGet = $conn->prepare("SELECT dependencia_id FROM Carpetas WHERE id = ?");
+        $stmtGet = $conn->prepare("SELECT dependencia_id FROM carpetas WHERE id = ?");
         $stmtGet->bind_param("i", $id);
         $stmtGet->execute();
         $resGet = $stmtGet->get_result();
@@ -249,7 +249,7 @@ function updateFolder($conn) {
         $depId = $current['dependencia_id'];
 
         // 2. Verificar duplicados
-        $stmtCheck = $conn->prepare("SELECT id FROM Carpetas WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ? AND id != ?");
+        $stmtCheck = $conn->prepare("SELECT id FROM carpetas WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ? AND id != ?");
         $stmtCheck->bind_param("iiii", $caja, $carpeta, $depId, $id);
         $stmtCheck->execute();
         if ($stmtCheck->get_result()->num_rows > 0) {
@@ -257,18 +257,18 @@ function updateFolder($conn) {
         }
 
         // 3. Actualizar
-        $stmtUpd = $conn->prepare("UPDATE Carpetas SET Caja = ?, Carpeta = ? WHERE id = ?");
+        $stmtUpd = $conn->prepare("UPDATE carpetas SET Caja = ?, Carpeta = ? WHERE id = ?");
         $stmtUpd->bind_param("iii", $caja, $carpeta, $id);
         $stmtUpd->execute();
 
         // 4. Actualizar índices (solo si existen columnas)
         // IndiceDocumental
-        $stmtUpdDocs = $conn->prepare("UPDATE IndiceDocumental SET Caja = ?, Carpeta = ? WHERE carpeta_id = ?");
+        $stmtUpdDocs = $conn->prepare("UPDATE indice_documental SET Caja = ?, Carpeta = ? WHERE carpeta_id = ?");
         $stmtUpdDocs->bind_param("iii", $caja, $carpeta, $id);
         $stmtUpdDocs->execute();
 
         // IndiceTemp (intentar update por dependencia)
-        $stmtUpdTemp = $conn->prepare("UPDATE IndiceTemp SET Caja = ?, Carpeta = ? WHERE dependencia_id = ? AND carpeta_id = ?"); 
+        $stmtUpdTemp = $conn->prepare("UPDATE indice_temp SET Caja = ?, Carpeta = ? WHERE dependencia_id = ? AND carpeta_id = ?"); 
         // Nota: carpeta_id podría no existir en IndiceTemp en versiones viejas, pero update fallaría graceful sin excepción si columna existe pero 0 rows
         // Si columna NO existe, lanza error.
         // Asumo carpeta_id existe en IndiceTemp (vimos schema antes).

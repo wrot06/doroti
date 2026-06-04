@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST
 
     try {
         // Paso 1: Eliminar el capítulo
-        $sql_delete = "DELETE FROM IndiceTemp WHERE id2 = ? AND carpeta_id = ?";
+        $sql_delete = "DELETE FROM indice_temp WHERE id2 = ? AND carpeta_id = ?";
         $stmt_delete = $conec->prepare($sql_delete);
 
         if ($stmt_delete === false) {
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST
         $stmt_delete->close();
 
         // Paso 2: Obtener los capítulos restantes, ordenados por id2
-        $sql_select = "SELECT id2, paginas FROM IndiceTemp WHERE carpeta_id = ? ORDER BY id2 ASC";
+        $sql_select = "SELECT id2, paginas FROM indice_temp WHERE carpeta_id = ? ORDER BY id2 ASC";
         $stmt_select = $conec->prepare($sql_select);
 
         if ($stmt_select === false) {
@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id']) && isset($_POST
         // Paso 3: Recalcular páginas y actualizar cada capítulo
         $siguientePagina = 1;
 
-        $sql_update = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ?, id2 = ? WHERE carpeta_id = ? AND id2 = ?";
+        $sql_update = "UPDATE indice_temp SET NoFolioInicio = ?, NoFolioFin = ?, id2 = ? WHERE carpeta_id = ? AND id2 = ?";
         $stmt_update = $conec->prepare($sql_update);
 
         if ($stmt_update === false) {

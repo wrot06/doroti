@@ -15,7 +15,7 @@ it.Carpeta,
 it.DescripcionUnidadDocumental,
 it.paginas,
 d.nombre AS dependencia_nombre
-FROM IndiceDocumental it
+FROM indice_documental it
 LEFT JOIN dependencias d ON it.dependencia_id=d.id
 WHERE it.serie IS NULL OR TRIM(it.serie)=''
 ORDER BY RAND()

@@ -41,7 +41,7 @@ try {
     }
 
     // Obtener la última página final
-    $sql_last_page = "SELECT MAX(NoFolioFin) as ultima_pagina FROM IndiceTemp WHERE carpeta_id = ?";
+    $sql_last_page = "SELECT MAX(NoFolioFin) as ultima_pagina FROM indice_temp WHERE carpeta_id = ?";
     $stmt_last_page = $conec->prepare($sql_last_page);
     $stmt_last_page->bind_param("i", $id_carpeta);
     $stmt_last_page->execute();
@@ -58,7 +58,7 @@ try {
     $paginas = $paginaFinal - $paginaInicio + 1;
 
     // Obtener el próximo id2
-    $sql_last_id = "SELECT MAX(id2) as last_id FROM IndiceTemp WHERE carpeta_id = ?";
+    $sql_last_id = "SELECT MAX(id2) as last_id FROM indice_temp WHERE carpeta_id = ?";
     $stmt_last_id = $conec->prepare($sql_last_id);
     $stmt_last_id->bind_param("i", $id_carpeta);
     $stmt_last_id->execute();
@@ -84,7 +84,7 @@ try {
     $soporte = "F"; 
 
     // INSERT con id_carpeta agregado
-    $sql = "INSERT INTO IndiceTemp 
+    $sql = "INSERT INTO indice_temp 
             (id2, Caja, Carpeta, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, dependencia_id, Soporte, carpeta_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 

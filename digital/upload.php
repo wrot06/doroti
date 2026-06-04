@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     $stmt = $conec->prepare("
-        INSERT INTO Documentos (
+        INSERT INTO documentos (
             serie, fecha_creacion, archivo_nombre,
             archivo_ruta, user_id, titulo_documento, archivo_pdf
         ) VALUES (?, ?, ?, ?, ?, ?, NULL)

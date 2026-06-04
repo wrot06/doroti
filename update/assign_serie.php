@@ -32,7 +32,7 @@ exit();
 
 $stmtBuscar=$conec->prepare("
 SELECT DescripcionUnidadDocumental
-FROM IndiceDocumental
+FROM indice_documental
 WHERE id=?
 ");
 
@@ -65,7 +65,7 @@ $descripcionActual
 $nuevaDescripcion=$serie.': '.$descripcionLimpia;
 
 $stmt=$conec->prepare("
-UPDATE IndiceDocumental
+UPDATE indice_documental
 SET serie=?,
 DescripcionUnidadDocumental=?
 WHERE id=?

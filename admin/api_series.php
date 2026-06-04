@@ -76,7 +76,7 @@ if (ob_get_length()) ob_end_flush();
 
 function listGlobalSeries($conn)
 {
-    $sql = "SELECT id, nombre FROM Serie ORDER BY nombre ASC";
+    $sql = "SELECT id, nombre FROM serie ORDER BY nombre ASC";
     $res = $conn->query($sql);
     $series = [];
     if ($res) {
@@ -93,7 +93,7 @@ function addSerie($conn)
     $nombre = trim($_POST['nombre'] ?? '');
     if (empty($nombre)) throw new Exception("El nombre de la serie es requerido");
 
-    $stmtCheck = $conn->prepare("SELECT id FROM Serie WHERE nombre = ?");
+    $stmtCheck = $conn->prepare("SELECT id FROM serie WHERE nombre = ?");
     $stmtCheck->bind_param("s", $nombre);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows > 0) {
@@ -101,7 +101,7 @@ function addSerie($conn)
     }
     $stmtCheck->close();
 
-    $stmt = $conn->prepare("INSERT INTO Serie (nombre) VALUES (?)");
+    $stmt = $conn->prepare("INSERT INTO serie (nombre) VALUES (?)");
     $stmt->bind_param("s", $nombre);
     if (!$stmt->execute()) {
         throw new Exception("Error al crear la serie");
@@ -121,7 +121,7 @@ function updateSerie($conn)
     if (!$id) throw new Exception("ID inválido");
     if (empty($nombre)) throw new Exception("El nombre es requerido");
 
-    $stmtCheck = $conn->prepare("SELECT id FROM Serie WHERE nombre = ? AND id != ?");
+    $stmtCheck = $conn->prepare("SELECT id FROM serie WHERE nombre = ? AND id != ?");
     $stmtCheck->bind_param("si", $nombre, $id);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows > 0) {
@@ -129,7 +129,7 @@ function updateSerie($conn)
     }
     $stmtCheck->close();
 
-    $stmt = $conn->prepare("UPDATE Serie SET nombre = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE serie SET nombre = ? WHERE id = ?");
     $stmt->bind_param("si", $nombre, $id);
     if (!$stmt->execute()) {
         throw new Exception("Error al actualizar");
@@ -138,7 +138,7 @@ function updateSerie($conn)
     // Si se actualizó el nombre, deberíamos actualizar las referencias en la tabla Subs (si es que guarda string)
     // Sabemos por api_subseries que Subs tiene serie_nombre.
     if ($stmt->affected_rows > 0) {
-        $stmtUpdateSubs = $conn->prepare("UPDATE Subs SET serie_nombre = ? WHERE serie_id = ?");
+        $stmtUpdateSubs = $conn->prepare("UPDATE subs SET serie_nombre = ? WHERE serie_id = ?");
         $stmtUpdateSubs->bind_param("si", $nombre, $id);
         $stmtUpdateSubs->execute();
         $stmtUpdateSubs->close();
@@ -155,7 +155,7 @@ function deleteSerie($conn)
     $id = filter_var($_POST['id'] ?? '', FILTER_VALIDATE_INT);
     if (!$id) throw new Exception("ID inválido");
 
-    $stmtCheck = $conn->prepare("SELECT id FROM OficinaSerie WHERE serie_id = ? LIMIT 1");
+    $stmtCheck = $conn->prepare("SELECT id FROM oficina_serie WHERE serie_id = ? LIMIT 1");
     $stmtCheck->bind_param("i", $id);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows > 0) {
@@ -163,7 +163,7 @@ function deleteSerie($conn)
     }
     $stmtCheck->close();
 
-    $stmtCheck2 = $conn->prepare("SELECT id FROM Subs WHERE serie_id = ? LIMIT 1");
+    $stmtCheck2 = $conn->prepare("SELECT id FROM subs WHERE serie_id = ? LIMIT 1");
     $stmtCheck2->bind_param("i", $id);
     $stmtCheck2->execute();
     if ($stmtCheck2->get_result()->num_rows > 0) {
@@ -171,7 +171,7 @@ function deleteSerie($conn)
     }
     $stmtCheck2->close();
 
-    $stmt = $conn->prepare("DELETE FROM Serie WHERE id = ?");
+    $stmt = $conn->prepare("DELETE FROM serie WHERE id = ?");
     $stmt->bind_param("i", $id);
     if (!$stmt->execute()) {
         throw new Exception("Error al eliminar la serie");
@@ -191,8 +191,8 @@ function listSeriesByOficina($conn)
     if (!$dependencia_id) throw new Exception("Dependencia requerida");
 
     $sql = "SELECT os.id as vinculo_id, s.id, s.nombre 
-            FROM OficinaSerie os
-            INNER JOIN Serie s ON os.serie_id = s.id
+            FROM oficina_serie os
+            INNER JOIN serie s ON os.serie_id = s.id
             WHERE os.dependencia_id = ?
             ORDER BY s.nombre ASC";
     $stmt = $conn->prepare($sql);
@@ -216,8 +216,8 @@ function listUnassignedSeries($conn)
     $dependencia_id = filter_var($_GET['dependencia_id'] ?? '', FILTER_VALIDATE_INT);
     if (!$dependencia_id) throw new Exception("Dependencia requerida");
 
-    $sql = "SELECT id, nombre FROM Serie 
-            WHERE id NOT IN (SELECT serie_id FROM OficinaSerie WHERE dependencia_id = ?)
+    $sql = "SELECT id, nombre FROM serie 
+            WHERE id NOT IN (SELECT serie_id FROM oficina_serie WHERE dependencia_id = ?)
             ORDER BY nombre ASC";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $dependencia_id);
@@ -243,7 +243,7 @@ function linkSerieToOficina($conn)
     if (!$dependencia_id) throw new Exception("Dependencia requerida");
     if (!$serie_id) throw new Exception("Serie requerida");
 
-    $stmtCheck = $conn->prepare("SELECT id FROM OficinaSerie WHERE dependencia_id = ? AND serie_id = ?");
+    $stmtCheck = $conn->prepare("SELECT id FROM oficina_serie WHERE dependencia_id = ? AND serie_id = ?");
     $stmtCheck->bind_param("ii", $dependencia_id, $serie_id);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows > 0) {
@@ -251,7 +251,7 @@ function linkSerieToOficina($conn)
     }
     $stmtCheck->close();
 
-    $stmt = $conn->prepare("INSERT INTO OficinaSerie (dependencia_id, serie_id) VALUES (?, ?)");
+    $stmt = $conn->prepare("INSERT INTO oficina_serie (dependencia_id, serie_id) VALUES (?, ?)");
     $stmt->bind_param("ii", $dependencia_id, $serie_id);
     if (!$stmt->execute()) {
         throw new Exception("Error al asignar la serie: " . $stmt->error);
@@ -268,7 +268,7 @@ function unlinkSerieFromOficina($conn)
     if (!$vinculo_id) throw new Exception("ID del vínculo requerido");
 
     // Requerimos que no haya subseries de esta oficina vinculadas a esta serie, de lo contrario la DB puede quedar huérfana
-    $stmtData = $conn->prepare("SELECT dependencia_id, serie_id FROM OficinaSerie WHERE id = ?");
+    $stmtData = $conn->prepare("SELECT dependencia_id, serie_id FROM oficina_serie WHERE id = ?");
     $stmtData->bind_param("i", $vinculo_id);
     $stmtData->execute();
     $result = $stmtData->get_result();
@@ -279,7 +279,7 @@ function unlinkSerieFromOficina($conn)
     $data = $result->fetch_assoc();
     $stmtData->close();
     
-    $stmtCheck = $conn->prepare("SELECT id FROM Subs WHERE dependencia_id = ? AND serie_id = ? LIMIT 1");
+    $stmtCheck = $conn->prepare("SELECT id FROM subs WHERE dependencia_id = ? AND serie_id = ? LIMIT 1");
     $stmtCheck->bind_param("ii", $data['dependencia_id'], $data['serie_id']);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows > 0) {
@@ -287,7 +287,7 @@ function unlinkSerieFromOficina($conn)
     }
     $stmtCheck->close();
 
-    $stmt = $conn->prepare("DELETE FROM OficinaSerie WHERE id = ?");
+    $stmt = $conn->prepare("DELETE FROM oficina_serie WHERE id = ?");
     $stmt->bind_param("i", $vinculo_id);
     if (!$stmt->execute()) {
         throw new Exception("Error al desvincular la serie");

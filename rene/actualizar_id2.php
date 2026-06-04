@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nuevoId2 = $cambio['nuevoId2']; // Nueva posición (id2)
 
         // Actualizar id2 en la base de datos
-        $sql = "UPDATE IndiceTemp SET id2 = ? WHERE id = ?"; // Cambia la condición para que busque por id en lugar de id2
+        $sql = "UPDATE indice_temp SET id2 = ? WHERE id = ?"; // Cambia la condición para que busque por id en lugar de id2
         $stmt = $conec->prepare($sql);
         $stmt->bind_param("ii", $nuevoId2, $id);
         $stmt->execute();

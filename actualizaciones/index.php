@@ -80,6 +80,43 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.4.6') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Compatibilidad con servidores Linux y base de datos sensible a mayúsculas";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se corrigieron todas las consultas SQL que hacían referencia a tablas con nombres capitalizados para soportar la sensibilidad a mayúsculas y minúsculas en servidores Linux.</li>
+                    <li>Se normalizó el uso de las tablas 'carpetas', 'indice_temp', 'indice_documental', 'documentos', 'serie', 'oficina_serie' y 'subs' en todas las consultas de la aplicación.</li>
+                    <li>Se solucionó la visualización del archivo PDF de inventario de carpetas y el correcto funcionamiento de los módulos de administración y rótulos.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
+        if (!$exists && $current_version === '1.4.7') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Visor de Libro Animado Interactivo, Controles de Zoom y Descarga Segura con Renombrado";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se implementó un visor de libro animado interactivo auto-alojado de una página (Turn.js + PDF.js).</li>
+                    <li>Se agregaron controles interactivos de Zoom en el pie de página de 100% a 300% con navegación fija y soporte de arrastre para desplazamiento.</li>
+                    <li>Se añadió un botón de descarga directa en la cabecera fija del visor.</li>
+                    <li>Se habilitó la descarga segura de versiones históricas específicas mediante parámetros validados.</li>
+                    <li>Se implementó el renombrado dinámico y sanitizado automático del archivo descargado bajo el formato '[Tipo Documental] [Título].pdf'.</li>
+                    <li>Se eliminó target='_blank' en la vista previa del listado y versiones para navegar fluidamente dentro de la misma pestaña.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

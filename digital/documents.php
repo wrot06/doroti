@@ -35,10 +35,11 @@ $offset=($page-1)*$limit;
 
 /* ================== CONSULTA ================== */
 $sql="
-SELECT id,tipo,titulo_documento,fecha_creacion,fecha_subida
-FROM documentos
-WHERE user_id=? AND estado='activo'
-ORDER BY fecha_subida DESC
+SELECT d.id, d.tipo, td.nombre AS tipo_nombre, d.titulo_documento, d.fecha_creacion, d.fecha_subida
+FROM documentos d
+LEFT JOIN tipo_documental td ON d.tipo = td.id
+WHERE d.user_id = ? AND d.estado = 'activo'
+ORDER BY d.fecha_subida DESC
 LIMIT ? OFFSET ?
 ";
 $stmt=$conec->prepare($sql);
@@ -133,8 +134,8 @@ require_once "../components/navbar.php";
     </thead>
     <tbody>
 <?php while($doc=$result->fetch_assoc()): ?>
-<tr class="list-item" data-serie="<?=h(strtolower($doc['tipo']))?>" data-titulo="<?=h(strtolower($doc['titulo_documento']))?>">
-    <td class="fw-bold text-primary"><?=h($doc['tipo'])?></td>
+<tr class="list-item" data-serie="<?=h(strtolower($doc['tipo_nombre'] ?? $doc['tipo']))?>" data-titulo="<?=h(strtolower($doc['titulo_documento']))?>">
+    <td class="fw-bold text-primary"><?=h($doc['tipo_nombre'] ?? $doc['tipo'])?></td>
     <td class="text-dark fw-medium"><?=h($doc['titulo_documento'])?></td>
     <td>
         <ul class="list-unstyled mb-0" style="font-size: 0.75rem;">
@@ -144,11 +145,14 @@ require_once "../components/navbar.php";
     </td>
     <td>
         <div class="d-flex align-items-center justify-content-center flex-wrap gap-1">
-            <a href="viewer.php?id=<?= (int)$doc['id'] ?>" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-1" title="Nueva Versión">
-                <i class="bi bi-file-earmark-plus"></i>
+            <a href="viewer.php?id=<?= (int)$doc['id'] ?>" class="btn btn-outline-primary btn-sm py-0 px-1" title="Ver en Libro Animado">
+                <i class="bi bi-book-half"></i>
             </a>
-            <a href="download.php?id=<?= (int)$doc['id'] ?>" target="_blank" class="btn btn-outline-info btn-sm text-dark py-0 px-1" title="Ver PDF">
-                <i class="bi bi-eye"></i>
+            <a href="versions.php?id=<?= (int)$doc['id'] ?>" class="btn btn-outline-info btn-sm text-dark py-0 px-1" title="Historial de Versiones">
+                <i class="bi bi-clock-history"></i>
+            </a>
+            <a href="download.php?id=<?= (int)$doc['id'] ?>&download=1" class="btn btn-outline-success btn-sm py-0 px-1" title="Descargar PDF">
+                <i class="bi bi-download"></i>
             </a>
             <form method="POST" action="delete_document.php" class="m-0" onsubmit="return confirm('¿Está seguro de que desea eliminar este documento?');">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">

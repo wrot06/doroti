@@ -32,7 +32,7 @@ $sql = "
 SELECT c.*, 
        d1.nombre AS oficina, 
        d2.nombre AS centro
-FROM Carpetas c
+FROM carpetas c
 LEFT JOIN dependencias d1 ON d1.id = c.dependencia_id   -- oficina directa
 LEFT JOIN dependencias d2 ON d2.id = d1.parent_id       -- centro (padre de oficina)
 WHERE c.id = $idpost

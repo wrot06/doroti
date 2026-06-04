@@ -115,7 +115,7 @@ try {
 
     $conec->commit();
     $_SESSION['success'] = '¡Documento subido, guardado y registrado exitosamente!';
-    header("Location: digital.php");
+    header("Location: documents.php");
     exit;
 
 } catch (Exception $e) {

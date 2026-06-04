@@ -109,8 +109,7 @@ function h(string $v): string {
     </td>
     <td class="text-end">
         <a class="btn btn-primary btn-sm"
-           target="_blank"
-           href="download.php?id=<?=$documento_id?>&version=<?=$v['id']?>">
+           href="viewer.php?id=<?=$documento_id?>&version=<?=$v['id']?>">
             <i class="bi bi-eye"></i>
         </a>
         <a class="btn btn-outline-secondary btn-sm"

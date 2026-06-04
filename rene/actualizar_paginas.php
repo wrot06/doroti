@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $paginaFinal = $cambio['paginaFinal'];
 
         // Actualizar la consulta para usar id2
-        $sql = "UPDATE IndiceTemp SET NoFolioInicio = ?, NoFolioFin = ? WHERE id2 = ?";
+        $sql = "UPDATE indice_temp SET NoFolioInicio = ?, NoFolioFin = ? WHERE id2 = ?";
         $stmt = $conec->prepare($sql);
         $stmt->bind_param("iii", $paginaInicio, $paginaFinal, $id2);
         $stmt->execute();

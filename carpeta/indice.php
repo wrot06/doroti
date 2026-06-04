@@ -118,7 +118,7 @@ $_SESSION['id_carpeta'] = $id_carpeta;
 ================================ */
 $sqlCap = "
     SELECT id2, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas
-    FROM IndiceTemp
+    FROM indice_temp
     WHERE carpeta_id = ?
     ORDER BY NoFolioInicio ASC, id2 ASC
 ";

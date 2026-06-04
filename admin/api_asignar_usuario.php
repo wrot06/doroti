@@ -82,7 +82,7 @@ function listFoldersWithUsers($conn)
             c.user_id,
             u.username as usuario_actual,
             d.nombre as dependencia
-        FROM Carpetas c
+        FROM carpetas c
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN dependencias d ON c.dependencia_id = d.id
         WHERE c.dependencia_id = ?
@@ -171,7 +171,7 @@ function assignUserToFolder($conn)
         // Verificar que la carpeta existe y obtener su estado
         $stmtCheck = $conn->prepare("
             SELECT id, Caja, Carpeta, Estado, dependencia_id, user_id as user_id_actual 
-            FROM Carpetas 
+            FROM carpetas 
             WHERE id = ?
         ");
         $stmtCheck->bind_param("i", $folderId);
@@ -198,7 +198,7 @@ function assignUserToFolder($conn)
             // Carpeta Activa: verificar datos en IndiceTemp
             $stmtCount = $conn->prepare("
                 SELECT COUNT(*) as total 
-                FROM IndiceTemp 
+                FROM indice_temp 
                 WHERE carpeta_id = ? AND Caja = ? AND Carpeta = ? AND dependencia_id = ?
             ");
             $stmtCount->bind_param("iiii", $folderId, $caja, $carpeta, $dependencia_id);
@@ -212,7 +212,7 @@ function assignUserToFolder($conn)
             // Carpeta Cerrada: verificar datos en IndiceDocumental
             $stmtCount = $conn->prepare("
                 SELECT COUNT(*) as total 
-                FROM IndiceDocumental 
+                FROM indice_documental 
                 WHERE carpeta_id = ? AND Caja = ? AND Carpeta = ? AND dependencia_id = ?
             ");
             $stmtCount->bind_param("iiii", $folderId, $caja, $carpeta, $dependencia_id);
@@ -243,11 +243,11 @@ function assignUserToFolder($conn)
 
         // Actualizar user_id de la carpeta
         if ($userId) {
-            $stmt = $conn->prepare("UPDATE Carpetas SET user_id = ? WHERE id = ?");
+            $stmt = $conn->prepare("UPDATE carpetas SET user_id = ? WHERE id = ?");
             $stmt->bind_param("ii", $userId, $folderId);
         } else {
             // Desasignar usuario (set to NULL)
-            $stmt = $conn->prepare("UPDATE Carpetas SET user_id = NULL WHERE id = ?");
+            $stmt = $conn->prepare("UPDATE carpetas SET user_id = NULL WHERE id = ?");
             $stmt->bind_param("i", $folderId);
         }
 
@@ -255,7 +255,7 @@ function assignUserToFolder($conn)
 
         if ($stmt->affected_rows === 0) {
             // Verificar si realmente no hubo cambio o si falló
-            $stmtVerify = $conn->prepare("SELECT user_id FROM Carpetas WHERE id = ?");
+            $stmtVerify = $conn->prepare("SELECT user_id FROM carpetas WHERE id = ?");
             $stmtVerify->bind_param("i", $folderId);
             $stmtVerify->execute();
             $verifyResult = $stmtVerify->get_result();
@@ -324,7 +324,7 @@ function getFolderInfo($conn)
             c.dependencia_id,
             u.username as usuario_actual,
             d.nombre as dependencia
-        FROM Carpetas c
+        FROM carpetas c
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN dependencias d ON c.dependencia_id = d.id
         WHERE c.id = ?

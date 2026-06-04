@@ -14,7 +14,7 @@ $dependencia_id = (int)$_SESSION['dependencia_id'];
 
 $sql = "
     SELECT *
-    FROM Carpetas
+    FROM carpetas
     WHERE dependencia_id = ?
     ORDER BY Caja ASC, Carpeta ASC
 ";

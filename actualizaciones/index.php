@@ -184,6 +184,22 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.2') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Simplificación de Rótulos y Limpieza de Subida de Documentos";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se eliminó por completo la opción y el botón para subir documentos ('Subir') en la visualización de Rótulos (rotulo.php).</li>
+                    <li>Se retiraron flujos asociados hacia el script idcargar.php para simplificar el módulo y mantenerlo solo de lectura y descarga de PDFs existentes.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

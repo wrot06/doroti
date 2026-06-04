@@ -157,8 +157,6 @@ function addDependencia($conn) {
               `Soporte` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
               `FechaIngreso` datetime DEFAULT CURRENT_TIMESTAMP,
               `paginas` int DEFAULT NULL,
-              `ruta_pdf` varchar(255) DEFAULT NULL,
-              `cargaFecha` datetime DEFAULT NULL,
               PRIMARY KEY (`id`),
               KEY `fk_indicedocumental_carpeta_{$newId}` (`carpeta_id`),
               CONSTRAINT `fk_indicedocumental_carpeta_{$newId}` FOREIGN KEY (`carpeta_id`) REFERENCES `carpetas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

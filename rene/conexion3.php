@@ -50,7 +50,13 @@ if (!function_exists('getAllIndiceTables')) {
     function getAllIndiceTables(mysqli $conn): array {
         static $tables = null;
         if ($tables === null) {
-            $tables = ['indice_documental'];
+            $tables = [];
+            // Verificar si existe la tabla base
+            $resBase = $conn->query("SHOW TABLES LIKE 'indice_documental'");
+            if ($resBase && $resBase->num_rows > 0) {
+                $tables[] = 'indice_documental';
+            }
+            // Verificar tablas dedicadas
             $res = $conn->query("SHOW TABLES LIKE 'indice_documental_dep_%'");
             if ($res) {
                 while ($row = $res->fetch_row()) {
@@ -67,9 +73,6 @@ if (!function_exists('getAllIndiceTables')) {
  */
 if (!function_exists('getIndiceTableName')) {
     function getIndiceTableName(mysqli $conn, int $depId): string {
-        if ($depId <= 0) {
-            return 'indice_documental';
-        }
         static $existingTables = null;
         if ($existingTables === null) {
             $existingTables = [];
@@ -83,7 +86,20 @@ if (!function_exists('getIndiceTableName')) {
                 }
             }
         }
-        return isset($existingTables[$depId]) ? $existingTables[$depId] : 'indice_documental';
+        
+        if ($depId > 0 && isset($existingTables[$depId])) {
+            return $existingTables[$depId];
+        }
+        
+        // Si no es una dependencia con tabla dedicada, verificar si la tabla base existe
+        $resBase = $conn->query("SHOW TABLES LIKE 'indice_documental'");
+        if ($resBase && $resBase->num_rows > 0) {
+            return 'indice_documental';
+        }
+        
+        // Retornar la primera tabla disponible si la base no existe
+        $tables = getAllIndiceTables($conn);
+        return !empty($tables) ? $tables[0] : 'indice_documental';
     }
 }
 

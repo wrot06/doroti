@@ -169,7 +169,7 @@ function h($v)
                                         <td><?= htmlspecialchars($doc['NoFolioInicio']) ?></td>
                                         <td><?= htmlspecialchars($doc['NoFolioFin']) ?></td>
                                         <td>
-                                            <?php if (!empty($doc['ruta_pdf']) && $doc['Soporte'] === 'FD'): ?>
+                                            <?php if (is_file(__DIR__ . '/../uploads/' . $doc['id'] . '.pdf') && $doc['Soporte'] === 'FD'): ?>
                                                 <form action="download.php" method="get" target="_blank">
                                                     <button name="id2" value="<?= $doc['id'] ?>" class="btn btn-success btn-sm">
                                                         Ver PDF

@@ -81,16 +81,15 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
   redirect("idcargar.php?id={$id}");
  }
 
- $fecha=date('Y-m-d H:i:s');
  $conec->begin_transaction();
 
  $tableName = getIndiceTableNameByDocumentId($conec, $id);
  $upd=$conec->prepare("
   UPDATE `$tableName`
-  SET ruta_pdf=?, serie=?, cargaFecha=?, Soporte=?
+  SET serie=?, Soporte=?
   WHERE id=?
  ");
- $upd->bind_param("ssssi",$pathRel,$serie,$fecha,$nuevoSoporte,$id);
+ $upd->bind_param("ssi",$serie,$nuevoSoporte,$id);
 
  if($upd->execute()){
   $conec->commit();

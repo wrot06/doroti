@@ -16,7 +16,7 @@ if(!$id){
 
 $tableName = getIndiceTableNameByDocumentId($conec, $id);
 $stmt=$conec->prepare("
-  SELECT ruta_pdf, DescripcionUnidadDocumental
+  SELECT DescripcionUnidadDocumental
   FROM `$tableName`
   WHERE id=?
  ");
@@ -25,15 +25,15 @@ $stmt->execute();
 $doc=$stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-if(!$doc || empty($doc['ruta_pdf'])){
+if(!$doc){
  http_response_code(404);
- exit("Documento sin PDF");
+ exit("Documento no encontrado");
 }
 
-$ruta=__DIR__.'/'.$doc['ruta_pdf'];
+$ruta=__DIR__.'/../uploads/'.$id.'.pdf';
 if(!is_file($ruta)){
  http_response_code(404);
- exit("Archivo no encontrado en el servidor");
+ exit("Documento sin PDF o archivo no encontrado");
 }
 
 $filename=basename($ruta);

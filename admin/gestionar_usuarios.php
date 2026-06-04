@@ -15,24 +15,13 @@ if (($_SESSION['rol'] ?? '') !== 'admin') {
     exit();
 }
 
-$usuario = $_SESSION['username'] ?? 'Admin';
+require_once "../services/UserService.php";
 
-// Obtener avatar del usuario actual
-$userAvatar = '../uploads/avatars/default.png'; // Default
-if (!empty($_SESSION['user_id'])) {
-    require_once '../rene/conexion3.php';
-    $stmt = $conec->prepare("SELECT avatar FROM users WHERE id = ?");
-    $userId = (int)$_SESSION['user_id'];
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        if ($row['avatar'] && file_exists('../uploads/avatars/' . basename($row['avatar']))) {
-            $userAvatar = '../uploads/avatars/' . basename($row['avatar']);
-        }
-    }
-    $stmt->close();
-}
+$userService = new UserService($conec);
+$userInfo = $userService->getUserInfo((int)$_SESSION['user_id']);
+$usuario = $userInfo['username'];
+$oficina = $userInfo['oficina'];
+$userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="es">

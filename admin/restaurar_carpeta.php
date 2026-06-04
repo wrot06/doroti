@@ -107,6 +107,14 @@ function restaurarCarpeta($conec)
 // Lógica GET (Vista HTML)
 // ==============================
 
+require_once "../services/UserService.php";
+$userService = new UserService($conec);
+$user_id = (int)($_SESSION['user_id'] ?? 0);
+$userInfo = $userService->getUserInfo($user_id);
+$usuario = $userInfo['username'];
+$oficina = $userInfo['oficina'];
+$userAvatar = '../' . $userService->getUserAvatar($user_id);
+
 // Listar carpetas "Cerradas" ('C') para restaurar
 // Agrupadas por dependencia si es posible, o simple lista
 $sqlListar = "

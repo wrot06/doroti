@@ -15,7 +15,15 @@ if (($_SESSION['rol'] ?? '') !== 'admin') {
     exit();
 }
 
-$usuario = $_SESSION['username'] ?? 'Admin';
+require_once "../rene/conexion3.php";
+require_once "../services/UserService.php";
+
+$user_id = (int)($_SESSION['user_id'] ?? 0);
+$userService = new UserService($conec);
+$userInfo = $userService->getUserInfo($user_id);
+$usuario = $userInfo['username'];
+$oficina = $userInfo['oficina'];
+$userAvatar = '../' . $userService->getUserAvatar($user_id);
 ?>
 <!DOCTYPE html>
 <html lang="es">

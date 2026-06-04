@@ -134,6 +134,22 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.4.9') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Unificación de Avatares en Admin y Restauración de Asignación de Usuarios";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se corrigió la carga del avatar del usuario actual y su información de oficina en todas las vistas de administración mediante la reutilización homogénea de UserService.</li>
+                    <li>Se restauró y diseñó completamente la interfaz interactiva para asignar o reasignar usuarios a carpetas (asignar_usuario_carpeta.php) conectándola con su API respectiva.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

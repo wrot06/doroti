@@ -117,6 +117,23 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.4.8') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Corrección del Clasificador (Juego) y Filtro Dinámico por Dependencia de Usuario";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se corrigió el error SQL que impedía abrir la pantalla de juego del clasificador mediante un INNER JOIN con la tabla de carpetas.</li>
+                    <li>Se implementó el filtrado dinámico en la selección de tipos documentales (series) según la dependencia asignada al usuario conectado en la sesión.</li>
+                    <li>Se restringió la asignación de registros a clasificar para que pertenezcan a la misma dependencia que el usuario logueado.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

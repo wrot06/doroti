@@ -6,28 +6,55 @@ AuthMiddleware::initSession();
 AuthMiddleware::checkAuth('../login/login.php');
 
 
-$sql = "
-SELECT 
-it.id,
-it.dependencia_id,
-it.Caja,
-it.Carpeta,
-it.DescripcionUnidadDocumental,
-it.paginas,
-d.nombre AS dependencia_nombre
-FROM indice_documental it
-LEFT JOIN dependencias d ON it.dependencia_id=d.id
-WHERE it.serie IS NULL OR TRIM(it.serie)=''
-ORDER BY RAND()
-LIMIT 1
-";
+$userDepId = isset($_SESSION['dependencia_id']) ? (int)$_SESSION['dependencia_id'] : 0;
 
-$res = $conec->query($sql);
-
-$registro = $res->fetch_assoc();
+if ($userDepId > 0) {
+    $sql = "
+        SELECT 
+            it.id,
+            c.dependencia_id,
+            c.Caja,
+            c.Carpeta,
+            it.DescripcionUnidadDocumental,
+            it.paginas,
+            d.nombre AS dependencia_nombre
+        FROM indice_documental it
+        INNER JOIN carpetas c ON it.carpeta_id = c.id
+        LEFT JOIN dependencias d ON c.dependencia_id = d.id
+        WHERE (it.serie IS NULL OR TRIM(it.serie) = '')
+          AND c.dependencia_id = ?
+        ORDER BY RAND()
+        LIMIT 1
+    ";
+    
+    $stmt = $conec->prepare($sql);
+    $stmt->bind_param("i", $userDepId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $registro = $res->fetch_assoc();
+    $stmt->close();
+} else {
+    $sql = "
+        SELECT 
+            it.id,
+            c.dependencia_id,
+            c.Caja,
+            c.Carpeta,
+            it.DescripcionUnidadDocumental,
+            it.paginas,
+            d.nombre AS dependencia_nombre
+        FROM indice_documental it
+        INNER JOIN carpetas c ON it.carpeta_id = c.id
+        LEFT JOIN dependencias d ON c.dependencia_id = d.id
+        WHERE it.serie IS NULL OR TRIM(it.serie) = ''
+        ORDER BY RAND()
+        LIMIT 1
+    ";
+    $res = $conec->query($sql);
+    $registro = $res->fetch_assoc();
+}
 
 if (!$registro) {
-
     die("
 <body style='background:#0f172a;color:white;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial'>
 <h1>🎉 No hay registros pendientes</h1>
@@ -35,25 +62,27 @@ if (!$registro) {
 ");
 }
 
-$depId = (int)$registro['dependencia_id'];
-
-$sqlTipos = "
-SELECT nombre
-FROM tipo_documental
-WHERE estado=1
-AND dependencia_id= ?
-ORDER BY nombre ASC
-";
-
-$stmtTipos = $conec->prepare($sqlTipos);
-$stmtTipos->bind_param("i", $depId);
-$stmtTipos->execute();
-$resTipos = $stmtTipos->get_result();
-
+$depId = ($userDepId > 0) ? $userDepId : (int)($registro['dependencia_id'] ?? 0);
 $tipos = [];
 
-while ($row = $resTipos->fetch_assoc()) {
-    $tipos[] = $row['nombre'];
+if ($depId > 0) {
+    $sqlTipos = "
+        SELECT nombre
+        FROM tipo_documental
+        WHERE estado = 1
+          AND dependencia_id = ?
+        ORDER BY nombre ASC
+    ";
+
+    $stmtTipos = $conec->prepare($sqlTipos);
+    $stmtTipos->bind_param("i", $depId);
+    $stmtTipos->execute();
+    $resTipos = $stmtTipos->get_result();
+
+    while ($row = $resTipos->fetch_assoc()) {
+        $tipos[] = $row['nombre'];
+    }
+    $stmtTipos->close();
 }
 ?>
 

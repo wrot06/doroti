@@ -175,16 +175,7 @@ function h($v)
                                                         Ver PDF
                                                     </button>
                                                 </form>
-                                            <?php else: ?>
-                                                <form action="idcargar.php" method="post" target="_blank">
-                                                    <input type="hidden" name="id" value="<?= $doc['id'] ?>">
-                                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                                    <button class="btn btn-primary btn-sm">
-                                                        Subir
-                                                    </button>
-                                                </form>
                                             <?php endif; ?>
-
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

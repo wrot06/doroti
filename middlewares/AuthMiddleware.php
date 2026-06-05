@@ -17,18 +17,6 @@ class AuthMiddleware {
                 ob_start();
             }
             
-            // Configurar cookies de sesión de forma segura y compatible con iFastNet
-            $isSecure = (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] == 1)) 
-                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-            
-            session_set_cookie_params([
-                'lifetime' => 0,
-                'path' => '/',
-                'domain' => '',
-                'secure' => false,
-                'httponly' => true
-            ]);
-            
             session_start();
         }
         

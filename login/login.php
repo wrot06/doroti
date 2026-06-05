@@ -142,8 +142,12 @@ $rememberedUsername = '';
 $rememberedPassword = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        $error = "Token CSRF inválido. Por favor, recarga la página.";
+    if (!isset($_POST['csrf_token']) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        if (empty($_SESSION['csrf_token'])) {
+            $error = "No se detectó una sesión activa. Por favor, asegúrate de permitir las cookies en tu navegador y recarga la página.";
+        } else {
+            $error = "Token de seguridad (CSRF) inválido. Por favor, recarga la página e intenta de nuevo.";
+        }
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = trim($_POST['password'] ?? '');

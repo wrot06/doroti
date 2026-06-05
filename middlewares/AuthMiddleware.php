@@ -8,13 +8,20 @@ require_once __DIR__ . '/../utils/ResponseHelper.php';
  */
 class AuthMiddleware {
     
-    /**
-     * Inicializar sesión y configurar headers de caché
-     */
     public static function initSession(): void {
         if (session_status() === PHP_SESSION_NONE) {
             if (ob_get_level() === 0) {
                 ob_start();
+            }
+            
+            // Ruta de sesión personalizada para evitar /tmp lleno en InfinityFree
+            $sessionPath = dirname(__DIR__) . '/uploads/sessions';
+            if (!is_dir($sessionPath)) {
+                @mkdir($sessionPath, 0755, true);
+                @file_put_contents($sessionPath . '/.htaccess', "Deny from all\n");
+            }
+            if (is_dir($sessionPath) && is_writable($sessionPath)) {
+                session_save_path($sessionPath);
             }
             
             session_start();

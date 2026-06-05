@@ -12,13 +12,44 @@ class AuthMiddleware {
      * Inicializar sesión y configurar headers de caché
      */
     public static function initSession(): void {
-        ob_start();
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            if (ob_get_level() === 0) {
+                ob_start();
+            }
+            
+            // Configurar cookies de sesión de forma segura y compatible con iFastNet
+            $isSecure = (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] == 1)) 
+                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+            
+            session_set_cookie_params([
+                'lifetime' => 0,
+                'path' => '/',
+                'domain' => '',
+                'secure' => $isSecure,
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+            
+            session_start();
+        }
         
         // Control de caché
         header("Cache-Control: no-cache, no-store, must-revalidate");
         header("Pragma: no-cache");
         header("Expires: 0");
+    }
+
+    /**
+     * Validar token CSRF para peticiones POST/mutaciones
+     */
+    public static function checkCsrf(): void {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $token = $_POST['csrf_token'] ?? '';
+            if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+                http_response_code(403);
+                die("Error: Token CSRF inválido o ausente.");
+            }
+        }
     }
     
     /**

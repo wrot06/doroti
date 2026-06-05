@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+ob_start();
 require_once "../rene/conexion3.php";
 require_once "../middlewares/AuthMiddleware.php";
 
@@ -379,6 +381,7 @@ if ($depId > 0) {
 
                 fd.append('id', '<?= $registro['id'] ?>');
                 fd.append('serie', serieSeleccionada);
+                fd.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
 
                 const response = await fetch('assign_serie.php', {
                     method: 'POST',
@@ -467,3 +470,4 @@ if ($depId > 0) {
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

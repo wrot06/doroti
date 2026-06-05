@@ -96,6 +96,9 @@ if (!function_exists('nh')) {
                 </a>
 
                 <form method="POST" action="<?= nh($basePath) ?>index.php" class="m-0">
+                    <?php if (isset($_SESSION['csrf_token'])): ?>
+                        <input type="hidden" name="csrf_token" value="<?= nh($_SESSION['csrf_token']) ?>">
+                    <?php endif; ?>
                     <button type="submit" name="cerrar_seccion" class="btn btn-danger btn-sm w-100 text-start text-lg-center"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
                 </form>
             </div>

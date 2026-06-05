@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Verificar autenticación
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
@@ -132,6 +134,7 @@ require_once "../components/navbar.php";
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const CSRF_TOKEN = <?= json_encode($_SESSION['csrf_token'] ?? '') ?>;
     const selectOficina = document.getElementById('selectOficina');
     const btnBuscar = document.getElementById('btnBuscar');
     const contenedorResultados = document.getElementById('resultados');
@@ -290,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const userId = selectUsuario.value;
 
         const formData = new FormData();
+        formData.append('csrf_token', CSRF_TOKEN);
         formData.append('folder_id', folderId);
         formData.append('user_id', userId);
 
@@ -326,3 +330,4 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<?php ob_end_flush(); ?>

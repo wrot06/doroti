@@ -1,5 +1,14 @@
 <?php
-session_start();
+declare(strict_types=1);
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
+
+if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
+    header('Location: ../login/login.php');
+    exit;
+}
+
 function flash($msg, $type='info'){
     echo "<div class='flash {$type}'>{$msg}</div>";
 }
@@ -30,4 +39,4 @@ function flash($msg, $type='info'){
   <p><a href="idcargar.php?id=<?=urlencode($_GET['id'] ?? '')?>">Volver al formulario</a></p>
 </body>
 </html>
-h
+<?php ob_end_flush(); ?>

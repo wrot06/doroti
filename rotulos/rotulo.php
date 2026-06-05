@@ -1,25 +1,26 @@
 <?php
+declare(strict_types=1);
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once __DIR__ . '/../rene/conexion3.php';
-ini_set('display_errors', 1);
+
+ini_set('display_errors', '0');
 error_reporting(E_ALL);
-session_start();
 
-
-$dependencia_id  = $_SESSION['dependencia_id']  ?? null;
 /* ================== AUTENTICACIÓN ================== */
 if (empty($_SESSION['authenticated'])) {
     header('Location: ../login/login.php');
     exit;
 }
 
-if (isset($_POST['cerrar_seccion'])) {
-    session_destroy();
-    header("Location: ../login/login.php");
-    exit;
-}
-
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    AuthMiddleware::checkCsrf();
+    if (isset($_POST['cerrar_seccion'])) {
+        session_destroy();
+        header("Location: ../login/login.php");
+        exit;
+    }
 }
 
 $oficina  = $_SESSION['oficina']  ?? null;
@@ -134,6 +135,7 @@ function h($v)
 
                         <td>
                             <form action="../pdf/RotuloCarpeta.php" method="post" target="_blank">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                                 <button name="consulta" value="<?= $f['id'] ?>" class="btn btn-primary btn-sm">
                                     Carpeta <?= $carpeta ?>
                                 </button>
@@ -143,6 +145,7 @@ function h($v)
                         <td>
                             <?php if ($carpeta === 1): ?>
                                 <form action="../pdf/RotuloCaja.php" method="post" target="_blank">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                                     <button name="consulta" value="<?= $caja ?>" class="btn btn-primary btn-sm">
                                         Caja <?= $caja ?>
                                     </button>
@@ -154,6 +157,7 @@ function h($v)
                     <tr class="panel" style="display:none">
                         <td colspan="11">
                             <form action="../pdf/Indice.php" method="post" target="_blank">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                                 <input type="hidden" name="Carpeta" value="<?= $carpeta ?>">
                                 <div class="d-grid gap-2 col-6 mx-auto">
                                     <button name="Caja" value="<?= $caja ?>" class="btn btn-info btn-sm">
@@ -192,5 +196,5 @@ function h($v)
     <script src="rotulo.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
+<?php ob_end_flush(); ?>

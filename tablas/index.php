@@ -1,6 +1,6 @@
 <?php
-
 declare(strict_types=1);
+ob_start();
 
 require_once __DIR__ . "/../rene/conexion3.php";
 require_once __DIR__ . "/../middlewares/AuthMiddleware.php";

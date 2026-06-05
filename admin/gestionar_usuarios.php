@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Verificar autenticación
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
@@ -216,6 +218,7 @@ require_once "../components/navbar.php";
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const CSRF_TOKEN = <?= json_encode($_SESSION['csrf_token'] ?? '') ?>;
     const tablaBody = document.querySelector('#tablaUsuarios tbody');
     const modalCrear = new bootstrap.Modal(document.getElementById('modalCrear'));
     const modalEditar = new bootstrap.Modal(document.getElementById('modalEditar'));
@@ -356,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnGuardarCrear').addEventListener('click', async () => {
         const formData = new FormData();
+        formData.append('csrf_token', CSRF_TOKEN);
         formData.append('username', document.getElementById('createUsername').value);
         formData.append('password', document.getElementById('createPassword').value);
         formData.append('email', document.getElementById('createEmail').value);
@@ -375,6 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const avatarFile = document.getElementById('createAvatar').files[0];
                 if (avatarFile) {
                     const avatarData = new FormData();
+                    avatarData.append('csrf_token', CSRF_TOKEN);
                     avatarData.append('user_id', data.user_id);
                     avatarData.append('avatar', avatarFile);
                     
@@ -423,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnGuardarEditar').addEventListener('click', async () => {
         const userId = document.getElementById('editId').value;
         const formData = new FormData();
+        formData.append('csrf_token', CSRF_TOKEN);
         formData.append('id', userId);
         formData.append('email', document.getElementById('editEmail').value);
         formData.append('phone', document.getElementById('editPhone').value);
@@ -442,6 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (avatarFile) {
                     console.log('Uploading avatar for user:', userId);
                     const avatarData = new FormData();
+                    avatarData.append('csrf_token', CSRF_TOKEN);
                     avatarData.append('user_id', userId);
                     avatarData.append('avatar', avatarFile);
                     
@@ -498,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (result.isConfirmed) {
             const formData = new FormData();
+            formData.append('csrf_token', CSRF_TOKEN);
             formData.append('user_id', userId);
             
             try {
@@ -539,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then((result) => {
             if (result.isConfirmed) {
                 const formData = new FormData();
+                formData.append('csrf_token', CSRF_TOKEN);
                 formData.append('id', id);
 
                 fetch('api_users.php?action=delete_user', {
@@ -568,3 +577,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+<?php ob_end_flush(); ?>

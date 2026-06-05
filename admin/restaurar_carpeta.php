@@ -1,7 +1,8 @@
 <?php
-
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Validar auth admin
 if (empty($_SESSION['authenticated']) || ($_SESSION['rol'] ?? '') !== 'admin') {
@@ -22,6 +23,7 @@ $mensaje = "";
 // Lógica POST (Acciones)
 // ==============================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    AuthMiddleware::checkCsrf();
     header('Content-Type: application/json');
     $accion = $_POST['accion'] ?? '';
 
@@ -204,6 +206,7 @@ $resListar = $conec->query($sqlListar);
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const CSRF_TOKEN = <?= json_encode($_SESSION['csrf_token'] ?? '') ?>;
             document.querySelectorAll('.btn-restaurar').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = btn.getAttribute('data-id');
@@ -228,6 +231,7 @@ $resListar = $conec->query($sqlListar);
 
             function restaurar(id) {
                 const formData = new FormData();
+                formData.append('csrf_token', CSRF_TOKEN);
                 formData.append('accion', 'restaurar_carpeta');
                 formData.append('id_carpeta', id);
 
@@ -255,3 +259,4 @@ $resListar = $conec->query($sqlListar);
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

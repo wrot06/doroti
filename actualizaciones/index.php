@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+ob_start();
 
 require_once "../rene/conexion3.php";
 require_once "../middlewares/AuthMiddleware.php";
@@ -235,6 +236,24 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.5') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Auditoría de Seguridad y Protección contra Redirecciones de iFastNet";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se implementó control estricto del búfer de salida (ob_start / ob_end_flush) al inicio de todos los scripts principales.</li>
+                    <li>Se unificó el inicio de sesión a través de AuthMiddleware configurando cookies compatibles (httponly, samesite y secure dinámico).</li>
+                    <li>Se añadió validación CSRF a todas las peticiones POST y llamadas AJAX FormData.</li>
+                    <li>Se corrigieron redirecciones y errores de sintaxis en el visor digital, rótulos, tablas, juego y actualizaciones.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());
@@ -380,3 +399,4 @@ $resultado = $conec->query($sql);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<?php ob_end_flush(); ?>

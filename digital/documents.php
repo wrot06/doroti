@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once "../rene/conexion3.php";
 
 /* ================== SEGURIDAD ================== */
@@ -27,8 +29,10 @@ if($user_id<=0){http_response_code(401);exit('Sesión inválida');}
 
 /* ================== LOGOUT ================== */
 if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cerrar_seccion'])){
-    session_destroy();
-    header("Location: ../login/login.php");exit;
+    if (isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
+        session_destroy();
+        header("Location: ../login/login.php");exit;
+    }
 }
 
 /* ================== CSRF ================== */
@@ -187,3 +191,4 @@ document.querySelectorAll('.list-item').forEach(i=>{
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<?php ob_end_flush(); ?>

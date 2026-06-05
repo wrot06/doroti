@@ -1,7 +1,8 @@
 <?php
-
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Verificar autenticación
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
@@ -84,6 +85,7 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
         <div class="form-section">
             <h3 class="mb-3" id="formTitle"><i class="bi bi-plus-circle"></i> Agregar Nueva Subserie</h3>
             <form id="formSubserie">
+                <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>">
                 <input type="hidden" id="subserieId" name="id" value="">
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -389,6 +391,7 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
             const formData = new FormData();
             formData.append('action', 'delete');
             formData.append('id', idEliminar);
+            formData.append('csrf_token', '<?= h($_SESSION['csrf_token']) ?>');
 
             fetch('api_subseries.php', {
                     method: 'POST',
@@ -448,3 +451,4 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

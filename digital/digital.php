@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once "../rene/conexion3.php";
 
 /* ================== AUTH ================== */
@@ -10,9 +12,11 @@ if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 
 
 if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cerrar_seccion'])){
-    session_destroy();
-    header('Location: ../login/login.php');
-    exit();
+    if (isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
+        session_destroy();
+        header('Location: ../login/login.php');
+        exit();
+    }
 }
 
 $user_id = (int)($_SESSION['user_id'] ?? 0);
@@ -91,6 +95,7 @@ require_once "../components/navbar.php";
 <?php endif; ?>
 
 <form action="upload_document.php" method="POST" enctype="multipart/form-data" class="card shadow-sm">
+<input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>">
 <div class="card-body">
 
 <h5 class="mb-3">Subir un Documento al Sistema</h5>
@@ -179,3 +184,4 @@ document.getElementById('versionBox').classList.toggle('d-none',document.getElem
 
 </body>
 </html>
+<?php ob_end_flush(); ?>

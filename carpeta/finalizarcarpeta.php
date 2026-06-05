@@ -1,10 +1,13 @@
 <?php
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once __DIR__ . '/../rene/conexion3.php';
 
 /* =========================
    CAPTURA Y VALIDACIÓN
 ========================= */
+AuthMiddleware::checkCsrf();
 $dependencia_id = intval($_POST['dependencia_id'] ?? 0);
 $caja           = intval($_POST['caja'] ?? 0);
 $carpeta        = intval($_POST['carpeta'] ?? 0);
@@ -222,3 +225,4 @@ $conec->close();
 </div>
 </body>
 </html>
+<?php ob_end_flush(); ?>

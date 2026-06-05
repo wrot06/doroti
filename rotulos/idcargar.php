@@ -1,10 +1,18 @@
 <?php
-session_start();
+declare(strict_types=1);
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once __DIR__ . '/../rene/conexion3.php';
 
-ini_set('display_errors','1');
-ini_set('display_startup_errors','1');
+ini_set('display_errors','0');
 error_reporting(E_ALL);
+
+/* ================== AUTENTICACIÓN ================== */
+if (empty($_SESSION['authenticated'])) {
+    header('Location: ../login/login.php');
+    exit;
+}
 
 function flash(string $msg,string $type='success'):void{
  $_SESSION['flash']=['message'=>$msg,'type'=>$type];
@@ -12,10 +20,6 @@ function flash(string $msg,string $type='success'):void{
 function redirect(string $url):void{
  header("Location: {$url}");
  exit;
-}
-
-if(empty($_SESSION['csrf_token'])){
- $_SESSION['csrf_token']=bin2hex(random_bytes(32));
 }
 
 $id=filter_input(INPUT_POST,'id',FILTER_VALIDATE_INT)
@@ -26,12 +30,7 @@ if(!$id){
 }
 
 if($_SERVER['REQUEST_METHOD']==='POST' && isset($_FILES['archivo_pdf'])){
-
- $tokenPost=$_POST['csrf_token']??'';
- if(!hash_equals($_SESSION['csrf_token'],$tokenPost)){
-  flash("Token CSRF inválido",'error');
-  redirect("idcargar.php?id={$id}");
- }
+ AuthMiddleware::checkCsrf();
 
  $tableName = getIndiceTableNameByDocumentId($conec, $id);
  $stmt=$conec->prepare("SELECT Soporte FROM `$tableName` WHERE id=?");
@@ -172,3 +171,4 @@ $f=$_SESSION['flash']; unset($_SESSION['flash']); ?>
 
 </body>
 </html>
+<?php ob_end_flush(); ?>

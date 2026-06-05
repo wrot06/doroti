@@ -1,7 +1,8 @@
 <?php
-
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Verificar autenticación
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
@@ -335,6 +336,7 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
             
             const formData = new FormData();
             formData.append('nombre', nombre);
+            formData.append('csrf_token', '<?= h($_SESSION['csrf_token']) ?>');
             
             let action = 'add_serie';
             if(id) {
@@ -389,6 +391,7 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
             const fd = new FormData();
             fd.append('action', 'delete_serie');
             fd.append('id', idEliminarGlobal);
+            fd.append('csrf_token', '<?= h($_SESSION['csrf_token']) ?>');
 
             fetch(API_URL, { method:'POST', body: fd })
                 .then(r => r.json())
@@ -495,6 +498,7 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
             fd.append('action', 'link_serie');
             fd.append('dependencia_id', dependencia_id);
             fd.append('serie_id', serie_id);
+            fd.append('csrf_token', '<?= h($_SESSION['csrf_token']) ?>');
 
             fetch(API_URL, { method: 'POST', body: fd })
                 .then(r => r.json())
@@ -518,6 +522,7 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
             const fd = new FormData();
             fd.append('action', 'unlink_serie');
             fd.append('vinculo_id', idDesvincular);
+            fd.append('csrf_token', '<?= h($_SESSION['csrf_token']) ?>');
 
             fetch(API_URL, { method: 'POST', body: fd })
                 .then(r => r.json())
@@ -544,3 +549,4 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
     </script>
 </body>
 </html>
+<?php ob_end_flush(); ?>

@@ -1,7 +1,6 @@
 <?php
-
 declare(strict_types=1);
-
+ob_start();
 // Acceso seguro para componentes
 if (!defined('SECURE_ACCESS')) {
     define('SECURE_ACCESS', true);
@@ -70,6 +69,7 @@ $userAvatar = $userService->getUserAvatar($user_id);
             <!-- Crear nueva carpeta -->
             <div class="folder-card" style="background:rgb(40, 167, 163); color:white;">
                 <form method="POST" action="carpeta/agregarcarpeta.php" class="h-100">
+                    <input type="hidden" name="csrf_token" value="<?= ResponseHelper::h($_SESSION['csrf_token']) ?>">
                     <div class="text-center p-3 h-100">
                         <img src="img/Carpeta.png" class="folder-icon" alt="Icono de carpeta">
                         <h5 class="mb-2 fw-semibold text-light">Crear nueva carpeta</h5>

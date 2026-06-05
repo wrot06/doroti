@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Verificar autenticación
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
@@ -75,6 +77,7 @@ require_once "../components/navbar.php";
     <div class="form-section">
         <h3 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Nueva Dependencia</h3>
         <form id="formAgregarDependencia">
+            <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
@@ -307,6 +310,7 @@ document.getElementById('btnConfirmarEliminar').addEventListener('click', functi
     const formData = new FormData();
     formData.append('action', 'delete');
     formData.append('id', idEliminar);
+    formData.append('csrf_token', '<?= h($_SESSION['csrf_token']) ?>');
     
     fetch('api_dependencias.php', {
         method: 'POST',
@@ -373,3 +377,4 @@ function escapeHtml(text) {
 
 </body>
 </html>
+<?php ob_end_flush(); ?>

@@ -1,10 +1,13 @@
 <?php
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once __DIR__ . '/../rene/conexion3.php';
 
 /* =========================
    VALIDACIÓN DE ENTRADA
 ========================= */
+AuthMiddleware::checkCsrf();
 $caja           = intval($_POST['caja'] ?? 0);
 $carpeta        = intval($_POST['carpeta'] ?? 0);
 $id_carpeta     = intval($_POST['id_carpeta'] ?? 0);
@@ -124,6 +127,7 @@ $stmt->close();
                     <span class="badge badge-dark mr-2">ID <?= $id_carpeta ?></span>
 
                     <form action="indice.php" method="post" class="m-0">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                         <input type="hidden" name="consulta" value="<?= $caja ?>">
                         <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
                         <button class="btn btn-outline-primary btn-sm">Regresar</button>
@@ -134,7 +138,7 @@ $stmt->close();
             <div class="card-body">
 
                 <form action="finalizarcarpeta.php" method="post">
-
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="caja" value="<?= $caja ?>">
                     <input type="hidden" name="carpeta" value="<?= $carpeta ?>">
                     <input type="hidden" name="id_carpeta" value="<?= $id_carpeta ?>">
@@ -228,3 +232,4 @@ $stmt->close();
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

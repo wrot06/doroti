@@ -1,7 +1,8 @@
 <?php
-
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once '../rene/conexion3.php';
 
 // Definir constante de acceso seguro para archivos incluidos
@@ -318,3 +319,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

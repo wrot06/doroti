@@ -1,11 +1,13 @@
 <?php
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once __DIR__ . '/../rene/conexion3.php';
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 ini_set('error_log', __DIR__ . '/../error.log');
 error_reporting(E_ALL);
 
-session_start();
 if(!isset($_SESSION['authenticated'])||$_SESSION['authenticated']!==true){
     header('Location: ../login/login.php');
     exit();
@@ -13,9 +15,11 @@ if(!isset($_SESSION['authenticated'])||$_SESSION['authenticated']!==true){
 
 // Manejar cierre de sesión
 if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cerrar_seccion'])){
-    session_destroy();
-    header('Location: ../login/login.php');
-    exit();
+    if (isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
+        session_destroy();
+        header('Location: ../login/login.php');
+        exit();
+    }
 }
 
 
@@ -235,3 +239,4 @@ document.getElementById('form-busqueda').addEventListener('submit',(e)=>{
 
 </body>
 </html>
+<?php ob_end_flush(); ?>

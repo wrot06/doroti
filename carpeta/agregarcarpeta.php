@@ -1,12 +1,8 @@
 <?php
-
 declare(strict_types=1);
-session_start();
-
-// Control de caché
-header("Cache-Control: no-cache, no-store, must-revalidate");
-header("Pragma: no-cache");
-header("Expires: 0");
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Redirigir si no está autenticado
 if (empty($_SESSION['authenticated'])) {
@@ -135,3 +131,4 @@ unset($_SESSION['mensaje']);
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

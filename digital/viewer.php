@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 require_once "../rene/conexion3.php";
 
 /* ================== AUTH ================== */
@@ -575,3 +577,4 @@ function h(string $v): string {
     </script>
 </body>
 </html>
+<?php ob_end_flush(); ?>

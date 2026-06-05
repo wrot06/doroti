@@ -1,7 +1,8 @@
 <?php
-
 declare(strict_types=1);
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Verificar autenticación
 if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
@@ -185,3 +186,4 @@ $userAvatar = '../' . $userService->getUserAvatar((int)$_SESSION['user_id']);
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

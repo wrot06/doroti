@@ -12,7 +12,8 @@ if (ob_get_level() === 0) {
     ob_start();
 }
 
-session_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 // Validar sesión de admin
 if (empty($_SESSION['authenticated']) || ($_SESSION['rol'] ?? '') !== 'admin') {
@@ -22,6 +23,8 @@ if (empty($_SESSION['authenticated']) || ($_SESSION['rol'] ?? '') !== 'admin') {
     echo json_encode(['success' => false, 'message' => 'Acceso denegado']);
     exit;
 }
+
+AuthMiddleware::checkCsrf();
 
 header('Content-Type: application/json');
 

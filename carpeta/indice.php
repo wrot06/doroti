@@ -1,21 +1,8 @@
 <?php
-
 declare(strict_types=1);
-
-/* ===============================
-   Sesión segura
-================================ */
-$params = session_get_cookie_params();
-session_set_cookie_params([
-    'lifetime' => $params['lifetime'],
-    'path'     => $params['path'],
-    'domain'   => $params['domain'],
-    'secure'   => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
-
-session_start();
+ob_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 /* ===============================
    Helpers
@@ -43,14 +30,19 @@ if (empty($_SESSION['authenticated'])) {
 
 // Manejar cierre de sesión
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cerrar_seccion'])) {
-    session_destroy();
-    redirect('../login/login.php');
+    if (isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
+        session_destroy();
+        redirect('../login/login.php');
+    }
 }
 
 /* ===============================
    PRG: recibir datos desde index.php
 ================================ */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['Caja'], $_POST['carpeta'], $_POST['oficina'])) {
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
+        redirect('../index.php', 'Token CSRF inválido.');
+    }
     $_SESSION['caja']     = (int)$_POST['Caja'];
     $_SESSION['carpeta']  = (int)$_POST['carpeta'];
     $_SESSION['oficina']  = trim($_POST['oficina']); // nombre de la oficina
@@ -202,10 +194,12 @@ $proximaPagina = $ultimaPagina + 1;
             </h5>
 
             <form action="" method="POST" style="margin:0 0 0 auto;">
+                <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
                 <button type="submit" name="cerrar_seccion" class="btn btn-outline-danger btn-sm" style="padding:.25rem .5rem;">Cerrar sesión</button>
             </form>
 
             <form action="tcarpeta.php" method="POST" style="margin:0;">
+                <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
                 <input type="hidden" name="caja" value="<?= e((string)$caja) ?>">
                 <input type="hidden" name="carpeta" value="<?= e((string)$carpeta) ?>">
                 <input type="hidden" name="folios" value="<?= e((string)$ultimaPagina) ?>">
@@ -369,3 +363,4 @@ $proximaPagina = $ultimaPagina + 1;
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

@@ -25,9 +25,8 @@ class AuthMiddleware {
                 'lifetime' => 0,
                 'path' => '/',
                 'domain' => '',
-                'secure' => $isSecure,
-                'httponly' => true,
-                'samesite' => 'Lax'
+                'secure' => false,
+                'httponly' => true
             ]);
             
             session_start();

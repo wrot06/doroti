@@ -6,3 +6,8 @@ doroti.zip
 
 # Archivos PDF cargados por usuarios en almacenamiento físico
 uploads/documentos/*.pdf
+
+# Logs de error y sesiones temporales de PHP
+error.log
+uploads/sessions/
+

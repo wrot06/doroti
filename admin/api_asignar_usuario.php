@@ -202,9 +202,9 @@ function assignUserToFolder($conn)
             $stmtCount = $conn->prepare("
                 SELECT COUNT(*) as total 
                 FROM indice_temp 
-                WHERE carpeta_id = ? AND Caja = ? AND Carpeta = ? AND dependencia_id = ?
+                WHERE carpeta_id = ?
             ");
-            $stmtCount->bind_param("iiii", $folderId, $caja, $carpeta, $dependencia_id);
+            $stmtCount->bind_param("i", $folderId);
             $stmtCount->execute();
             $countResult = $stmtCount->get_result();
             $countData = $countResult->fetch_assoc();
@@ -216,11 +216,10 @@ function assignUserToFolder($conn)
             $tableName = getIndiceTableName($conn, (int)$dependencia_id);
             $stmtCount = $conn->prepare("
                 SELECT COUNT(*) as total 
-                FROM `$tableName` it
-                INNER JOIN carpetas c ON it.carpeta_id = c.id
-                WHERE it.carpeta_id = ? AND c.Caja = ? AND c.Carpeta = ? AND c.dependencia_id = ?
+                FROM `$tableName`
+                WHERE carpeta_id = ?
             ");
-            $stmtCount->bind_param("iiii", $folderId, $caja, $carpeta, $dependencia_id);
+            $stmtCount->bind_param("i", $folderId);
             $stmtCount->execute();
             $countResult = $stmtCount->get_result();
             $countData = $countResult->fetch_assoc();

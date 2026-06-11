@@ -20,7 +20,7 @@ if (($_SESSION['rol'] ?? '') !== 'admin') {
 require_once "../rene/conexion3.php";
 
 // Escapar HTML
-function h(mixed $str): string {
+function h($str): string {
     return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
 }
 

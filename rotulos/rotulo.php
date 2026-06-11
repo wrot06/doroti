@@ -42,11 +42,14 @@ $stmt2 = $conec->prepare("
     INNER JOIN carpetas c ON c.id = i.carpeta_id
     WHERE c.dependencia_id = ?
 ");
-$stmt2->bind_param("i", $dependencia_id);
-$stmt2->execute();
-$res = $stmt2->get_result();
-while ($r = $res->fetch_assoc()) {
-    $indices[$r['Caja']][$r['Carpeta']][] = $r;
+if ($stmt2 !== false) {
+    $stmt2->bind_param("i", $dependencia_id);
+    $stmt2->execute();
+    $res = $stmt2->get_result();
+    while ($r = $res->fetch_assoc()) {
+        $indices[$r['Caja']][$r['Carpeta']][] = $r;
+    }
+    $stmt2->close();
 }
 /* ================== SESIÓN ================== */
 require_once "../services/UserService.php";
@@ -122,20 +125,20 @@ function h($v)
                 ?>
                     <tr style="background:<?= $bg ?>">
                         <td><button class="accordion">v</button></td>
-                        <td><?= htmlspecialchars($caja) ?></td>
-                        <td><?= htmlspecialchars($carpeta) ?></td>
+                        <td><?= h($caja) ?></td>
+                        <td><?= h($carpeta) ?></td>
                         <td>
-                            <b><?= htmlspecialchars($f['Serie']) ?></b>
-                            <?php if ($f['Subs']): ?><br><small><?= htmlspecialchars($f['Subs']) ?></small><?php endif; ?>
+                            <b><?= h($f['Serie']) ?></b>
+                            <?php if ($f['Subs']): ?><br><small><?= h($f['Subs']) ?></small><?php endif; ?>
                         </td>
-                        <td><?= htmlspecialchars($f['Titulo'] ?? '') ?></td>
-                        <td><?= htmlspecialchars($f['FInicial']) ?></td>
-                        <td><?= htmlspecialchars($f['FFinal']) ?></td>
-                        <td><b><?= htmlspecialchars($f['Folios']) ?></b></td>
+                        <td><?= h($f['Titulo'] ?? '') ?></td>
+                        <td><?= h($f['FInicial']) ?></td>
+                        <td><?= h($f['FFinal']) ?></td>
+                        <td><b><?= h($f['Folios']) ?></b></td>
 
                         <td>
                             <form action="../pdf/RotuloCarpeta.php" method="post" target="_blank">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token'] ?? '') ?>">
                                 <button name="consulta" value="<?= $f['id'] ?>" class="btn btn-primary btn-sm">
                                     Carpeta <?= $carpeta ?>
                                 </button>
@@ -145,7 +148,7 @@ function h($v)
                         <td>
                             <?php if ($carpeta === 1): ?>
                                 <form action="../pdf/RotuloCaja.php" method="post" target="_blank">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token'] ?? '') ?>">
                                     <button name="consulta" value="<?= $caja ?>" class="btn btn-primary btn-sm">
                                         Caja <?= $caja ?>
                                     </button>
@@ -157,7 +160,7 @@ function h($v)
                     <tr class="panel" style="display:none">
                         <td colspan="11">
                             <form action="../pdf/Indice.php" method="post" target="_blank">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token'] ?? '') ?>">
                                 <input type="hidden" name="Carpeta" value="<?= $carpeta ?>">
                                 <div class="d-grid gap-2 col-6 mx-auto">
                                     <button name="Caja" value="<?= $caja ?>" class="btn btn-info btn-sm">
@@ -169,9 +172,9 @@ function h($v)
                             <table class="mi-tabla2">
                                 <?php foreach ($indices[$caja][$carpeta] ?? [] as $doc): ?>
                                     <tr>
-                                        <td><i><?= htmlspecialchars($doc['DescripcionUnidadDocumental']) ?></i></td>
-                                        <td><?= htmlspecialchars($doc['NoFolioInicio']) ?></td>
-                                        <td><?= htmlspecialchars($doc['NoFolioFin']) ?></td>
+                                        <td><i><?= h($doc['DescripcionUnidadDocumental']) ?></i></td>
+                                        <td><?= h($doc['NoFolioInicio']) ?></td>
+                                        <td><?= h($doc['NoFolioFin']) ?></td>
                                         <td>
                                             <?php if (is_file(__DIR__ . '/../uploads/' . $doc['id'] . '.pdf') && $doc['Soporte'] === 'FD'): ?>
                                                 <form action="download.php" method="get" target="_blank">

@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
+
 // Desactivar display_errors para evitar corromper JSON
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
@@ -85,8 +87,8 @@ try {
 
     // INSERT con id_carpeta agregado
     $sql = "INSERT INTO indice_temp 
-            (id2, Caja, Carpeta, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, dependencia_id, Soporte, carpeta_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            (id2, serie, DescripcionUnidadDocumental, NoFolioInicio, NoFolioFin, paginas, Soporte, carpeta_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conec->prepare($sql);
 
@@ -95,16 +97,13 @@ try {
     }
 
     $stmt->bind_param(
-        "iiissiiiisi", 
+        "issiiisi", 
         $id2,
-        $caja,
-        $carpeta,
         $serie,
         $titulo,
         $paginaInicio,
         $paginaFinal,
         $paginas,
-        $dependencia_id,
         $soporte,
         $id_carpeta
     );

@@ -254,6 +254,24 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.6') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Compatibilidad con PHP 7.4 y Normalización de Índices Temporales";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se habilitó compatibilidad con versiones anteriores de PHP (PHP 7.4+) eliminando los constructores match, tipo de unión (union types) e indicación de tipo mixed de PHP 8.</li>
+                    <li>Se normalizó la tabla de índices temporales eliminando columnas redundantes (Caja, Carpeta, dependencia_id) en las consultas SQL e insertando registros únicamente asociados a carpeta_id.</li>
+                    <li>Se mejoró la robustez de las conexiones a base de datos aplicando límites de tiempo de espera (timeout de 5 segundos) y unificando el inicio de sesión con AuthMiddleware en los reportes e índices PDF.</li>
+                    <li>Se corrigieron errores menores de sintaxis en el clasificador de rótulos y validación de consultas UNION vacías en el buscador global.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

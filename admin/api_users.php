@@ -395,12 +395,20 @@ function uploadAvatar($conn) {
         $currentAvatar = $result->fetch_assoc()['avatar'];
         
         // Determinar extensión
-        $extension = match($mimeType) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-            default => 'jpg'
-        };
+        switch ($mimeType) {
+            case 'image/jpeg':
+                $extension = 'jpg';
+                break;
+            case 'image/png':
+                $extension = 'png';
+                break;
+            case 'image/webp':
+                $extension = 'webp';
+                break;
+            default:
+                $extension = 'jpg';
+                break;
+        }
         
         // 1. Saneamiento estricto del ID de usuario
         $safeUserId = (int)$user_id;
@@ -442,12 +450,20 @@ function uploadAvatar($conn) {
         }
         
         // Guardar imagen redimensionada
-        $saved = match($mimeType) {
-            'image/jpeg' => imagejpeg($resized, $targetPath, 90),
-            'image/png' => imagepng($resized, $targetPath, 8),
-            'image/webp' => imagewebp($resized, $targetPath, 90),
-            default => false
-        };
+        switch ($mimeType) {
+            case 'image/jpeg':
+                $saved = imagejpeg($resized, $targetPath, 90);
+                break;
+            case 'image/png':
+                $saved = imagepng($resized, $targetPath, 8);
+                break;
+            case 'image/webp':
+                $saved = imagewebp($resized, $targetPath, 90);
+                break;
+            default:
+                $saved = false;
+                break;
+        }
         
         imagedestroy($resized);
         
@@ -545,12 +561,20 @@ function deleteAvatar($conn) {
  */
 function resizeImage($sourcePath, $mimeType, $maxWidth, $maxHeight) {
     // Crear imagen desde archivo
-    $source = match($mimeType) {
-        'image/jpeg' => imagecreatefromjpeg($sourcePath),
-        'image/png' => imagecreatefrompng($sourcePath),
-        'image/webp' => imagecreatefromwebp($sourcePath),
-        default => false
-    };
+    switch ($mimeType) {
+        case 'image/jpeg':
+            $source = imagecreatefromjpeg($sourcePath);
+            break;
+        case 'image/png':
+            $source = imagecreatefrompng($sourcePath);
+            break;
+        case 'image/webp':
+            $source = imagecreatefromwebp($sourcePath);
+            break;
+        default:
+            $source = false;
+            break;
+    }
     
     if (!$source) {
         return false;

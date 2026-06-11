@@ -525,12 +525,20 @@ $vista = $_GET['vista'] ?? 'global';
                             <?php foreach ($serieRows as $i => $row):
                                 $rank  = $i + 1;
                                 $pct   = (float)$row['pct'];
-                                $badgeClass = match (true) {
-                                    $rank === 1 => 'rank-1',
-                                    $rank === 2 => 'rank-2',
-                                    $rank === 3 => 'rank-3',
-                                    default     => 'rank-n',
-                                };
+                                switch ($rank) {
+                                    case 1:
+                                        $badgeClass = 'rank-1';
+                                        break;
+                                    case 2:
+                                        $badgeClass = 'rank-2';
+                                        break;
+                                    case 3:
+                                        $badgeClass = 'rank-3';
+                                        break;
+                                    default:
+                                        $badgeClass = 'rank-n';
+                                        break;
+                                }
                             ?>
                                 <tr class="tbl-row">
                                     <td>

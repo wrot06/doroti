@@ -164,8 +164,8 @@ function deleteFolder($conn) {
         // Estado 'C' (Cerrado) = registros en IndiceDocumental
         if ($folderData['Estado'] === 'A') {
             // Carpeta activa: eliminar de indice_temp
-            $stmt1 = $conn->prepare("DELETE FROM indice_temp WHERE Caja = ? AND Carpeta = ? AND dependencia_id = ?");
-            $stmt1->bind_param("iii", $folderData['Caja'], $folderData['Carpeta'], $folderData['dependencia_id']);
+            $stmt1 = $conn->prepare("DELETE FROM indice_temp WHERE carpeta_id = ?");
+            $stmt1->bind_param("i", $folderId);
             $stmt1->execute();
             $stmt1->close();
         } elseif ($folderData['Estado'] === 'C') {
@@ -268,13 +268,7 @@ function updateFolder($conn) {
         // 4. Actualizar índices (Caja y Carpeta no existen en las tablas de índices, por lo que no es necesario realizar UPDATE allí)
         // IndiceDocumental (No requiere actualización)
 
-        // IndiceTemp (intentar update por dependencia)
-        $stmtUpdTemp = $conn->prepare("UPDATE indice_temp SET Caja = ?, Carpeta = ? WHERE dependencia_id = ? AND carpeta_id = ?"); 
-        // Nota: carpeta_id podría no existir en IndiceTemp en versiones viejas, pero update fallaría graceful sin excepción si columna existe pero 0 rows
-        // Si columna NO existe, lanza error.
-        // Asumo carpeta_id existe en IndiceTemp (vimos schema antes).
-        $stmtUpdTemp->bind_param("iiii", $caja, $carpeta, $depId, $id);
-        $stmtUpdTemp->execute();
+        // IndiceTemp (No requiere actualización de Caja y Carpeta ya que están normalizados en la tabla de carpetas)
 
         $conn->commit();
         if (ob_get_length()) ob_clean();

@@ -25,7 +25,7 @@ $activePage = $activePage ?? '';
 
 // Función auxiliar de escape seguro local
 if (!function_exists('nh')) {
-    function nh(mixed $str): string {
+    function nh($str): string {
         return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
     }
 }

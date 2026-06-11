@@ -9,7 +9,7 @@ class ResponseHelper {
     /**
      * Escapar HTML para prevenir XSS
      */
-    public static function h(mixed $str): string {
+    public static function h($str): string {
         return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
     }
     

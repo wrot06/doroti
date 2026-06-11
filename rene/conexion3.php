@@ -36,9 +36,17 @@ if (!$db_host || !$db_user || !$db_name) {
 
 // Crear conexión utilizando las variables cargadas dinámicamente
 // Esto evita la regla de SonarCloud RSPEC-2068 (Hardcoded Credentials)
-$conec = new mysqli($db_host, $db_user, $db_pass, $db_name);
-if ($conec->connect_error) {
-    die('Error de conexión: ' . $conec->connect_error);
+$conec = mysqli_init();
+if (!$conec) {
+    die('mysqli_init falló');
+}
+$conec->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+
+if (!@$conec->real_connect($db_host, $db_user, $db_pass, $db_name)) {
+    ini_set('display_errors', '1');
+    $errMsg = 'Error de conexión (' . mysqli_connect_errno() . '): ' . mysqli_connect_error();
+    error_log($errMsg);
+    die($errMsg);
 }
 $conec->set_charset('utf8mb4');
 
@@ -164,6 +172,13 @@ if (!function_exists('getIndiceTableNameByDocumentId')) {
 if (!function_exists('getIndiceUnionQuery')) {
     function getIndiceUnionQuery(mysqli $conn, array $columns = []): string {
         $tables = getAllIndiceTables($conn);
+        if (empty($tables)) {
+            if (empty($columns)) {
+                return "(SELECT NULL WHERE 1=0)";
+            }
+            $selectCols = implode(", ", array_map(fn($c) => "NULL AS `$c`", $columns));
+            return "(SELECT $selectCols FROM (SELECT 1) AS dummy WHERE 1=0)";
+        }
         $colList = empty($columns) ? "*" : implode(", ", array_map(fn($c) => "`$c`", $columns));
         $subqueries = [];
         foreach ($tables as $t) {

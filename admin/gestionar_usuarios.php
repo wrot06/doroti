@@ -17,6 +17,7 @@ if (($_SESSION['rol'] ?? '') !== 'admin') {
     exit();
 }
 
+require_once "../rene/conexion3.php";
 require_once "../services/UserService.php";
 
 $userService = new UserService($conec);

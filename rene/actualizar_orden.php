@@ -26,10 +26,25 @@ if ($conec->connect_error) {
     exit;
 }
 
+// Obtener id de la carpeta correspondiente
+$sql_carpeta = "SELECT id FROM carpetas WHERE Caja = ? AND Carpeta = ? AND Estado = 'A' LIMIT 1";
+$stmt_carpeta = $conec->prepare($sql_carpeta);
+$stmt_carpeta->bind_param("ii", $caja, $carpeta);
+$stmt_carpeta->execute();
+$res_carpeta = $stmt_carpeta->get_result();
+$row_carpeta = $res_carpeta->fetch_assoc();
+$carpeta_id = $row_carpeta ? (int)$row_carpeta['id'] : 0;
+$stmt_carpeta->close();
+
+if ($carpeta_id === 0) {
+    echo json_encode(['status' => 'error', 'message' => 'No se encontró la carpeta correspondiente']);
+    exit;
+}
+
 // Preparar consulta
 $sql = "UPDATE indice_temp 
         SET NoFolioInicio = ?, NoFolioFin = ?, DescripcionUnidadDocumental = ?, paginas = ?
-        WHERE id2 = ? AND Caja = ? AND Carpeta = ?";
+        WHERE id2 = ? AND carpeta_id = ?";
 $stmt = $conec->prepare($sql);
 
 if (!$stmt) {
@@ -45,7 +60,7 @@ foreach ($cambios as $capitulo) {
     $paginas = (int) $capitulo['paginas'];
     $id2 = (int) $capitulo['id'];
 
-    $stmt->bind_param("iisiiii", $inicio, $fin, $titulo, $paginas, $id2, $caja, $carpeta);
+    $stmt->bind_param("iisiii", $inicio, $fin, $titulo, $paginas, $id2, $carpeta_id);
 
     if (!$stmt->execute()) {
         echo json_encode(['status' => 'error', 'message' => 'Error al actualizar: ' . $stmt->error]);

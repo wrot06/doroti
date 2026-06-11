@@ -18,7 +18,7 @@ class FolderService {
      * 
      * @return mysqli_result|false
      */
-    public function getUserFolders(int $userId): mysqli_result|false {
+    public function getUserFolders(int $userId) {
         $sql = "
         SELECT 
             c.id AS carpeta_id,

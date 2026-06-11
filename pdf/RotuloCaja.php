@@ -1,6 +1,7 @@
 <?php
 ob_start();
-session_start();
+require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
+AuthMiddleware::initSession();
 
 require('fpdf.php');
 require('../rene/conexion3.php');

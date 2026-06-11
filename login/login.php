@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     SELECT u.id, u.password, u.dependencia_id, d.nombre AS oficina, u.rol
                     FROM users u
                     LEFT JOIN dependencias d ON d.id = u.dependencia_id
-                    WHERE u.username = ?
+                    WHERE LOWER(u.username) = LOWER(?)
                     LIMIT 1
                 ");
                 if (!$stmt) {

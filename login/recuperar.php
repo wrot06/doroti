@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($username !== '' && $email !== '') {
                 try {
                     // Buscar usuario
-                    $stmt = $conec->prepare("SELECT id FROM users WHERE username = ? AND email = ? LIMIT 1");
+                    $stmt = $conec->prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND LOWER(email) = LOWER(?) LIMIT 1");
                     $stmt->bind_param("ss", $username, $email);
                     $stmt->execute();
                     $res = $stmt->get_result();

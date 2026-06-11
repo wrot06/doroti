@@ -5,7 +5,7 @@ require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
 AuthMiddleware::initSession();
 require_once __DIR__ . '/../rene/conexion3.php';
 
-error_log("[LOGIN_ACCESS_DEBUG] Method: " . $_SERVER['REQUEST_METHOD'] . " | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN') . " | Session ID: " . session_id() . " | Cookies: " . json_encode($_COOKIE) . " | CSRF in Session: " . ($_SESSION['csrf_token'] ?? 'NONE'));
+error_log("[LOGIN_ACCESS_DEBUG] Host: " . ($_SERVER['HTTP_HOST'] ?? 'UNKNOWN') . " | Method: " . $_SERVER['REQUEST_METHOD'] . " | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN') . " | Session ID: " . session_id() . " | Cookies: " . json_encode($_COOKIE) . " | CSRF in Session: " . ($_SESSION['csrf_token'] ?? 'NONE'));
 
 // Definir constante de acceso seguro para archivos incluidos
 if (!defined('SECURE_ACCESS')) {

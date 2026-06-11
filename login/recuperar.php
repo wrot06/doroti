@@ -4,6 +4,7 @@ ob_start();
 
 require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
 AuthMiddleware::initSession();
+$had_session_token = !empty($_SESSION['csrf_token']);
 AuthMiddleware::generateCsrf();
 
 require_once __DIR__ . '/../rene/conexion3.php';
@@ -35,8 +36,12 @@ $success = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verificar CSRF
-    if (!isset($_POST['csrf_token']) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        $error = "Token de seguridad (CSRF) inválido. Por favor, intente de nuevo.";
+    if (!isset($_POST['csrf_token']) || !$had_session_token || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        if (!$had_session_token) {
+            $error = "No se detectó una sesión activa. Por favor, asegúrate de permitir las cookies en tu navegador y accede usando localhost (http://localhost/doroti/login/recuperar.php) en lugar del dominio sin puntos (http://doroti/).";
+        } else {
+            $error = "Token de seguridad (CSRF) inválido. Por favor, recarga la página e intenta de nuevo.";
+        }
     } else {
         $action = $_POST['action'] ?? '';
 

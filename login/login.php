@@ -132,8 +132,9 @@ if (!empty($_SESSION['authenticated'])) {
     redirect('../index.php');
 }
 
-// Generar CSRF token si no existe
-if (empty($_SESSION['csrf_token'])) {
+// Generar CSRF token si no existe, pero recordar si ya existía para dar un mensaje de error más preciso en POST
+$had_session_token = !empty($_SESSION['csrf_token']);
+if (!$had_session_token) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
@@ -149,13 +150,13 @@ $rememberedUsername = '';
 $rememberedPassword = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+    if (!isset($_POST['csrf_token']) || !$had_session_token || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
         $posted_token = $_POST['csrf_token'] ?? 'NOT_SET';
         $session_token = $_SESSION['csrf_token'] ?? 'NOT_SET';
-        error_log("[CSRF_DEBUG] Token mismatch. POST: $posted_token | SESSION: $session_token");
+        error_log("[CSRF_DEBUG] Token mismatch. POST: $posted_token | SESSION: $session_token | Had session token before: " . ($had_session_token ? 'YES' : 'NO'));
         
-        if (empty($_SESSION['csrf_token'])) {
-            $error = "No se detectó una sesión activa. Por favor, asegúrate de permitir las cookies en tu navegador y recarga la página.";
+        if (!$had_session_token) {
+            $error = "No se detectó una sesión activa. Por favor, asegúrate de permitir las cookies en tu navegador y accede usando localhost (http://localhost/doroti/login/login.php) en lugar del dominio sin puntos (http://doroti/).";
         } else {
             $error = "Token de seguridad (CSRF) inválido. Por favor, recarga la página e intenta de nuevo.";
         }

@@ -46,6 +46,10 @@ $isSecure = (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER
                 <table class="table table-bordered align-middle">
                     <tbody>
                         <tr>
+                            <th>Versión de PHP:</th>
+                            <td><code><?= PHP_VERSION ?></code></td>
+                        </tr>
+                        <tr>
                             <th>Contador de Pruebas:</th>
                             <td>
                                 <span class="badge bg-primary fs-5"><?= $_SESSION['test_counter'] ?></span>

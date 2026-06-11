@@ -148,6 +148,10 @@ $rememberedPassword = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $posted_token = $_POST['csrf_token'] ?? 'NOT_SET';
+        $session_token = $_SESSION['csrf_token'] ?? 'NOT_SET';
+        error_log("[CSRF_DEBUG] Token mismatch. POST: $posted_token | SESSION: $session_token");
+        
         if (empty($_SESSION['csrf_token'])) {
             $error = "No se detectó una sesión activa. Por favor, asegúrate de permitir las cookies en tu navegador y recarga la página.";
         } else {

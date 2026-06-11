@@ -3,7 +3,7 @@ declare(strict_types=1);
 ob_start();
 require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
 AuthMiddleware::initSession();
-require_once '../rene/conexion3.php';
+require_once __DIR__ . '/../rene/conexion3.php';
 
 // Definir constante de acceso seguro para archivos incluidos
 if (!defined('SECURE_ACCESS')) {
@@ -136,6 +136,11 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 $error = null;
+$success = null;
+
+if (isset($_GET['reset']) && $_GET['reset'] === 'success') {
+    $success = "Tu contraseña ha sido restablecida con éxito. Ya puedes iniciar sesión.";
+}
 
 // Mantener compatibilidad con el formulario sin exponer contraseñas en texto plano
 $rememberedUsername = '';
@@ -292,6 +297,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if ($error): ?>
                     <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
+                <?php if ($success): ?>
+                    <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+                <?php endif; ?>
                 <form method="POST" action="login.php">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
                     <div class="mb-3">
@@ -316,7 +324,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
         <div class="mt-3">
-            <a href="#" class="text-white text-decoration-underline">¿Olvidaste tu contraseña?</a>
+            <a href="recuperar.php" class="text-white text-decoration-underline">¿Olvidaste tu contraseña?</a>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

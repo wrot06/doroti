@@ -30,7 +30,7 @@ if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $tok
 // Recibir datos
 $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 $table = trim($_POST['table'] ?? '');
-$texto = trim($_POST['texto'] ?? '');
+$texto = (string)($_POST['texto'] ?? '');
 
 // Validar parámetros
 if (!$id || $id <= 0) {

@@ -27,8 +27,8 @@ if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $tok
     exit;
 }
 
-$search = trim($_POST['q'] ?? '');
-$replace = trim($_POST['r'] ?? '');
+$search = (string)($_POST['q'] ?? '');
+$replace = (string)($_POST['r'] ?? '');
 
 if ($search === '') {
     echo json_encode(['status' => 'error', 'message' => 'La palabra a buscar no puede estar vacía.']);

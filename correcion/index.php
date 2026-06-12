@@ -26,9 +26,9 @@ $userAvatar = '../' . $userService->getUserAvatar($user_id);
 // Generar CSRF token
 AuthMiddleware::generateCsrf();
 
-// Parámetros de búsqueda
-$search = trim($_GET['q'] ?? '');
-$replace = trim($_GET['r'] ?? '');
+// Parámetros de búsqueda (se conservan los espacios para búsquedas exactas)
+$search = (string)($_GET['q'] ?? '');
+$replace = (string)($_GET['r'] ?? '');
 
 // Obtener todas las tablas dedicadas (indice_documental_dep_*)
 $tables = [];
@@ -530,8 +530,8 @@ function resaltarPalabra(string $text, string $search): string {
             $("#btnConfirmBulkApply").click(function() {
                 const $btnConfirm = $(this);
                 const $btnTrigger = $("#btnBulkCorrect");
-                const searchVal = $("#q").val().trim();
-                const replaceVal = $("#r").val().trim();
+                const searchVal = $("#q").val();
+                const replaceVal = $("#r").val();
                 
                 // Deshabilitar botón
                 $btnConfirm.prop("disabled", true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
@@ -590,9 +590,9 @@ function resaltarPalabra(string $text, string $search): string {
                 
                 const recordId = $btn.data("id");
                 const recordTable = $btn.data("table");
-                const newText = $textarea.val().trim();
+                const newText = $textarea.val();
                 
-                if (newText === '') {
+                if (newText.trim() === '') {
                     alert("La descripción no puede estar vacía.");
                     return;
                 }

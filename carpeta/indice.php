@@ -305,7 +305,12 @@ $proximaPagina = $ultimaPagina + 1;
                         <select class="form-control" id="editSerie"></select>
                     </div>
                     <div class="form-group">
-                        <label for="editTitulo">Título</label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="editTitulo" class="mb-0">Título</label>
+                            <button type="button" class="btn btn-outline-info btn-sm" id="corregirTituloIa" style="padding: 2px 8px; font-size: 0.85rem;">
+                                <i class="bi bi-magic"></i> Corregir con IA
+                            </button>
+                        </div>
                         <textarea class="form-control" id="editTitulo" rows="6" style="font-size:1.1rem; resize:vertical;"></textarea>
                     </div>
                 </div>
@@ -340,7 +345,7 @@ $proximaPagina = $ultimaPagina + 1;
     <script src="js/interceptarPlusTecla.js"></script>
     <script src="js/voice.js"></script>
     <script src="js/navegacionInputs.js"></script>
-    <script src="js/editcapitulo.js"></script>
+    <script src="js/editcapitulo.js?v=<?= time() ?>"></script>
     <script src="js/centrarpantalla.js"></script>
 
     <!-- Nuevo: radios con label en negrita -->

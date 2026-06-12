@@ -137,3 +137,46 @@ $("#editarCapituloModal").on("keydown", function (e) {
     }
 });
 
+// =======================
+// 7. Corregir descripción con IA
+// =======================
+$(document).on("click", "#corregirTituloIa", function () {
+    const $btn = $(this);
+    const $textarea = $("#editTitulo");
+    const textoOriginal = $textarea.val().trim();
+
+    if (textoOriginal === '') {
+        alert("Por favor, escribe algún texto para corregir.");
+        return;
+    }
+
+    // Deshabilitar botón y mostrar cargando
+    $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Corrigiendo...');
+    $textarea.prop("disabled", true);
+
+    $.ajax({
+        url: '../rene/corregir_descripcion_ia.php',
+        method: 'POST',
+        data: {
+            texto: textoOriginal
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.status === 'success') {
+                $textarea.val(response.texto_corregido);
+            } else {
+                alert(response.message || "Error al procesar la corrección.");
+            }
+        },
+        error: function (xhr) {
+            console.error("Error IA:", xhr.responseText);
+            alert("Error de conexión al intentar comunicarse con el servidor.");
+        },
+        complete: function () {
+            // Re-habilitar botón y restaurar texto
+            $btn.prop("disabled", false).html('<i class="bi bi-magic"></i> Corregir con IA');
+            $textarea.prop("disabled", false).focus();
+        }
+    });
+});
+

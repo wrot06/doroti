@@ -272,6 +272,42 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.7') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Diagnóstico CSRF Inteligente y Control de Cookies de Sesión";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se implementó detección proactiva de bloqueo de cookies y sesiones inactivas en el inicio de sesión y recuperación de contraseña.</li>
+                    <li>Se añadieron advertencias específicas y detalladas para el uso de dominios locales sin puntos (como http://doroti/), guiando al usuario a utilizar http://localhost/ o http://127.0.0.1/ para garantizar la compatibilidad con navegadores modernos como Chrome.</li>
+                    <li>Se optimizó el flujo de inicio de sesión de los usuarios Rene y Mariana mediante la normalización de contraseñas seguras y búsquedas insensibles a mayúsculas.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
+        if (!$exists && $current_version === '1.5.8') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Integración de IA (Gemini API) para Corrección Ortográfica y Resúmenes";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se implementó un script de consola (CLI) para la limpieza masiva por lotes (batching) de la ortografía y el resumen de textos de las descripciones documentales.</li>
+                    <li>Se integró un botón interactivo 'Corregir con IA' en el modal de edición del índice de carpetas (carpeta/indice.php).</li>
+                    <li>Se creó un endpoint API interno (rene/corregir_descripcion_ia.php) conectado de forma segura con la API de Gemini (modelo gemini-2.5-flash).</li>
+                    <li>Se definieron reglas de IA estrictas para omitir puntos y dos puntos en las correcciones y mantener intactos los prefijos antes del primer carácter ':'.</li>
+                    <li>Se agregaron parámetros de versión a la inclusión de scripts frontend para evitar problemas de caché del navegador.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

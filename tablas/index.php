@@ -453,7 +453,7 @@ $vista = $_GET['vista'] ?? 'global';
                     <div class="kpi-icon green"><i class="bi bi-tags"></i></div>
                     <div>
                         <div class="kpi-value"><?= $seriesUnicas ?></div>
-                        <div class="kpi-label">Series</div>
+                        <div class="kpi-label">Tipos</div>
                     </div>
                 </div>
             </div>

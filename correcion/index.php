@@ -361,13 +361,18 @@ function resaltarPalabra(string $text, string $search): string {
                         <p class="text-muted mb-0">Escribe una palabra en el buscador de arriba para comenzar a buscar en los índices de todas las tablas dedicadas.</p>
                     </div>
                 <?php else: ?>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
                         <div>
                             <h5 class="fw-bold text-dark mb-0">
                                 Coincidencias para "<span class="text-primary"><?= eh($search) ?></span>"
                             </h5>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <?php if ($totalRows > 0): ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold text-dark px-3 rounded-pill shadow-sm" id="btnBulkCorrect">
+                                    <i class="bi bi-lightning-fill me-1"></i> Corrección Masiva
+                                </button>
+                            <?php endif; ?>
                             <span class="badge bg-dark fs-6 py-2 px-3 rounded-pill shadow-sm" id="total-count-badge">
                                 Coincidencias: <span id="total-count"><?= $totalRows ?></span>
                             </span>
@@ -469,12 +474,114 @@ function resaltarPalabra(string $text, string $search): string {
         </div>
     </main>
 
+    <!-- MODAL DE CONFIRMACIÓN MASIVA -->
+    <div class="modal fade" id="bulkConfirmModal" tabindex="-1" aria-labelledby="bulkConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark" id="bulkConfirmModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Confirmar Corrección Masiva
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="mb-2">¿Está seguro de que desea realizar la corrección masiva en todas las tablas dedicadas?</p>
+                    <div class="alert alert-warning border-0 py-2 px-3 small rounded-3 mb-3">
+                        <i class="bi bi-info-circle me-1"></i> Esta acción actualizará todos los registros que coinciden con el término de búsqueda exacto.
+                    </div>
+                    <ul class="list-group list-group-flush mb-0 border rounded-3 p-2 small bg-light">
+                        <li class="list-group-item bg-transparent d-flex justify-content-between py-1 border-0">
+                            <span class="text-muted">Palabra a buscar:</span>
+                            <span class="fw-bold text-danger">"<?= eh($search) ?>"</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex justify-content-between py-1 border-0">
+                            <span class="text-muted">Reemplazar por:</span>
+                            <span class="fw-bold text-success">"<?= eh($replace) ?>"</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex justify-content-between py-1 border-0">
+                            <span class="text-muted">Registros estimados:</span>
+                            <span class="fw-bold text-dark" id="modalEstimateCount"><?= $totalRows ?></span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light btn-sm fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" id="btnConfirmBulkApply">
+                        <i class="bi bi-check-lg me-1"></i> Sí, aplicar a todos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- jQuery y Bootstrap 5 Bundle -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         $(document).ready(function() {
+            // Mostrar Modal de Confirmación Masiva
+            $("#btnBulkCorrect").click(function() {
+                const bulkModal = new bootstrap.Modal(document.getElementById('bulkConfirmModal'));
+                bulkModal.show();
+            });
+
+            // Confirmar y Ejecutar Corrección Masiva
+            $("#btnConfirmBulkApply").click(function() {
+                const $btnConfirm = $(this);
+                const $btnTrigger = $("#btnBulkCorrect");
+                const searchVal = $("#q").val().trim();
+                const replaceVal = $("#r").val().trim();
+                
+                // Deshabilitar botón
+                $btnConfirm.prop("disabled", true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
+                
+                $.ajax({
+                    url: 'guardar_masivo.php',
+                    method: 'POST',
+                    data: {
+                        q: searchVal,
+                        r: replaceVal,
+                        csrf_token: '<?= $_SESSION['csrf_token'] ?>'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        // Cerrar modal
+                        bootstrap.Modal.getInstance(document.getElementById('bulkConfirmModal')).hide();
+                        
+                        if (response.status === 'success') {
+                            alert("Corrección masiva completada: " + response.message);
+                            
+                            // Animación de salida de todas las tarjetas y vaciado
+                            $(".record-item").addClass("card-saved");
+                            setTimeout(function() {
+                                $(".record-item").remove();
+                                $("#total-count-badge").addClass("d-none");
+                                $btnTrigger.addClass("d-none");
+                                $(".pagination").addClass("d-none");
+                                $("#recordsContainer").html(
+                                    '<div class="col-12 alert alert-info text-center py-5 rounded-4 shadow-sm">' +
+                                    '<i class="bi-check-circle-fill fs-2 mb-2 d-block text-success"></i>' +
+                                    '<h4 class="fw-bold">¡Correcciones Masivas Completadas!</h4>' +
+                                    '<p class="text-muted mb-0">Se han corregido todos los registros en las tablas de la base de datos.</p>' +
+                                    '</div>'
+                                );
+                            }, 500);
+                        } else {
+                            alert(response.message || "Error al realizar la corrección masiva.");
+                        }
+                    },
+                    error: function(xhr) {
+                        bootstrap.Modal.getInstance(document.getElementById('bulkConfirmModal')).hide();
+                        console.error("Error AJAX Masivo:", xhr.responseText);
+                        alert("Error de conexión al servidor al ejecutar corrección masiva.");
+                    },
+                    complete: function() {
+                        $btnConfirm.prop("disabled", false).html('<i class="bi bi-check-lg me-1"></i> Sí, aplicar a todos');
+                    }
+                });
+            });
+
             // Guardar registro mediante AJAX
             $(document).on("click", ".btn-save-action", function() {
                 const $btn = $(this);

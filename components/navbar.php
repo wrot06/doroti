@@ -91,6 +91,10 @@ if (!function_exists('nh')) {
                     <i class="bi bi-controller me-2"></i>Juego
                 </a>
 
+                <a href="<?= nh($basePath) ?>ia/index.php" class="btn btn-outline-info btn-sm text-start text-lg-center <?= $activePage === 'ia' ? 'active' : '' ?>">
+                    <i class="bi bi-magic me-2"></i>Módulo IA
+                </a>
+
                 <a href="<?= nh($basePath) ?>actualizaciones/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'novedades' ? 'active' : '' ?>">
                     <i class="bi bi-stars me-2"></i>Novedades
                 </a>

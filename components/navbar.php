@@ -95,6 +95,12 @@ if (!function_exists('nh')) {
                     <i class="bi bi-magic me-2"></i>Módulo IA
                 </a>
 
+                <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
+                    <a href="<?= nh($basePath) ?>correcion/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'correcion' ? 'active' : '' ?>">
+                        <i class="bi bi-pencil-square me-2"></i>Corrección
+                    </a>
+                <?php endif; ?>
+
                 <a href="<?= nh($basePath) ?>actualizaciones/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'novedades' ? 'active' : '' ?>">
                     <i class="bi bi-stars me-2"></i>Novedades
                 </a>

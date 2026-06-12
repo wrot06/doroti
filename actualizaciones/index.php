@@ -308,6 +308,24 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.5.9') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Módulo de Corrección y Búsqueda Multitabla para Administradores";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se implementó el nuevo módulo 'Corrección' para buscar palabras erróneas en el campo DescripciónUnidadDocumental de todas las tablas dedicadas.</li>
+                    <li>Se automatizó la consulta dinámica para identificar todas las tablas del tipo 'indice_documental_dep_*' presentes y futuras.</li>
+                    <li>Se restringió la visualización del módulo en el menú de navegación y su acceso en el servidor de forma exclusiva para usuarios con rol 'admin'.</li>
+                    <li>Se desarrolló una interfaz de usuario optimizada con resaltado de términos buscados, reemplazo asíncrono vía AJAX con micro-botón de guardado y animaciones de desvanecimiento para registros completados.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

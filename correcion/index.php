@@ -59,10 +59,10 @@ $records = [];
 if ($search !== '' && !empty($tables)) {
     $searchWildcard = "%{$search}%";
     
-    // 1. Contar total de coincidencias en todas las tablas
+    // 1. Contar total de coincidencias en todas las tablas (Búsqueda exacta/sensible a mayúsculas)
     $countQueries = [];
     foreach ($tables as $t) {
-        $countQueries[] = "SELECT COUNT(*) AS total FROM `$t` WHERE `DescripcionUnidadDocumental` LIKE ?";
+        $countQueries[] = "SELECT COUNT(*) AS total FROM `$t` WHERE `DescripcionUnidadDocumental` LIKE BINARY ?";
     }
     $unionCountQuery = "(" . implode(") UNION ALL (", $countQueries) . ")";
     
@@ -88,7 +88,7 @@ if ($search !== '' && !empty($tables)) {
     // 2. Obtener registros paginados
     $dataQueries = [];
     foreach ($tables as $t) {
-        $dataQueries[] = "SELECT '{$t}' AS origen_tabla, id, DescripcionUnidadDocumental, CHAR_LENGTH(DescripcionUnidadDocumental) AS longitud FROM `$t` WHERE `DescripcionUnidadDocumental` LIKE ?";
+        $dataQueries[] = "SELECT '{$t}' AS origen_tabla, id, DescripcionUnidadDocumental, CHAR_LENGTH(DescripcionUnidadDocumental) AS longitud FROM `$t` WHERE `DescripcionUnidadDocumental` LIKE BINARY ?";
     }
     $unionDataQuery = "(" . implode(") UNION ALL (", $dataQueries) . ") ORDER BY longitud DESC, id ASC LIMIT {$limit} OFFSET {$offset}";
     
@@ -115,13 +115,13 @@ if (!function_exists('eh')) {
     }
 }
 
-// Función para resaltar la palabra buscada
+// Función para resaltar la palabra buscada (sensible a mayúsculas)
 function resaltarPalabra(string $text, string $search): string {
     if ($search === '') {
         return eh($text);
     }
     $escaped = preg_quote($search, '/');
-    return preg_replace('/(' . $escaped . ')/i', '<mark class="bg-warning text-dark px-1 rounded">$1</mark>', eh($text));
+    return preg_replace('/(' . $escaped . ')/', '<mark class="bg-warning text-dark px-1 rounded">$1</mark>', eh($text));
 }
 ?>
 <!DOCTYPE html>
@@ -387,7 +387,7 @@ function resaltarPalabra(string $text, string $search): string {
                             <?php foreach ($records as $r): 
                                 $tableName = $r['origen_tabla'];
                                 $depName = $depNames[$tableName] ?? $tableName;
-                                $replacedText = str_ireplace($search, $replace, $r['DescripcionUnidadDocumental']);
+                                $replacedText = str_replace($search, $replace, $r['DescripcionUnidadDocumental']);
                             ?>
                                 <div class="col-12 record-item" id="card-<?= eh($tableName) ?>-<?= eh((string)$r['id']) ?>">
                                     <div class="record-card p-4">

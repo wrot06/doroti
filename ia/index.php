@@ -9,6 +9,13 @@ require_once __DIR__ . '/../services/UserService.php';
 AuthMiddleware::initSession();
 AuthMiddleware::checkAuth('../login/login.php');
 
+// Verificar rol de admin
+if (($_SESSION['rol'] ?? '') !== 'admin') {
+    http_response_code(403);
+    echo "<h1>Acceso Denegado</h1><p>No tienes permiso para ver esta página.</p><a href='../index.php'>Volver al inicio</a>";
+    exit();
+}
+
 $user_id = AuthMiddleware::validateUser();
 $userService = new UserService($conec);
 $userInfo = $userService->getUserInfo($user_id);

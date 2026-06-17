@@ -91,9 +91,11 @@ if (!function_exists('nh')) {
                     <i class="bi bi-controller me-2"></i>Juego
                 </a>
 
-                <a href="<?= nh($basePath) ?>ia/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'ia' ? 'active' : '' ?>">
-                    <i class="bi bi-magic me-2"></i>Módulo IA
-                </a>
+                <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
+                    <a href="<?= nh($basePath) ?>ia/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'ia' ? 'active' : '' ?>">
+                        <i class="bi bi-magic me-2"></i>Módulo IA
+                    </a>
+                <?php endif; ?>
 
                 <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
                     <a href="<?= nh($basePath) ?>correcion/index.php" class="btn btn-outline-primary btn-sm text-start text-lg-center <?= $activePage === 'correcion' ? 'active' : '' ?>">

@@ -5,8 +5,8 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
 AuthMiddleware::initSession();
 
-// Verificar autenticación
-if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
+// Verificar autenticación y rol de admin
+if (empty($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true || ($_SESSION['rol'] ?? '') !== 'admin') {
     http_response_code(403);
     echo json_encode(['status' => 'error', 'message' => 'No autorizado']);
     exit;

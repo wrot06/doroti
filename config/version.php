@@ -1,3 +1,3 @@
 <?php
 // Archivo de configuración para el versionado del sistema
-define('APP_VERSION', '1.6.0');
+define('APP_VERSION', '1.6.1');

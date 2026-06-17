@@ -56,13 +56,22 @@ echo json_encode([
 exit();
 }
 
-$descripcionActual=trim($row['DescripcionUnidadDocumental']);
+$descripcionFront=trim($_POST['descripcion'] ?? '');
 
-$descripcionLimpia=preg_replace(
-'/^[^:]+:\s*/',
-'',
-$descripcionActual
-);
+if ($descripcionFront !== '') {
+    $descripcionLimpia=preg_replace(
+        '/^[^:]+:\s*/',
+        '',
+        $descripcionFront
+    );
+} else {
+    $descripcionActual=trim($row['DescripcionUnidadDocumental']);
+    $descripcionLimpia=preg_replace(
+        '/^[^:]+:\s*/',
+        '',
+        $descripcionActual
+    );
+}
 
 $nuevaDescripcion=$serie.': '.$descripcionLimpia;
 

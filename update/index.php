@@ -205,6 +205,25 @@ if ($depId > 0) {
             font-weight: bold;
             min-height: 30px;
         }
+
+        /* Estilos para destacar el radio seleccionado (checkbox-round) */
+        input[name="serie_radio"]:checked + label {
+            font-weight: bold !important;
+            color: #38bdf8 !important; /* Celeste brillante */
+            text-decoration: underline !important;
+        }
+
+        /* Estilo para la descripción editable */
+        .descripcion[contenteditable="true"] {
+            outline: none;
+            transition: all 0.2s;
+            cursor: text;
+        }
+        .descripcion[contenteditable="true"]:focus {
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+            background: #1e293b !important;
+        }
     </style>
 
 </head>
@@ -232,7 +251,10 @@ if ($depId > 0) {
             <span class="badge-custom">N° de Carpeta <?= $registro['Carpeta'] ?></span>
         </div>
 
-        <div class="descripcion">
+        <div class="mb-2 text-start" style="font-size: 0.9rem; color: #94a3b8;">
+            ✏️ Puedes corregir la descripción directamente abajo:
+        </div>
+        <div class="descripcion" contenteditable="true" id="descripcionTexto" style="text-align: left;">
             <?= htmlspecialchars($registro['DescripcionUnidadDocumental']) ?>
         </div>
 
@@ -240,13 +262,24 @@ if ($depId > 0) {
             No has seleccionado una serie
         </div>
 
-        <button
-            id="btnAbrirModal"
-            class="btn btn-primary btn-game w-100 mb-3"
-            data-bs-toggle="modal"
-            data-bs-target="#seriesModal">
-            📂 Seleccionar Serie
-        </button>
+        <!-- Selección de Series (checkbox-round) -->
+        <div class="etiquetas mb-4" style="font-size: 1rem; background: #0f172a; padding: 20px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, .05);">
+            <div class="etiquetas-container d-flex flex-wrap align-items-center justify-content-center" style="gap: 12px;">
+                <?php if (!empty($tipos)): ?>
+                    <?php foreach ($tipos as $tipo): ?>
+                        <?php $id = 'serie-' . preg_replace('/[^a-z0-9_-]/i', '_', $tipo); ?>
+                        <div class="form-check form-check-inline" style="margin-bottom: 2px;">
+                            <input class="form-check-input" type="radio" name="serie_radio" value="<?= htmlspecialchars($tipo) ?>" id="<?= htmlspecialchars($id) ?>" style="width: 1.1rem; height: 1.1rem; cursor: pointer;">
+                            <label class="form-check-label text-white" for="<?= htmlspecialchars($id) ?>" style="margin-left: 5px; cursor: pointer;">
+                                <?= htmlspecialchars(ucfirst($tipo)) ?>
+                            </label>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <span class="text-muted">No hay series configuradas.</span>
+                <?php endif; ?>
+            </div>
+        </div>
 
         <div class="d-flex gap-3">
 
@@ -269,61 +302,16 @@ if ($depId > 0) {
 
     </div>
 
-    <div class="modal fade" id="seriesModal" tabindex="-1">
-
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-
-            <div class="modal-content">
-
-                <div class="modal-header border-0">
-
-                    <h3>Selecciona una Serie</h3>
-
-                    <button
-                        type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
-
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="series-grid">
-
-                        <?php foreach ($tipos as $tipo): ?>
-
-                            <button
-                                type="button"
-                                class="serie-btn"
-                                data-serie="<?= htmlspecialchars($tipo) ?>">
-                                <?= htmlspecialchars($tipo) ?>
-                            </button>
-
-                        <?php endforeach; ?>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         const btnGuardar = document.getElementById('guardar');
         const mensaje = document.getElementById('mensaje');
         const serieVisual = document.getElementById('serieSeleccionada');
-        const modalElement = document.getElementById('seriesModal');
-        const btnAbrirModal = document.getElementById('btnAbrirModal');
 
-        const botonesSerie = document.querySelectorAll('.serie-btn');
+        const radiosSerie = document.querySelectorAll('input[name="serie_radio"]');
 
         let serieSeleccionada = '';
-        let modalCerrandose = false;
 
         let puntos = parseInt(localStorage.getItem('puntos') || 0);
         let racha = parseInt(localStorage.getItem('racha') || 0);
@@ -331,34 +319,15 @@ if ($depId > 0) {
         document.getElementById('puntos').innerText = puntos;
         document.getElementById('racha').innerText = racha;
 
-        modalElement.addEventListener('hidden.bs.modal', () => {
-
-            modalCerrandose = false;
-
-            btnAbrirModal.blur();
-
-            btnGuardar.focus();
-
-        });
-
-        botonesSerie.forEach(btn => {
-
-            btn.addEventListener('click', () => {
-
-                serieSeleccionada = btn.dataset.serie;
-
-                serieVisual.innerHTML = '📁 ' + serieSeleccionada;
-
-                btnGuardar.disabled = false;
-
-                modalCerrandose = true;
-
-                const modal = bootstrap.Modal.getInstance(modalElement);
-
-                modal.hide();
-
+        radiosSerie.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.checked) {
+                    serieSeleccionada = radio.value;
+                    serieVisual.innerHTML = '📁 ' + serieSeleccionada;
+                    btnGuardar.disabled = false;
+                    btnGuardar.focus();
+                }
             });
-
         });
 
         async function guardarRegistro() {
@@ -381,6 +350,7 @@ if ($depId > 0) {
 
                 fd.append('id', '<?= $registro['id'] ?>');
                 fd.append('serie', serieSeleccionada);
+                fd.append('descripcion', document.getElementById('descripcionTexto').innerText.trim());
                 fd.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
 
                 const response = await fetch('assign_serie.php', {
@@ -443,27 +413,12 @@ if ($depId > 0) {
         });
 
         document.addEventListener('keydown', (e) => {
-
             if (e.key === 'Enter') {
-
                 e.preventDefault();
-
-                if (modalCerrandose) {
-                    return;
-                }
-
-                const modalAbierto = document.querySelector('.modal.show');
-
-                if (modalAbierto) {
-                    return;
-                }
-
                 if (serieSeleccionada) {
                     guardarRegistro();
                 }
-
             }
-
         });
     </script>
 

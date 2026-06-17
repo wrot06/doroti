@@ -326,6 +326,24 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.6.0') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Clasificador Inline y Corrección Directa de Descripciones";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se reemplazó el modal de selección de series por un grupo de radios circulares ('checkbox-round') integrados directamente en la pantalla de juego del clasificador.</li>
+                    <li>Se implementó el destaque visual interactivo (color celeste, negrita y subrayado) para la opción elegida.</li>
+                    <li>Se habilitó la corrección directa del texto de descripción en pantalla a través de la propiedad contenteditable.</li>
+                    <li>Se optimizó el script de guardado asíncrono para capturar y almacenar las correcciones descritas en la base de datos.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

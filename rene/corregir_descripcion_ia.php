@@ -44,9 +44,10 @@ REGLAS CRÍTICAS Y OBLIGATORIAS:
 1. Si el texto contiene el carácter de dos puntos (':'), conserva el texto que está antes del primer ':' exactamente igual, sin modificar ninguna palabra ni borrar ninguna letra. Solo realiza correcciones y resúmenes en la parte del texto que se encuentra después del primer ':'.
 2. No debes colocar puntos ('.') ni dos puntos (':') en la parte corregida o resumida del texto (la parte que va después del primer ':'). Si en el texto original a corregir había puntos o dos puntos, elimínalos o cámbialos por espacios o comas. El único ':' permitido en el texto final es el que separa la primera parte de la segunda.
 3. Corrige los errores ortográficos y la redacción en español de la parte posterior al primer ':'.
-4. Si la descripción posterior al primer ':' es extremadamente larga (más de 200 caracteres), genera un resumen conciso y fluido en español de esa parte que conserve los datos esenciales (nombres, fechas, códigos), asegurándote de no usar puntos ('.') ni dos puntos (':').
+4. Si la descripción posterior al primer ':' es extremadamente larga o en general el texto final total es largo, genera un resumen conciso y fluido en español de esa parte que conserve los datos esenciales (nombres, fechas, códigos, números), asegurándote de no usar puntos ('.') ni dos puntos (':').
 5. Si la descripción posterior al primer ':' es corta o mediana, solo corrige la ortografía y redacción sin resumir.
 6. Si no hay errores, devuélvelo igual (pero asegurándote de remover los puntos '.' y dos puntos ':' de la parte posterior al primer ':').
+7. LÍMITE ESTRICTO DE LONGITUD: El resultado corregido final completo (incluyendo el prefijo antes de los dos puntos si lo hay) DEBE tener un tamaño máximo de 300 caracteres. Si el texto resultante final supera los 300 caracteres, debes resumirlo y abreviarlo de forma estricta para garantizar que tenga un máximo absoluto de 300 caracteres de longitud total.
 
 Texto a corregir:
 \"" . $texto . "\"";

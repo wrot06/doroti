@@ -254,7 +254,7 @@ require_once __DIR__ . '/../components/navbar.php';
                 <p class="text-muted mb-0">Correcciones ortográficas y resúmenes automáticos de textos mayores a 300 caracteres.</p>
             </div>
             <div class="mt-2 mt-sm-0">
-                <span class="badge bg-dark fs-6 py-2 px-3 rounded-pill shadow-sm">Total Coincidencias: <?= $totalRows ?></span>
+                <span id="total-matches-badge" class="badge bg-dark fs-6 py-2 px-3 rounded-pill shadow-sm">Total Coincidencias: <?= $totalRows ?></span>
             </div>
         </div>
 
@@ -468,26 +468,47 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    // Mostrar etiqueta de éxito por 3 segundos
+                    // Mostrar etiqueta de éxito
                     $labelSuccess.removeClass("d-none");
-                    setTimeout(function() {
-                        $labelSuccess.addClass("d-none");
-                    }, 4000);
                     
-                    // Cambiar badge de estado a "Procesado" (verde)
-                    const $badge = $card.find(".status-badge");
-                    $badge.removeClass("badge-pending").addClass("badge-success");
-                    $badge.html('<i class="bi bi-check-circle-fill me-1"></i>Procesado');
+                    // Obtener la columna de la tarjeta actual (su contenedor principal)
+                    const $cardRow = $btn.closest("[id^='card-row-']");
+                    
+                    // Efecto de desvanecimiento
+                    $card.css({
+                        'transition': 'all 0.3s ease',
+                        'opacity': '0',
+                        'transform': 'scale(0.9)'
+                    });
+                    
+                    setTimeout(function() {
+                        $cardRow.slideUp(350, function() {
+                            $cardRow.remove();
+                            
+                            // Decrementar contador dinámicamente
+                            const $totalBadge = $("#total-matches-badge");
+                            let count = parseInt($totalBadge.text().replace(/\D/g, ''));
+                            if (!isNaN(count) && count > 0) {
+                                count--;
+                                $totalBadge.text("Total Coincidencias: " + count);
+                            }
+                            
+                            // Si ya no quedan registros visibles en la página actual, recargar para traer más
+                            if ($("[id^='card-row-']").length === 0) {
+                                location.reload();
+                            }
+                        });
+                    }, 500);
                 } else {
                     $labelError.removeClass("d-none").attr("title", response.message || "Error al guardar.");
+                    $btn.prop("disabled", false).html('<i class="bi bi-save me-1"></i> Guardar');
+                    $improveBtn.prop("disabled", false);
+                    $textarea.prop("disabled", false);
                 }
             },
             error: function(xhr) {
                 console.error("Error AJAX Guardar:", xhr.responseText);
                 $labelError.removeClass("d-none").attr("title", "Error de red o conexión.");
-            },
-            complete: function() {
-                // Restaurar
                 $btn.prop("disabled", false).html('<i class="bi bi-save me-1"></i> Guardar');
                 $improveBtn.prop("disabled", false);
                 $textarea.prop("disabled", false);

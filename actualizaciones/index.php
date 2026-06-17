@@ -360,6 +360,23 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.6.2') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Límite Estricto de Longitud IA y Ocultación Asíncrona";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se modificó el prompt del modelo de IA (Gemini) en corregir_descripcion_ia.php para garantizar que la descripción corregida final tenga un límite estricto de 300 caracteres.</li>
+                    <li>Se implementó animación de salida (slideUp y fadeOut) para las tarjetas procesadas y guardadas del listado en el Módulo IA.</li>
+                    <li>Se automatizó el decremento en tiempo real del contador total de coincidencias y la recarga automática del listado al quedar vacío.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

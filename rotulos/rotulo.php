@@ -116,11 +116,10 @@ function h($v)
                 ?>
                     <tr style="background:<?= $bg ?>">
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-outline-primary accordion-btn d-flex align-items-center gap-1 mx-auto"
-                                    style="padding: 2px 8px; font-size: 0.75rem;"
+                            <button type="button" class="btn btn-sm btn-outline-primary accordion-btn d-flex align-items-center justify-content-center mx-auto"
+                                    style="width: 28px; height: 28px; padding: 0; border-radius: 50%;"
                                     onclick="toggleAccordion(this, <?= $f['id'] ?>)">
                                 <i class="bi bi-chevron-down transition-icon"></i>
-                                <span>Índice</span>
                             </button>
                         </td>
                         <td><?= h($caja) ?></td>
@@ -253,32 +252,17 @@ function h($v)
                                         <th class="px-3 py-2">Unidad Documental</th>
                                         <th class="text-center py-2" style="width: 100px;">Folio Inicio</th>
                                         <th class="text-center py-2" style="width: 100px;">Folio Fin</th>
-                                        <th class="text-center py-2" style="width: 120px;">Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                     `;
                     
                     docs.forEach(doc => {
-                        let actionHtml = '';
-                        if (doc.has_pdf) {
-                            actionHtml = `
-                                <form action="download.php" method="get" target="_blank" class="m-0">
-                                    <button name="id2" value="${doc.id}" class="btn btn-success btn-sm py-1 px-2 fw-semibold w-100">
-                                        <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF
-                                    </button>
-                                </form>
-                            `;
-                        } else {
-                            actionHtml = `<span class="text-muted small">Físico (No PDF)</span>`;
-                        }
-                        
                         html += `
                             <tr>
                                 <td class="text-start px-3 text-dark"><i>${escapeHtml(doc.descripcion)}</i></td>
                                 <td class="text-center fw-bold text-secondary">${escapeHtml(doc.folio_inicio)}</td>
                                 <td class="text-center fw-bold text-secondary">${escapeHtml(doc.folio_fin)}</td>
-                                <td class="text-center px-2">${actionHtml}</td>
                             </tr>
                         `;
                     });

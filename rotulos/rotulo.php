@@ -33,26 +33,8 @@ $stmt->bind_param("i", $dependencia_id);
 $stmt->execute();
 $resultado = $stmt->get_result();
 
-/* ================== ÍNDICES DOCUMENTALES ================== */
-$indices = [];
-$tableName = getIndiceTableName($conec, (int)$dependencia_id);
-$stmt2 = $conec->prepare("
-    SELECT i.*, c.Caja, c.Carpeta
-    FROM `$tableName` i
-    INNER JOIN carpetas c ON c.id = i.carpeta_id
-    WHERE c.dependencia_id = ?
-");
-if ($stmt2 !== false) {
-    $stmt2->bind_param("i", $dependencia_id);
-    $stmt2->execute();
-    $res = $stmt2->get_result();
-    while ($r = $res->fetch_assoc()) {
-        $indices[$r['Caja']][$r['Carpeta']][] = $r;
-    }
-    $stmt2->close();
-}
 /* ================== SESIÓN ================== */
-require_once "../services/UserService.php";
+require_once __DIR__ . "/../services/UserService.php";
 $userService = new UserService($conec);
 $user_id = (int)($_SESSION['user_id'] ?? 0);
 $userInfo = $userService->getUserInfo($user_id);
@@ -84,6 +66,15 @@ function h($v)
         .hidden {
             display: none !important
         }
+        
+        .transition-icon {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        
+        .transition-icon.rotated {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 
@@ -95,7 +86,7 @@ function h($v)
     }
     $basePath = '../';
     $activePage = 'rotulos';
-    require_once "../components/navbar.php";
+    require_once __DIR__ . "/../components/navbar.php";
     ?>
 
 
@@ -124,7 +115,14 @@ function h($v)
                     $carpeta = (int)$f['Carpeta'];
                 ?>
                     <tr style="background:<?= $bg ?>">
-                        <td><button type="button" class="accordion" onclick="toggleAccordion(this)">v</button></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-primary accordion-btn d-flex align-items-center gap-1 mx-auto"
+                                    style="padding: 2px 8px; font-size: 0.75rem;"
+                                    onclick="toggleAccordion(this, <?= $f['id'] ?>)">
+                                <i class="bi bi-chevron-down transition-icon"></i>
+                                <span>Índice</span>
+                            </button>
+                        </td>
                         <td><?= h($caja) ?></td>
                         <td><?= h($carpeta) ?></td>
                         <td>
@@ -158,35 +156,24 @@ function h($v)
                     </tr>
 
                     <tr class="panel" style="display:none">
-                        <td colspan="11">
-                            <form action="../pdf/Indice.php" method="post" target="_blank">
-                                <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token'] ?? '') ?>">
-                                <input type="hidden" name="Carpeta" value="<?= $carpeta ?>">
-                                <div class="d-grid gap-2 col-6 mx-auto">
-                                    <button name="Caja" value="<?= $caja ?>" class="btn btn-info btn-sm">
-                                        Índice Carpeta <?= $carpeta ?>
-                                    </button>
-                                </div>
-                            </form>
+                        <td colspan="11" class="p-3 bg-light">
+                            <div class="border rounded bg-white shadow-sm p-3">
+                                <!-- Botón para descargar PDF del índice -->
+                                <form action="../pdf/Indice.php" method="post" target="_blank" class="mb-3">
+                                    <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token'] ?? '') ?>">
+                                    <input type="hidden" name="Carpeta" value="<?= $carpeta ?>">
+                                    <div class="d-grid gap-2 col-md-4 mx-auto">
+                                        <button name="Caja" value="<?= $caja ?>" class="btn btn-info text-white btn-sm fw-bold">
+                                            <i class="bi bi-file-earmark-pdf me-2"></i>Descargar PDF del Índice
+                                        </button>
+                                    </div>
+                                </form>
 
-                            <table class="mi-tabla2">
-                                <?php foreach ($indices[$caja][$carpeta] ?? [] as $doc): ?>
-                                    <tr>
-                                        <td><i><?= h($doc['DescripcionUnidadDocumental']) ?></i></td>
-                                        <td><?= h($doc['NoFolioInicio']) ?></td>
-                                        <td><?= h($doc['NoFolioFin']) ?></td>
-                                        <td>
-                                            <?php if (is_file(__DIR__ . '/../uploads/' . $doc['id'] . '.pdf') && $doc['Soporte'] === 'FD'): ?>
-                                                <form action="download.php" method="get" target="_blank">
-                                                    <button name="id2" value="<?= $doc['id'] ?>" class="btn btn-success btn-sm">
-                                                        Ver PDF
-                                                    </button>
-                                                </form>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </table>
+                                <!-- Contenedor dinámico del índice documental -->
+                                <div class="indice-contenido" id="indice-contenido-<?= $f['id'] ?>">
+                                    <!-- Se cargará mediante AJAX -->
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 <?php endwhile; ?>
@@ -197,7 +184,7 @@ function h($v)
 
 
     <script>
-        function toggleAccordion(button) {
+        function toggleAccordion(button, carpetaId) {
             const row = button.closest('tr');
             if (!row) return;
             
@@ -209,13 +196,129 @@ function h($v)
             }
             if (!panel) return;
             
+            const icon = button.querySelector('.transition-icon');
+            const contentDiv = document.getElementById('indice-contenido-' + carpetaId);
+            
+            // Si el panel está cerrado, abrirlo
             if (panel.style.display === "none" || panel.style.display === "") {
                 panel.style.display = "table-row";
-                button.textContent = "^";
+                if (icon) icon.classList.add('rotated');
+                
+                // Cargar datos por AJAX si aún no se han cargado
+                if (contentDiv && contentDiv.getAttribute('data-loaded') !== 'true') {
+                    loadIndiceData(carpetaId, contentDiv);
+                }
             } else {
+                // Si está abierto, cerrarlo
                 panel.style.display = "none";
-                button.textContent = "v";
+                if (icon) icon.classList.remove('rotated');
             }
+        }
+
+        function loadIndiceData(carpetaId, container) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                    <span class="fw-semibold">Cargando índice documental...</span>
+                </div>
+            `;
+            
+            fetch('get_indice_ajax.php?carpeta_id=' + carpetaId)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar datos');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        container.innerHTML = `<div class="alert alert-danger py-2 m-0">${data.error}</div>`;
+                        return;
+                    }
+                    
+                    const docs = data.documentos;
+                    if (docs.length === 0) {
+                        container.innerHTML = `
+                            <div class="text-center py-3 text-muted bg-light border rounded">
+                                <i class="bi bi-info-circle me-2"></i>No hay documentos registrados en esta carpeta.
+                            </div>
+                        `;
+                        container.setAttribute('data-loaded', 'true');
+                        return;
+                    }
+                    
+                    let html = `
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered table-sm align-middle bg-white m-0" style="font-size: 0.85rem;">
+                                <thead class="table-light text-secondary">
+                                    <tr>
+                                        <th class="px-3 py-2">Unidad Documental</th>
+                                        <th class="text-center py-2" style="width: 100px;">Folio Inicio</th>
+                                        <th class="text-center py-2" style="width: 100px;">Folio Fin</th>
+                                        <th class="text-center py-2" style="width: 120px;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    docs.forEach(doc => {
+                        let actionHtml = '';
+                        if (doc.has_pdf) {
+                            actionHtml = `
+                                <form action="download.php" method="get" target="_blank" class="m-0">
+                                    <button name="id2" value="${doc.id}" class="btn btn-success btn-sm py-1 px-2 fw-semibold w-100">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF
+                                    </button>
+                                </form>
+                            `;
+                        } else {
+                            actionHtml = `<span class="text-muted small">Físico (No PDF)</span>`;
+                        }
+                        
+                        html += `
+                            <tr>
+                                <td class="text-start px-3 text-dark"><i>${escapeHtml(doc.descripcion)}</i></td>
+                                <td class="text-center fw-bold text-secondary">${escapeHtml(doc.folio_inicio)}</td>
+                                <td class="text-center fw-bold text-secondary">${escapeHtml(doc.folio_fin)}</td>
+                                <td class="text-center px-2">${actionHtml}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    container.innerHTML = html;
+                    container.setAttribute('data-loaded', 'true');
+                })
+                .catch(err => {
+                    container.innerHTML = `
+                        <div class="alert alert-danger py-2 m-0 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-exclamation-triangle-fill me-2"></i>Error al cargar los documentos.</span>
+                            <button class="btn btn-sm btn-danger fw-bold" onclick="retryLoad(${carpetaId})">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        function retryLoad(carpetaId) {
+            const container = document.getElementById('indice-contenido-' + carpetaId);
+            if (container) loadIndiceData(carpetaId, container);
+        }
+
+        function escapeHtml(string) {
+            return String(string).replace(/[&<>"']/g, function (s) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[s];
+            });
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

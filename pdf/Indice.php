@@ -17,6 +17,14 @@ $dependencia_id = $_SESSION['dependencia_id'] ?? null;
 class PDF extends FPDF
 {
 
+    function Header()
+    {
+        // Dibujar una pequeña línea vertical en el centro superior de la página (marca de guía)
+        $this->SetDrawColor(180, 180, 180); // Gris claro
+        $this->SetLineWidth(0.2);
+        $this->Line(165, 0, 165, 4); // X=165 (mitad de 330), Y de 0 a 4mm
+    }
+
     function NbLines($w, $txt)
     {
         $cw = $this->CurrentFont['cw'];

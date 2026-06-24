@@ -22,7 +22,7 @@ class PDF extends FPDF
         // Dibujar una pequeña línea vertical en el centro superior de la página (marca de guía)
         $this->SetDrawColor(180, 180, 180); // Gris claro
         $this->SetLineWidth(0.2);
-        $this->Line(165, 0, 165, 4); // X=165 (mitad de 330), Y de 0 a 4mm
+        $this->Line(174, 0, 174, 4); // X=174 (desplazada 9mm a la derecha), Y de 0 a 4mm
     }
 
     function NbLines($w, $txt)

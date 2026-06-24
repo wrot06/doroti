@@ -469,6 +469,21 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.6.9') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Ajuste de Margen para Guía de Impresión del Índice PDF";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se desplazó la marca de centrado vertical 9 mm a la derecha (coordenada X modificada de 165 mm a 174 mm) para compensar el desfase físico de la impresora del cliente.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

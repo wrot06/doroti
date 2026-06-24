@@ -439,6 +439,21 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.6.7') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Paginación Dinámica del Historial de Cambios";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se implementó un sistema de visualización progresiva ('Ver más') en la línea de tiempo del historial de actualizaciones, mostrando por defecto las 3 últimas y desplegando el resto en cascada con efectos de transición suaves.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());
@@ -555,8 +570,13 @@ $resultado = $conec->query($sql);
 
                 <?php if ($resultado && $resultado->num_rows > 0): ?>
                     <ul class="timeline">
-                        <?php while ($row = $resultado->fetch_assoc()): ?>
-                            <li class="timeline-item">
+                        <?php 
+                        $counter = 0;
+                        while ($row = $resultado->fetch_assoc()): 
+                            $counter++;
+                            $isHidden = ($counter > 3) ? 'style="display:none;" class="timeline-item old-update"' : 'class="timeline-item"';
+                        ?>
+                            <li <?= $isHidden ?>>
                                 <div class="timeline-marker"></div>
                                 <div class="timeline-content">
                                     <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
@@ -571,6 +591,14 @@ $resultado = $conec->query($sql);
                             </li>
                         <?php endwhile; ?>
                     </ul>
+                    
+                    <?php if ($counter > 3): ?>
+                        <div class="text-center mt-4 mb-5" id="btn-ver-mas-container">
+                            <button type="button" class="btn btn-primary btn-lg shadow-sm px-4 fw-bold" onclick="showOlderUpdates()">
+                                <i class="bi bi-arrow-down-short me-2 fs-5"></i>Ver más actualizaciones
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="alert alert-info text-center py-4 rounded-4 shadow-sm">
                         <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
@@ -582,6 +610,32 @@ $resultado = $conec->query($sql);
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showOlderUpdates() {
+            const oldUpdates = document.querySelectorAll('.old-update');
+            const btnContainer = document.getElementById('btn-ver-mas-container');
+            
+            // Mostrar cada actualización antigua con un ligero efecto de desvanecimiento progresivo
+            oldUpdates.forEach((el, index) => {
+                el.style.display = '';
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.5s ease';
+                // Añadir retardo para que aparezcan una por una (efecto cascada)
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                }, index * 100);
+            });
+            
+            // Ocultar el botón "Ver más"
+            if (btnContainer) {
+                btnContainer.style.opacity = '0';
+                btnContainer.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    btnContainer.style.display = 'none';
+                }, 300);
+            }
+        }
+    </script>
 </body>
 </html>
 <?php ob_end_flush(); ?>

@@ -484,6 +484,21 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.6.10') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Calibración Fina de la Guía de Impresión en Índice PDF";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se ajustó levemente la marca de centrado vertical desplazándola 1 mm a la izquierda (coordenada X modificada de 174 mm a 173 mm) para una precisión de impresión milimétrica.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());

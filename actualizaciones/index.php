@@ -377,6 +377,68 @@ try {
                 $stmt_insert->close();
             }
         }
+        if (!$exists && $current_version === '1.6.3') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Compatibilidad de Acordeón para InfinityFree (Script Inline)";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se inlineó el código JavaScript del acordeón de los índices documentales directamente en rotulo.php para evitar bloqueos por caché y filtros de seguridad en el hosting compartido de InfinityFree.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
+        if (!$exists && $current_version === '1.6.4') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Inmunidad a Inyecciones de Código en Acordeones";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se robusteció el script del acordeón para buscar y saltar cualquier etiqueta (como scripts o anuncios de hosting gratuito) inyectada entre las filas de la tabla de carpetas.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
+        if (!$exists && $current_version === '1.6.5') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Carga Dinámica por AJAX de Índices Documentales";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se implementó un cargador AJAX (get_indice_ajax.php) para el acordeón de carpetas.</li>
+                    <li>Esto optimiza drásticamente el rendimiento, eliminando la necesidad de realizar decenas de sub-consultas en el renderizado inicial y previniendo caídas de servidor por sobrecarga en InfinityFree.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
+        if (!$exists && $current_version === '1.6.6') {
+            $insert_sql = "INSERT INTO actualizaciones (titulo, version, fecha_lanzamiento, descripcion, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conec->prepare($insert_sql);
+            if ($stmt_insert) {
+                $titulo = "Simplificación Estética de Rótulos y Ocultación de Acciones";
+                $fecha = date('Y-m-d');
+                $descripcion = "<ul>
+                    <li>Se rediseñó el botón de acordeón del índice para mostrar únicamente un icono circular y limpio.</li>
+                    <li>Se eliminó la columna 'Acción' de la tabla de documentos dentro del acordeón a solicitud del usuario.</li>
+                </ul>";
+                $estado = 1;
+                $stmt_insert->bind_param("ssssi", $titulo, $current_version, $fecha, $descripcion, $estado);
+                $stmt_insert->execute();
+                $stmt_insert->close();
+            }
+        }
     }
 } catch (Throwable $e) {
     error_log("Error al auto-registrar la actualización: " . $e->getMessage());
